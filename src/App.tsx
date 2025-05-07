@@ -6,6 +6,8 @@ import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./ui/ProtectedRoute";
 import AppLayout from "./ui/AppLayout";
 import Projects from "./pages/Projects";
+import Customers from "./pages/Customers";
+import Customer from "./pages/Customer";
 
 function App() {
   return (
@@ -21,7 +23,8 @@ function App() {
           <Route index element={<Navigate replace to="dashboard" />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="projects" element={<Projects />} />
-          <Route path="customers" element={<div>Customers Page</div>} />
+          <Route path="customers" element={<Customers />} />
+          <Route path="customers/add" element={<Customer />} />
           <Route path="reports" element={<div>Reports Page</div>} />
           <Route path="staff" element={<div>Staff Page</div>} />
           <Route path="analytics" element={<div>Analytics Page</div>} />

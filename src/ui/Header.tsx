@@ -5,7 +5,7 @@ import { useLocation } from "react-router";
 
 function Header() {
   const location = useLocation();
-  const title = location.pathname.slice(1);
+  const title = location.pathname.slice(1).split("/").at(0);
 
   return (
     <header className="flex items-center justify-between w-full h-16.5 px-4 border-b">

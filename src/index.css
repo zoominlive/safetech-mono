@@ -9,6 +9,11 @@
   --color-safetech-gray: #DDDDDD;
   --color-sf-prefix-btn: #CFCECE;
   --color-sf-gray-600: #616161;
+  --color-sf-customer-active: #BBE180;
+  --color-sf-customer-inactive: #F0EDCC;
+  --color-sf-customer-text: #323232;
+  --color-sf-secondary-300: #CECCCC;
+  --color-sf-secondary: #EFEEEE
 }
 
 @theme inline {
@@ -123,6 +128,6 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-inter;
   }
 }
