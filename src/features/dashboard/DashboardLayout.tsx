@@ -60,10 +60,18 @@ function DashboardLayout() {
     {
       header: "Start Date",
       accessorKey: "startDate",
+      // Hide on smaller screens
+      cell: (project) => (
+        <div className="hidden sm:block">{project.startDate}</div>
+      ),
     },
     {
       header: "Technician",
       accessorKey: "technician",
+      // Hide on mobile
+      cell: (project) => (
+        <div className="hidden md:block">{project.technician}</div>
+      ),
     },
     {
       header: "Status",
@@ -73,10 +81,14 @@ function DashboardLayout() {
   ];
 
   return (
-    <div className="flex flex-col space-y-6">
+    <div className="flex flex-col space-y-4 md:space-y-6">
       <Stats />
-      <Table columns={columns} data={projects} title="In Progress" />
-      <Table columns={columns} data={projects} title="Awaiting PM Review" />
+      <div className="overflow-x-auto">
+        <Table columns={columns} data={projects} title="In Progress" />
+      </div>
+      <div className="overflow-x-auto">
+        <Table columns={columns} data={projects} title="Awaiting PM Review" />
+      </div>
     </div>
   );
 }

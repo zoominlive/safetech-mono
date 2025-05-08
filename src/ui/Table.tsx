@@ -52,9 +52,9 @@ export const StatusBadge = ({ status }: { status: string }) => {
       case "on hold":
         return "bg-gray-100 text-gray-800";
       case "active":
-        return "bg-sf-customer-active text-sf-customer-text";
+        return "bg-sf-customer-active text-sf-black-300";
       case "inactive":
-        return "bg-sf-customer-inactive text-sf-customer-text";
+        return "bg-sf-customer-inactive text-sf-black-300";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -92,7 +92,13 @@ function Table<T>({
           <TableHeader>
             <TableRow className="bg-safetech-gray">
               {columns.map((column, index) => (
-                <TableHead key={index} className="font-bold text-lg">
+                <TableHead
+                  key={index}
+                  className={cn(
+                    "font-medium text-muted-foreground",
+                    column.className
+                  )}
+                >
                   {column.header}
                 </TableHead>
               ))}
@@ -102,50 +108,61 @@ function Table<T>({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((row, rowIndex) => (
-              <TableRow key={rowIndex} className="bg-white">
-                {columns.map((column, colIndex) => (
-                  <TableCell key={colIndex}>
-                    {column.cell
-                      ? column.cell(row)
-                      : (row[column.accessorKey] as React.ReactNode)}
-                  </TableCell>
-                ))}
-                {hasActions && (
-                  <TableCell>
-                    <div>
-                      {onDetails && (
-                        <Button
-                          variant="outline"
-                          className="rounded-r-none"
-                          onClick={() => onDetails(row)}
-                        >
-                          <Eye />
-                        </Button>
-                      )}
-                      {onEdit && (
-                        <Button
-                          variant="outline"
-                          className="rounded-none"
-                          onClick={() => onEdit(row)}
-                        >
-                          <SquarePen />
-                        </Button>
-                      )}
-                      {onDelete && (
-                        <Button
-                          variant="outline"
-                          className="rounded-l-none"
-                          onClick={() => onDelete(row)}
-                        >
-                          <Trash2 className="text-red-400" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                )}
+            {data.length > 0 ? (
+              data.map((row, rowIndex) => (
+                <TableRow key={rowIndex} className="bg-white">
+                  {columns.map((column, colIndex) => (
+                    <TableCell key={colIndex} className={column.className}>
+                      {column.cell
+                        ? column.cell(row)
+                        : (row[column.accessorKey] as React.ReactNode)}
+                    </TableCell>
+                  ))}
+                  {hasActions && (
+                    <TableCell>
+                      <div>
+                        {onDetails && (
+                          <Button
+                            variant="outline"
+                            className="rounded-r-none"
+                            onClick={() => onDetails(row)}
+                          >
+                            <Eye />
+                          </Button>
+                        )}
+                        {onEdit && (
+                          <Button
+                            variant="outline"
+                            className="rounded-none"
+                            onClick={() => onEdit(row)}
+                          >
+                            <SquarePen />
+                          </Button>
+                        )}
+                        {onDelete && (
+                          <Button
+                            variant="outline"
+                            className="rounded-l-none"
+                            onClick={() => onDelete(row)}
+                          >
+                            <Trash2 className="text-red-400" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="text-center py-6 text-gray-500"
+                >
+                  No data available
+                </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
           {pagination && (
             <TableFooter>

@@ -29,29 +29,25 @@ export function SearchInput({
   };
 
   return (
-    <div
-      className={`flex w-[332px] max-w-sm items-center space-x-2 ${className}`}
-    >
-      <div className={`w-full max-w-sm ${className}`}>
-        <div className="relative">
-          <Input
-            type="text"
-            placeholder={placeholder}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="w-full pr-12 bg-safetech-gray h-[60px]" // Added right padding to make space for the button
-          />
-          <Button
-            type="submit"
-            onClick={handleSearch}
-            className="absolute right-0 top-0 w-[68px] h-full rounded-l-none bg-sf-prefix-btn"
-            size="icon"
-            variant="ghost"
-          >
-            <Search className="h-4 w-4" />
-          </Button>
-        </div>
+    <div className={`flex w-full items-center space-x-2 ${className}`}>
+      <div className="w-full relative">
+        <Input
+          type="text"
+          placeholder={placeholder}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          className="w-full pr-12 bg-safetech-gray h-[60px]"
+        />
+        <Button
+          type="submit"
+          onClick={handleSearch}
+          className="absolute right-0 top-0 w-[68px] h-full rounded-l-none bg-sf-prefix-btn"
+          size="icon"
+          variant="ghost"
+        >
+          <Search className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   );

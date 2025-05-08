@@ -5,7 +5,7 @@ function Stats() {
   return (
     <div className="space-y-4">
       <h3 className="font-semibold text-lg">Overview</h3>
-      <div className="grid grid-cols-4 grid-rows-1 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <Stat
           title="Total Open Projects"
           value="123"

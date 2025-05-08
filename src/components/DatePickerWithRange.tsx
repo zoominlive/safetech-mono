@@ -21,30 +21,32 @@ export function DatePickerWithRange({
   });
 
   return (
-    <div className={cn("grid gap-2", className)}>
+    <div className={cn("grid w-full", className)}>
       <Popover>
         <PopoverTrigger asChild>
           <Button
             id="date"
             variant={"outline"}
             className={cn(
-              "w-[332px] h-[60px] p-0 justify-start text-left font-normal bg-safetech-gray ps-4 overflow-hidden",
+              "w-full h-[60px] p-0 justify-start text-left font-normal bg-safetech-gray ps-4 overflow-hidden",
               !date && "text-muted-foreground"
             )}
           >
-            {date?.from ? (
-              date.to ? (
-                <>
-                  {format(date.from, "LLL dd, y")} ~{" "}
-                  {format(date.to, "LLL dd, y")}
-                </>
+            <span className="truncate">
+              {date?.from ? (
+                date.to ? (
+                  <>
+                    {format(date.from, "LLL dd, y")} ~{" "}
+                    {format(date.to, "LLL dd, y")}
+                  </>
+                ) : (
+                  format(date.from, "LLL dd, y")
+                )
               ) : (
-                format(date.from, "LLL dd, y")
-              )
-            ) : (
-              <span>Pick a date</span>
-            )}
-            <span className="ml-auto h-full  w-[68px] bg-sf-prefix-btn flex items-center justify-center">
+                <span>Pick a date</span>
+              )}
+            </span>
+            <span className="ml-auto h-full min-w-[68px] bg-sf-prefix-btn flex items-center justify-center">
               <CalendarIcon className="" />
             </span>
           </Button>
@@ -57,6 +59,7 @@ export function DatePickerWithRange({
             selected={date}
             onSelect={setDate}
             numberOfMonths={2}
+            className="sm:max-w-none max-w-[300px] overflow-x-auto"
           />
         </PopoverContent>
       </Popover>

@@ -16,9 +16,10 @@ type SidebarItemProps = {
   label: string;
   path: string;
   active?: boolean;
+  onClick?: () => void;
 };
 
-const SidebarItem = ({ icon: Icon, label, path, active }: SidebarItemProps) => {
+const SidebarItem = ({ icon: Icon, label, path, active, onClick }: SidebarItemProps) => {
   return (
     <Link
       to={path}
@@ -28,6 +29,7 @@ const SidebarItem = ({ icon: Icon, label, path, active }: SidebarItemProps) => {
           ? "bg-gray-200 text-gray-900"
           : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
       )}
+      onClick={onClick}
     >
       <Icon className="w-5 h-5" />
       <span>{label}</span>
@@ -35,7 +37,11 @@ const SidebarItem = ({ icon: Icon, label, path, active }: SidebarItemProps) => {
   );
 };
 
-function MainNav() {
+interface MainNavProps {
+  onItemClick?: () => void;
+}
+
+function MainNav({ onItemClick }: MainNavProps) {
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -58,6 +64,7 @@ function MainNav() {
             label={item.label}
             path={item.path}
             active={currentPath === item.path}
+            onClick={onItemClick}
           />
         ))}
       </div>
@@ -66,6 +73,7 @@ function MainNav() {
           path="/login"
           icon={CircleArrowOutUpLeft}
           label="Sign Out"
+          onClick={onItemClick}
         />
       </div>
     </nav>

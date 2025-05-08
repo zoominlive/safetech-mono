@@ -15,11 +15,15 @@ import { CirclePlus } from "lucide-react";
 function ProjectTableOperations() {
   return (
     <>
-      <div className="flex items-center h-[60px] w-full gap-6">
-        <DatePickerWithRange />
-        <SearchInput placeholder="Type customer name..." />
+      <div className="flex flex-col lg:flex-row items-start lg:items-center w-full gap-4 lg:gap-6 mb-4 lg:mb-0">
+        <div className="w-full lg:w-auto">
+          <DatePickerWithRange />
+        </div>
+        <div className="w-full lg:w-auto">
+          <SearchInput placeholder="Type customer name..." />
+        </div>
         <Select>
-          <SelectTrigger className="h-[60px] w-[332px]  bg-safetech-gray">
+          <SelectTrigger className="h-[60px] w-full lg:w-[332px] bg-safetech-gray">
             <SelectValue placeholder="Select project status" />
           </SelectTrigger>
           <SelectContent>
@@ -33,8 +37,8 @@ function ProjectTableOperations() {
             </SelectGroup>
           </SelectContent>
         </Select>
-        <Button className="ml-auto h-full w-[200px] bg-sf-gray-600">
-          Add Project <CirclePlus />
+        <Button className="mt-4 lg:mt-0 lg:ml-auto h-[60px] w-full lg:w-[200px] bg-sf-gray-600">
+          Add Project <CirclePlus className="ml-1" />
         </Button>
       </div>
     </>
