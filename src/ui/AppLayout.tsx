@@ -23,24 +23,26 @@ export default function AppLayout() {
 
       {/* Mobile menu backdrop */}
       {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden" 
+        <div
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
       {/* Sidebar - hidden on mobile by default, shown when menu open */}
-      <div className={cn(
-        "fixed inset-0 z-40 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 w-[316px]",
-        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-      )}>
+      <div
+        className={cn(
+          "fixed inset-0 z-40 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 w-[316px]",
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
         <Sidebar onCloseMobileMenu={() => setIsMobileMenuOpen(false)} />
       </div>
-      
+
       {/* Main content */}
       <main className="w-full my-1">
         <Header />
-        <div className="px-4 py-6 overflow-y-auto">
+        <div className="px-4 py-6 overflow-y-auto h-[calc(100vh-75px)]">
           <Outlet />
         </div>
       </main>

@@ -26,7 +26,7 @@ const SidebarItem = ({ icon: Icon, label, path, active, onClick }: SidebarItemPr
       className={cn(
         "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors",
         active
-          ? "bg-gray-200 text-gray-900"
+          ? "bg-safetech-gray text-gray-900"
           : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
       )}
       onClick={onClick}
@@ -55,7 +55,7 @@ function MainNav({ onItemClick }: MainNavProps) {
     { icon: HandHeart, label: "Support", path: "/support" },
   ];
   return (
-    <nav className="flex flex-col h-[90%]">
+    <nav className="flex flex-col h-[calc(100vh-75px)]">
       <div className="flex flex-col gap-1 px-2 pt-8">
         {menuItems.map((item) => (
           <SidebarItem
@@ -68,7 +68,7 @@ function MainNav({ onItemClick }: MainNavProps) {
           />
         ))}
       </div>
-      <div className="mt-auto">
+      <div className="mt-auto px-2">
         <SidebarItem
           path="/login"
           icon={CircleArrowOutUpLeft}

@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CirclePlus } from "lucide-react";
+import { Link } from "react-router";
 
 function ProjectTableOperations() {
   return (
@@ -23,7 +24,7 @@ function ProjectTableOperations() {
           <SearchInput placeholder="Type customer name..." />
         </div>
         <Select>
-          <SelectTrigger className="h-[60px] w-full lg:w-[332px] bg-safetech-gray">
+          <SelectTrigger className="w-[332px] py-7.5 bg-safetech-gray">
             <SelectValue placeholder="Select project status" />
           </SelectTrigger>
           <SelectContent>
@@ -37,8 +38,10 @@ function ProjectTableOperations() {
             </SelectGroup>
           </SelectContent>
         </Select>
-        <Button className="mt-4 lg:mt-0 lg:ml-auto h-[60px] w-full lg:w-[200px] bg-sf-gray-600">
-          Add Project <CirclePlus className="ml-1" />
+        <Button className="ml-auto h-full w-[200px] bg-sf-gray-600" asChild>
+          <Link to="/projects/create">
+            Add Project <CirclePlus />
+          </Link>
         </Button>
       </div>
     </>

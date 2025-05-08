@@ -9,34 +9,34 @@ function Stats() {
         <Stat
           title="Total Open Projects"
           value="123"
-          change="8.5%"
-          changeLabel="Up from last month"
+          percentage="8.5%"
+          subtitle="Up from last month"
           icon={<Users />}
-          iconBg="bg-blue-100"
+          trend="up"
         />
         <Stat
           title="Projects Completed Last 30"
           value="87"
-          change="1.3%"
-          changeLabel="Up from last month"
+          percentage="1.3%"
+          subtitle="Up from last month"
           icon={<Box />}
-          iconBg="bg-yellow-200"
+          trend="up"
         />
         <Stat
           title="Avg. Time To Complete"
           value="1D 10H"
-          change="4.3%"
-          changeLabel="Down from last month"
+          percentage="4.3%"
+          subtitle="Down from last month"
           icon={<Users />}
-          iconBg="bg-blue-100"
+          trend="down"
         />
         <Stat
           title="Projects Older Than 48hrs"
           value="12"
-          change="1.8%"
-          changeLabel="Up from last week"
+          percentage="1.8%"
+          subtitle="Up from last week"
           icon={<Users />}
-          iconBg="bg-blue-100"
+          trend="up"
         />
       </div>
     </div>

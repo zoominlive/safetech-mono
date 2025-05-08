@@ -7,7 +7,7 @@ interface SidebarProps {
 
 function Sidebar({ onCloseMobileMenu }: SidebarProps) {
   return (
-    <aside className="w-[316px] border-r border-gray-500 h-screen bg-white">
+    <aside className="w-[316px] border-r border-sf-gray-400 h-screen bg-white">
       <div className="border-b py-1">
         <Logo />
       </div>
