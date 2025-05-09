@@ -1,0 +1,58 @@
+module.exports = (sequelize, DataTypes) => {
+  const Customer = sequelize.define('Customer', {
+    id: {
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      type: DataTypes.INTEGER,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    status: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    deleted_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    }
+  },
+  {
+    tableName: 'customers',
+    timestamps: true,
+    paranoid: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    deletedAt: 'deleted_at'
+  });
+
+  Customer.associate = models => {
+    Customer.hasMany(models.Project, {
+      foreignKey: 'customer_id',
+      as: 'projects'
+    });
+  };
+
+
+  return Customer;
+};
