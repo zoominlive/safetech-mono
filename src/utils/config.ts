@@ -5,7 +5,7 @@ interface IConfig {
   }
 
 export const config: IConfig = {
-  BASE_URL: process.env.NEXT_PUBLIC_BASE_URL as string,
-  APP_NAME: process.env.NEXT_PUBLIC_APP_NAME as string,
-  APP_VERSION: process.env.NEXT_PUBLIC_VERSION as string
+  BASE_URL: import.meta.env.VITE_BASE_URL as string,
+  APP_NAME: import.meta.env.VITE_NAME as string,
+  APP_VERSION: import.meta.env.VITE_VERSION as string
 }

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store";
 import {
   ChartNoAxesCombined,
   CircleArrowOutUpLeft,
@@ -9,7 +10,7 @@ import {
   UserRoundPlus,
   Users,
 } from "lucide-react";
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 
 type SidebarItemProps = {
   icon: React.ElementType;
@@ -43,7 +44,18 @@ interface MainNavProps {
 
 function MainNav({ onItemClick }: MainNavProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
+
+  const handleSignOut = async () => {
+    try {
+      console.log('token', useAuthStore.getState().token);
+      useAuthStore.getState().logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -54,6 +66,7 @@ function MainNav({ onItemClick }: MainNavProps) {
     { icon: ChartNoAxesCombined, label: "Analytics", path: "/analytics" },
     { icon: HandHeart, label: "Support", path: "/support" },
   ];
+
   return (
     <nav className="flex flex-col h-[calc(100vh-75px)]">
       <div className="flex flex-col gap-1 px-2 pt-8">
@@ -70,10 +83,10 @@ function MainNav({ onItemClick }: MainNavProps) {
       </div>
       <div className="mt-auto px-2">
         <SidebarItem
-          path="/login"
+          path=""
           icon={CircleArrowOutUpLeft}
           label="Sign Out"
-          onClick={onItemClick}
+          onClick={handleSignOut}
         />
       </div>
     </nav>

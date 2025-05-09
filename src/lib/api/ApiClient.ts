@@ -7,6 +7,7 @@ import axios, {
 import { HEADERS, STATUS_CODES, TIMEOUT } from "./constants";
 import { NetworkUtils } from "./helper";
 import { config as Config } from "@/utils/config";
+import { useAuthStore } from "@/store";
 
 class ApiClient {
   ApiInstance: AxiosInstance;
@@ -89,18 +90,22 @@ class ApiClient {
 
     switch (status) {
       case STATUS_CODES.INTERNAL_SERVER_ERROR: {
-        // toast.error(ERROR_MESSAGES.GENERIC)
+        // Handle server error
         break;
       }
       case STATUS_CODES.FORBIDDEN: {
+        // Handle forbidden error
         break;
       }
       case STATUS_CODES.UNAUTHORIZED: {
-        // toast.error(response?.data.message)
+        // If unauthorized, log the user out
+        useAuthStore.getState().logout();
+        // Redirect to login page
+        window.location.href = "/login";
         break;
       }
       case STATUS_CODES.NOT_FOUND: {
-        // toast.error(response?.data.message)
+        // Handle not found error
         break;
       }
       default:
@@ -112,6 +117,7 @@ class ApiClient {
 }
 
 const { BASE_URL, APP_VERSION } = Config;
+
 const BaseClient = new ApiClient(BASE_URL + "/" + APP_VERSION);
 
 export { BaseClient };
