@@ -13,10 +13,10 @@ function Header() {
         {title}
       </h2>
       <div className="flex items-center gap-1 md:gap-2">
-        <Button className="bg-white hidden md:flex">
+        <Button className="bg-white hidden md:flex text-black">
           <Settings className="size-4" />
         </Button>
-        <Button className="bg-white">
+        <Button className="bg-white text-black">
           <BellDot className="size-4" />
         </Button>
         <div className="flex items-center gap-2">

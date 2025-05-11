@@ -29,7 +29,9 @@ export function SearchInput({
   };
 
   return (
-    <div className={`flex w-full items-center space-x-2 ${className}`}>
+    <div
+      className={`flex w-full max-w-[332px] items-center space-x-2 ${className}`}
+    >
       <div className="w-full relative">
         <Input
           type="text"

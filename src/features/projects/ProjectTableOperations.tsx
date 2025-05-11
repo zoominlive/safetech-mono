@@ -16,7 +16,7 @@ import { Link } from "react-router";
 function ProjectTableOperations() {
   return (
     <>
-      <div className="flex flex-col lg:flex-row items-start lg:items-center w-full gap-4 lg:gap-6 mb-4 lg:mb-0">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center w-full gap-4 lg:gap-6 mb-4">
         <div className="w-full lg:w-auto">
           <DatePickerWithRange />
         </div>
@@ -24,7 +24,7 @@ function ProjectTableOperations() {
           <SearchInput placeholder="Type customer name..." />
         </div>
         <Select>
-          <SelectTrigger className="w-[332px] py-7.5 bg-safetech-gray">
+          <SelectTrigger className="w-full lg:w-auto py-7.5 bg-safetech-gray">
             <SelectValue placeholder="Select project status" />
           </SelectTrigger>
           <SelectContent>
@@ -38,7 +38,7 @@ function ProjectTableOperations() {
             </SelectGroup>
           </SelectContent>
         </Select>
-        <Button className="ml-auto h-full w-[200px] bg-sf-gray-600" asChild>
+        <Button className="ml-auto h-[60px] w-[200px] bg-sf-gray-600" asChild>
           <Link to="/projects/create">
             Add Project <CirclePlus />
           </Link>

@@ -11,6 +11,9 @@ import Customer from "./pages/Customer";
 import { Project } from "./pages/Project";
 import ProjectDetails from "./pages/ProjectDetails";
 import Reports from "./pages/Reports";
+import Report from "./pages/Report";
+import ReportDetails from "./pages/ReportDetails";
+import Analytics from "./pages/Analytics";
 
 function App() {
   return (
@@ -33,8 +36,10 @@ function App() {
           <Route path="customers/add" element={<Customer />} />
           <Route path="customers/:id" element={<Customer />} />
           <Route path="reports" element={<Reports />} />
+          <Route path="reports/:id" element={<ReportDetails />} />
+          <Route path="reports/:id/edit" element={<Report />} />
           <Route path="staff" element={<div>Staff Page</div>} />
-          <Route path="analytics" element={<div>Analytics Page</div>} />
+          <Route path="analytics" element={<Analytics />} />
           <Route path="support" element={<div>Support Page</div>} />
         </Route>
         <Route element={<AuthLayout />}>
