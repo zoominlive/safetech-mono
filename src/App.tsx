@@ -37,6 +37,8 @@ function App() {
           <Route path="projects" element={<Projects />} />
           <Route path="customers" element={<Customers />} />
           <Route path="customers/add" element={<Customer />} />
+          <Route path="customers/:id" element={<Customer />} />
+          <Route path="customers/:id/edit" element={<Customer />} />
           <Route path="reports" element={<div>Reports Page</div>} />
           <Route path="staff" element={<div>Staff Page</div>} />
           <Route path="analytics" element={<div>Analytics Page</div>} />

@@ -124,30 +124,30 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'auth-storage', // unique name for localStorage
       partialize: (state) => {
-        if (state.rememberMe) {
+        // if (state.rememberMe) {
           return { 
             isAuthenticated: state.isAuthenticated, 
             user: state.user, 
             token: state.token,
             rememberMe: state.rememberMe
           }
-        }
-        return { rememberMe: state.rememberMe };
+        // }
+        // return { rememberMe: state.rememberMe };
       },
-      storage: {
-        getItem: (name) => {
-          const storedData = JSON.parse(localStorage.getItem(name) || '{}');
-          if (!storedData.state?.rememberMe) {
-            const { rememberMe } = storedData.state || {};
-            return { state: { rememberMe } }; // ✅ return object, not string
-          }
-          return storedData; // ✅ already parsed
-        },
-        setItem: (name, value) => {
-          localStorage.setItem(name, JSON.stringify(value)); // ✅ store as string
-        },
-        removeItem: (name) => localStorage.removeItem(name),
-      }      
+      // storage: {
+      //   getItem: (name) => {
+      //     const storedData = JSON.parse(localStorage.getItem(name) || '{}');
+      //     if (!storedData.state?.rememberMe) {
+      //       const { rememberMe } = storedData.state || {};
+      //       return { state: { rememberMe } }; // ✅ return object, not string
+      //     }
+      //     return storedData; // ✅ already parsed
+      //   },
+      //   setItem: (name, value) => {
+      //     localStorage.setItem(name, JSON.stringify(value)); // ✅ store as string
+      //   },
+      //   removeItem: (name) => localStorage.removeItem(name),
+      // }      
     }
   )
 );

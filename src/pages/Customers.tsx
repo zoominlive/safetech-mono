@@ -1,11 +1,21 @@
 import { CustomersTable } from "@/features/customers/CustomersTable";
 import CustomersTableOperations from "@/features/customers/CustomersTableOperations";
+import { useState } from "react";
 
 function Customers() {
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [sortBy, setSortBy] = useState<string>("");
+  
   return (
     <div className="space-y-6">
-      <CustomersTableOperations />
-      <CustomersTable />
+      <CustomersTableOperations 
+        onSearch={setSearchQuery} 
+        onSort={setSortBy} 
+      />
+      <CustomersTable 
+        searchQuery={searchQuery}
+        sortBy={sortBy}
+      />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { HEADERS, STATUS_CODES, TIMEOUT } from "./constants";
 import { NetworkUtils } from "./helper";
 import { config as Config } from "@/utils/config";
 import { useAuthStore } from "@/store";
+import { toast } from "@/components/ui/use-toast";
 
 class ApiClient {
   ApiInstance: AxiosInstance;
@@ -87,6 +88,30 @@ class ApiClient {
   handleError = async (error: AxiosError) => {
     const { response }: { response?: AxiosResponse } = error;
     const status = response?.status ?? "";
+
+    // Check for token expiration message
+    if (response?.data && 
+        typeof response.data === 'object' && 
+        'code' in response.data && 
+        'message' in response.data &&
+        response.data.code === 400 && 
+        response.data.message === "Your token has been expired, Please login again") {
+      
+      // Handle token expiration
+      useAuthStore.getState().logout();
+      
+      // Show notification to user
+      toast({
+        title: "Session Expired",
+        description: "Your session has expired. Please login again.",
+        variant: "destructive",
+        duration: 5000
+      });
+      
+      // Redirect to login page
+      window.location.href = "/login";
+      return Promise.reject(response);
+    }
 
     switch (status) {
       case STATUS_CODES.INTERNAL_SERVER_ERROR: {

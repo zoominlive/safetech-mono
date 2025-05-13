@@ -3,6 +3,8 @@ import Stats from "./Stats";
 import { useAuthStore } from "@/store";
 import { useEffect, useState } from "react";
 import { dashboardService } from "@/services/api/dashboardService";
+import { TableSkeleton } from "@/components/ui/skeletons/TableSkeleton";
+import { StatsSkeleton } from "@/components/ui/skeletons/StatsSkeleton";
 
 interface DashboardResponse {
   code: number;
@@ -119,7 +121,11 @@ function DashboardLayout() {
   return (
     <div className="flex flex-col space-y-4 md:space-y-6">
       {isLoading ? (
-        <div className="flex justify-center py-8">Loading dashboard data...</div>
+        <>
+          <StatsSkeleton />
+          <TableSkeleton columns={5} rows={3} />
+          <TableSkeleton columns={3} rows={3} />
+        </>
       ) : error ? (
         <div className="text-red-500 text-center py-8">{error}</div>
       ) : (

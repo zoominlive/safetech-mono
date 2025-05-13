@@ -1,6 +1,7 @@
 import { projectService } from "@/services/api/projectService";
 import { useAuthStore } from "@/store";
 import Table, { Column, StatusBadge } from "@/ui/Table";
+import { TableSkeleton } from "@/components/ui/skeletons/TableSkeleton";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -82,7 +83,7 @@ function ProjectTable() {
   };
 
   if (isLoading) {
-    return <div className="flex justify-center py-8">Loading customers data...</div>;
+    return <TableSkeleton columns={5} rows={5} hasActions={true} />;
   }
 
   if (error) {
