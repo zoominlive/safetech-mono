@@ -1,12 +1,14 @@
-import { store } from "@/store";
+import { useAuthStore } from "@/store";
 import { AxiosRequestConfig } from "axios";
 
 const injectToken = (config: AxiosRequestConfig): AxiosRequestConfig => {
   const newConfig = { ...config };
-  const state = store.getState();
+  
   try {
-    if (state.auth.userDetails?.token && newConfig.headers) {
-      newConfig.headers.Authorization = `Bearer ${state.auth.userDetails?.token}`;
+    const token = useAuthStore.getState().token;
+    
+    if (token && newConfig.headers) {
+      newConfig.headers.Authorization = `Bearer ${token}`;
     }
 
     if (newConfig.headers)

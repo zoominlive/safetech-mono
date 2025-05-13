@@ -1,81 +1,106 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { StatusBadge } from "@/ui/Table";
+import { projectService } from "@/services/api/projectService";
+import { useAuthStore } from "@/store";
+import Table, { Column, StatusBadge } from "@/ui/Table";
+import { TableSkeleton } from "@/components/ui/skeletons/TableSkeleton";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+
+interface Project {
+  id: number;
+  projectName: string;
+  company: string;
+  startDate: string;
+  technician: string;
+  status: string;
+}
+
+const columns: Column<Project>[] = [
+  {
+    header: "Project Name",
+    accessorKey: "projectName",
+  },
+  {
+    header: "Company Name",
+    accessorKey: "company",
+  },
+  {
+    header: "Start Date",
+    accessorKey: "startDate",
+  },
+  {
+    header: "Technician",
+    accessorKey: "technician",
+  },
+  {
+    header: "Status",
+    accessorKey: "status",
+    cell: (customer) => <StatusBadge status={customer.status} />,
+  },
+];
 
 function ProjectTable() {
-  const projects = [
-    {
-      id: "728ed52f",
-      projectName: "Flood Damage",
-      companyName: "Acme Inc",
-      startDate: new Date(),
-      technician: "John Doe",
-      status: "new",
-    },
-    {
-      id: "62309df2",
-      projectName: "Fire Assessment",
-      companyName: "Tech Solutions",
-      startDate: new Date(),
-      technician: "Jane Smith",
-      status: "in progress",
-    },
-    {
-      id: "91ef35a8",
-      projectName: "Mold Remediation",
-      companyName: "Global Corp",
-      startDate: new Date(),
-      technician: "Mike Wilson",
-      status: "completed",
-    },
-  ];
+  const navigate = useNavigate();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const token = useAuthStore.getState().token;
+
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        setIsLoading(true);
+        const response = await projectService.getAllProjects();
+        
+        if (response.success) {
+          
+          const mappedProjects = response.data.rows.map(project => ({
+            id: Number(project.id),
+            projectName: project.name, // Assuming project.name should be projectName
+            company: project.company.name,
+            startDate: project.start_date,
+            technician: project.technician.name,
+            status: project.status, // Default to active if not provided by API
+          }));
+          
+          setProjects(mappedProjects);
+          setError(null);
+        } else {
+          setError(response.message || "Failed to load customers data");
+        }
+      } catch (err) {
+        console.error("Error fetching projects data:", err);
+        setError("Failed to load projects data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCustomers();
+  }, [token]);
+
+  const handleDetails = (project: Project) => {
+    navigate(`/projects/${project.id}`);
+  };
+
+  if (isLoading) {
+    return <TableSkeleton columns={5} rows={5} hasActions={true} />;
+  }
+
+  if (error) {
+    return <div className="text-red-500 text-center py-8">{error}</div>;
+  }
 
   return (
-    <div className="rounded-md border overflow-hidden">
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader className="bg-safetech-gray h-[70px]">
-            <TableRow>
-              <TableHead>Project Name</TableHead>
-              <TableHead>Company Name</TableHead>
-              <TableHead className="hidden sm:table-cell">Start Date</TableHead>
-              <TableHead className="hidden md:table-cell">Technician</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-[100px]">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {projects.map((project) => (
-              <TableRow key={project.id}>
-                <TableCell className="font-medium">
-                  {project.projectName}
-                </TableCell>
-                <TableCell>{project.companyName}</TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  {project.startDate.toLocaleDateString()}
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {project.technician}
-                </TableCell>
-                <TableCell>
-                  <StatusBadge status={project.status} />
-                </TableCell>
-                <TableCell>
-                  <button className="bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs py-1 px-3 rounded transition-colors">
-                    View
-                  </button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+    <div>
+      <Table
+        columns={columns}
+        data={projects}
+        hasActions={true}
+        onDetails={handleDetails}
+        onDelete={(customer) => console.log("Delete", customer)}
+        onEdit={(customer) => console.log("Edit", customer)}
+        pagination={true}
+      />
     </div>
   );
 }

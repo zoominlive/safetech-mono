@@ -1,10 +1,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store";
 import { BellDot, Settings } from "lucide-react";
 import { useLocation } from "react-router";
 
 function Header() {
   const location = useLocation();
+  const user = useAuthStore.getState().user;
   const title = location.pathname.slice(1).split("/").at(0);
 
   return (
@@ -20,7 +22,7 @@ function Header() {
           <BellDot className="size-4" />
         </Button>
         <div className="flex items-center gap-2">
-          <span className="hidden md:inline">Mary Smith</span>
+          <span className="hidden md:inline">{user?.name}</span>
           <Avatar>
             <AvatarImage src="/user/avatar-sf.png" />
             <AvatarFallback>MS</AvatarFallback>
