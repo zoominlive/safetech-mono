@@ -15,7 +15,7 @@ module.exports = {
         allowNull: true
       },
       profile_picture: {
-        type: DataTypes.STRING,
+        type: Sequelize.STRING,
         allowNull: true
       },
       role: {

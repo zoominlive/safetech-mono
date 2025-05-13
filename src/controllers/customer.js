@@ -20,14 +20,14 @@ exports.createCustomer = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
     const { user } = req;
-    const { name, email, phone } = req.body
+    const { name, email, phone, status } = req.body
     
     if (user.role == USER_ROLE.TECHNICIAN) {
       const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
       return ErrorHandler(ApiError, req, res, next);
     }
 
-    const customer = await Customer.create({ name, email, phone }, { transaction });
+    const customer = await Customer.create({ name, email, phone, status }, { transaction });
 
     await transaction.commit();
     return res
@@ -90,7 +90,7 @@ exports.updateCustomer = async (req, res, next) => {
   try {
     const { user } = req;
     const { id } = req.params;    
-    const { name, email, phone } = req.body
+    const { name, email, phone, status } = req.body
 
     if (user.role == USER_ROLE.TECHNICIAN) {
       const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
@@ -98,7 +98,7 @@ exports.updateCustomer = async (req, res, next) => {
     }
 
     const updated = await Customer.update(
-      { name: name, email: email, phone: phone },
+      { name: name, email: email, phone: phone, status: status },
       {
         where: { id: id },
         returning: true,
