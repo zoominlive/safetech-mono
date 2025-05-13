@@ -65,7 +65,7 @@ const ReportsTable: React.FC = () => {
               </Button>
             </TableCell>
             <TableCell className="text-center">
-              <Switch />
+              <Switch className="bg-sf-black-300 data-[state=unchecked]:bg-sf-black-300" />
             </TableCell>
           </TableRow>
         </TableBody>

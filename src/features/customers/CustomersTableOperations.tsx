@@ -16,7 +16,10 @@ interface CustomersTableOperationsProps {
   onSort: (sortBy: string) => void;
 }
 
-function CustomersTableOperations({ onSearch, onSort }: CustomersTableOperationsProps) {
+function CustomersTableOperations({
+  onSearch,
+  onSort,
+}: CustomersTableOperationsProps) {
   const [sortValue, setSortValue] = useState<string>("");
 
   const handleSortChange = (value: string) => {
@@ -25,13 +28,13 @@ function CustomersTableOperations({ onSearch, onSort }: CustomersTableOperations
   };
 
   return (
-    <div className="flex w-full h-16 gap-6">
-      <SearchInput 
-        placeholder="Search customer name, email..." 
+    <div className="flex flex-col md:flex-row w-full md:h-16 gap-6">
+      <SearchInput
+        placeholder="Search customer name, email..."
         onSearch={onSearch}
       />
       <Select value={sortValue} onValueChange={handleSortChange}>
-        <SelectTrigger className="w-[332px] py-7.5 bg-safetech-gray text-gray-600 rounded-md">
+        <SelectTrigger className="w-full md:w-[332px] py-7.5 bg-safetech-gray text-gray-600 rounded-md">
           <SelectValue placeholder="Sort by" />
         </SelectTrigger>
         <SelectContent>
@@ -41,7 +44,7 @@ function CustomersTableOperations({ onSearch, onSort }: CustomersTableOperations
           <SelectItem value="created_desc">Newest First</SelectItem>
         </SelectContent>
       </Select>
-      <Button className="ml-auto h-full w-[200px] bg-sf-gray-600" asChild>
+      <Button className="md:ml-auto py-7.5 md:w-[200px] bg-sf-gray-600" asChild>
         <Link to="/customers/add">
           Add Customer <CirclePlus />
         </Link>

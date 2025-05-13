@@ -1,4 +1,4 @@
-import { CirclePlus, CircleX, Info, Pen } from "lucide-react";
+import { Bookmark, CirclePlus, CircleX, Info, Pen } from "lucide-react";
 import React from "react";
 import {
   Tooltip,
@@ -36,19 +36,11 @@ const moistureStatus: Record<string, string>[] = [
 ];
 
 const fruitOptions: Option[] = [
-  { value: "apple", label: "Apple" },
-  { value: "banana", label: "Banana" },
-  { value: "blueberry", label: "Blueberry" },
-  { value: "cherry", label: "Cherry" },
-  { value: "grape", label: "Grape" },
-  { value: "lemon", label: "Lemon" },
-  { value: "lime", label: "Lime" },
-  { value: "mango", label: "Mango" },
-  { value: "orange", label: "Orange" },
-  { value: "peach", label: "Peach" },
-  { value: "pear", label: "Pear" },
-  { value: "pineapple", label: "Pineapple" },
-  { value: "strawberry", label: "Strawberry" },
+  { value: "vhm", label: "Very High Moisture" },
+  { value: "sm", label: "Slight Moisture" },
+  { value: "uml", label: "Unknown Moisture Level" },
+  { value: "ws", label: "Water Standing" },
+  { value: "mli", label: "Moisture Level Inconclusive" },
 ];
 
 const ReportForm: React.FC = () => {
@@ -70,7 +62,7 @@ const ReportForm: React.FC = () => {
         </TooltipProvider>
       </div>
       <Card>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 h-[calc(100vh-350px)] overflow-y-auto">
           <div className="space-y-6 border-b pb-7">
             <h4 className="font-semibold text-xl">Report Details</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 text-lg text-sf-black-300">
@@ -92,7 +84,7 @@ const ReportForm: React.FC = () => {
             <h4>Floor Moisture Description</h4>
             <div className="flex w-2xl space-x-2">
               <MultiSelect options={fruitOptions} />
-              <Button>
+              <Button className="bg-safetech-gray text-black">
                 <CirclePlus />
               </Button>
             </div>
@@ -102,7 +94,11 @@ const ReportForm: React.FC = () => {
             <RadioGroup defaultValue="ms3">
               {moistureStatus.map((ms) => (
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value={ms.value} id={ms.value} />
+                  <RadioGroupItem
+                    value={ms.value}
+                    id={ms.value}
+                    className="border-sf-black-300"
+                  />
                   <Label htmlFor={ms.value} className="text-lg font-normal">
                     {ms.name}
                   </Label>
@@ -141,6 +137,14 @@ const ReportForm: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+      <div className="text-end bg-white py-5 pe-8 space-x-6 absolute bottom-0 w-full left-0">
+        <Button className="bg-sf-gray-600 text-white w-[150px] h-[48px]">
+          Save <Bookmark />
+        </Button>
+        <Button className="bg-sf-secondary text-black w-[150px] h-[48px]">
+          Cancel <CircleX />
+        </Button>
+      </div>
     </div>
   );
 };
