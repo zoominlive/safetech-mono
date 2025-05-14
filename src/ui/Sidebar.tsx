@@ -1,17 +1,32 @@
+import { Button } from "@/components/ui/button";
 import Logo from "./Logo";
 import MainNav from "./MainNav";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   onCloseMobileMenu?: () => void;
+  onSetExpanded?: () => void;
+  expanded: boolean;
 }
 
-function Sidebar({ onCloseMobileMenu }: SidebarProps) {
+function Sidebar({ onCloseMobileMenu, expanded, onSetExpanded }: SidebarProps) {
   return (
-    <aside className="w-[316px] border-r border-sf-gray-400 h-screen bg-white">
-      <div className="border-b py-1">
+    <aside
+      className={cn("border-r border-sf-gray-400 h-screen bg-white w-full")}
+    >
+      <div className="border-b py-1 relative">
         <Logo />
+        <Button
+          variant="outline"
+          size="icon"
+          className="hidden md:flex absolute -right-4 -bottom-4 rounded-full"
+          onClick={onSetExpanded}
+        >
+          {expanded ? <ChevronLeft /> : <ChevronRight />}
+        </Button>
       </div>
-      <MainNav onItemClick={onCloseMobileMenu} />
+      <MainNav onItemClick={onCloseMobileMenu} expanded={expanded} />
     </aside>
   );
 }

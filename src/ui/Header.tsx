@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store";
-import { BellDot, Settings } from "lucide-react";
+import { BellDot, ChevronLeft, Settings } from "lucide-react";
 import { useLocation } from "react-router";
 
 function Header() {
@@ -15,10 +15,10 @@ function Header() {
         {title}
       </h2>
       <div className="flex items-center gap-1 md:gap-2">
-        <Button className="bg-white hidden md:flex text-black">
+        <Button className="bg-white hidden md:flex text-black hover:bg-white">
           <Settings className="size-4" />
         </Button>
-        <Button className="bg-white text-black">
+        <Button className="bg-white text-black hover:bg-white">
           <BellDot className="size-4" />
         </Button>
         <div className="flex items-center gap-2">

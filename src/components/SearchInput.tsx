@@ -30,7 +30,7 @@ export function SearchInput({
 
   return (
     <div
-      className={`flex w-full md:w-[332px] items-center space-x-2 ${className}`}
+      className={`flex w-full lg:w-auto items-center space-x-2 ${className}`}
     >
       <div className="w-full relative">
         <Input
