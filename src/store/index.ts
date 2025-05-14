@@ -8,6 +8,8 @@ export interface User {
   name: string;
   email: string;
   role: string;
+  profile_picture: string;
+  phone: string;
   token: string;
 }
 
@@ -25,6 +27,7 @@ interface AuthState {
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (password: string, token: string) => Promise<void>;
   clearError: () => void;
+  updateUserProfile: (user: User) => void; // Add new action
 }
 
 // Create store with persistence
@@ -120,6 +123,13 @@ export const useAuthStore = create<AuthState>()(
       
       // Clear any errors in the store
       clearError: () => set({ error: null }),
+
+      // New action to update user profile
+      updateUserProfile: (user: User) => {
+        set({ 
+          user: user 
+        });
+      },
     }),
     {
       name: 'auth-storage', // unique name for localStorage

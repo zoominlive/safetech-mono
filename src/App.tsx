@@ -16,6 +16,7 @@ import ReportDetails from "./pages/ReportDetails";
 import Analytics from "./pages/Analytics";
 import { useAuthStore } from "./store";
 import ForgotPassword from "./pages/ForgotPassword";
+import Settings from "./pages/Settings";
 
 function App() {
   const { isAuthenticated } = useAuthStore();
@@ -48,6 +49,7 @@ function App() {
           <Route path="reports/:id" element={<ReportDetails />} />
           <Route path="reports/:id/edit" element={<Report />} />
           <Route path="customers/:id/edit" element={<Customer />} />
+          <Route path="settings" element={<Settings />} />
           <Route path="reports" element={<div>Reports Page</div>} />
           <Route path="staff" element={<div>Staff Page</div>} />
           <Route path="analytics" element={<Analytics />} />
