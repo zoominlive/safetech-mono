@@ -417,3 +417,70 @@ exports.loginWithToken = async (req, res, next) => {
     }
   });
 };
+
+/**
+ * Change user password
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Object} Response with status and message
+ */
+exports.changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    const userId = req.user?.id; // Assuming you have authentication middleware that adds user to req
+
+    // Validate request
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      const ApiError = new APIError('All password fields are required', null, BAD_REQUEST);
+      return ErrorHandler(ApiError, req, res, next);
+    }
+
+    if (newPassword !== confirmPassword) {
+      const ApiError = new APIError('New password and confirmation do not match', null, BAD_REQUEST);
+      return ErrorHandler(ApiError, req, res, next);
+    }
+
+    // Find user by ID
+    const user = await User.findOne({ where: { id: userId } });
+    
+    if (!user) {
+      const ApiError = new APIError('User not found', null, NOT_FOUND);
+      return ErrorHandler(ApiError, req, res, next);
+    }
+
+    // Check if current password matches
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      const ApiError = new APIError('Current password is incorrect', null, UNAUTHORIZED);
+      return ErrorHandler(ApiError, req, res, next);
+    }
+
+    // Hash new password
+    const encryptedPassword = bcrypt.hashSync(newPassword, 10);
+
+    // Update password using the existing updateUserWithLogs function
+    const updateUser = {
+      updateValue: { password: encryptedPassword },
+      updateCondition: { id: userId },
+      req,
+      change_logs: {
+        activity: 'change_password',
+        description: 'password_updated_by_user',
+      },
+    };
+    
+    await updateUserWithLogs(updateUser);
+
+    return res.status(OK).json({
+      data: null,
+      code: OK,
+      message: 'Password updated successfully',
+      success: true,
+    });
+    
+  } catch (error) {
+    logger.error(`Error changing password: ${error.message}`);
+    return next(error);
+  }
+};
