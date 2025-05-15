@@ -36,7 +36,8 @@ const SidebarItem = ({
         "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors",
         active
           ? "bg-safetech-gray text-gray-900"
-          : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+          : "text-gray-500 hover:text-gray-900 hover:bg-gray-100",
+        showLabel ? "" : "justify-center"
       )}
       onClick={onClick}
     >
@@ -87,7 +88,10 @@ function MainNav({ onItemClick, expanded }: MainNavProps) {
             return (
               <div
                 key={item.label}
-                className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 cursor-not-allowed"
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 cursor-not-allowed",
+                  expanded ? "" : "justify-center"
+                )}
               >
                 <Icon className="w-5 h-5" />
                 {expanded && <span>{item.label}</span>}
