@@ -90,7 +90,7 @@ function Table<T>({
       <div className={cn("w-full overflow-auto rounded-md border", className)}>
         <ShadcnTable>
           <TableHeader>
-            <TableRow className="bg-safetech-gray">
+            <TableRow className="bg-safetech-gray hover:bg-safetech-gray">
               {columns.map((column, index) => (
                 <TableHead
                   key={index}

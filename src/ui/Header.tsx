@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store";
-import { BellDot, Settings } from "lucide-react";
+import { BellDot, ChevronLeft, Settings } from "lucide-react";
 import { useLocation, useNavigate } from "react-router";
 
 // Backend base URL - should ideally come from environment variables
@@ -32,7 +32,7 @@ function Header() {
         <Button onClick={() => navigate('/settings')} className="bg-white hidden md:flex text-black">
           <Settings className="size-4" />
         </Button>
-        <Button className="bg-white text-black">
+        <Button className="bg-white text-black hover:bg-white">
           <BellDot className="size-4" />
         </Button>
         <div className="flex items-center gap-2">

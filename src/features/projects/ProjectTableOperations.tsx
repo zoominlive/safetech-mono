@@ -30,15 +30,18 @@ function ProjectTableOperations() {
           <SelectContent>
             <SelectGroup>
               <SelectLabel>Status</SelectLabel>
-              <SelectItem value="apple">Apple</SelectItem>
-              <SelectItem value="banana">Banana</SelectItem>
-              <SelectItem value="blueberry">Blueberry</SelectItem>
-              <SelectItem value="grapes">Grapes</SelectItem>
-              <SelectItem value="pineapple">Pineapple</SelectItem>
+              <SelectItem value="new">New</SelectItem>
+              <SelectItem value="resent">Resent</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="started">Started</SelectItem>
+              <SelectItem value="sent">Sent</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
-        <Button className="ml-auto h-[60px] w-[200px] bg-sf-gray-600" asChild>
+        <Button
+          className="lg:ml-auto h-[60px] w-[200px] bg-sf-gray-600 hover:bg-sf-gray-600"
+          asChild
+        >
           <Link to="/projects/create">
             Add Project <CirclePlus />
           </Link>

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 export default function AppLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [expanded, setExpanded] = useState<boolean>(true);
 
   return (
     <div className="min-h-screen flex bg-slate-100">
@@ -16,7 +17,10 @@ export default function AppLayout() {
         variant="ghost"
         size="icon"
         className="fixed top-4 left-4 z-50 lg:hidden"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        onClick={() => {
+          setIsMobileMenuOpen(!isMobileMenuOpen);
+          setExpanded(true);
+        }}
       >
         {isMobileMenuOpen ? <X /> : <Menu />}
       </Button>
@@ -33,10 +37,15 @@ export default function AppLayout() {
       <div
         className={cn(
           "fixed inset-0 z-40 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 w-[316px]",
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full",
+          expanded ? "w-[316px]" : "lg:w-30"
         )}
       >
-        <Sidebar onCloseMobileMenu={() => setIsMobileMenuOpen(false)} />
+        <Sidebar
+          onCloseMobileMenu={() => setIsMobileMenuOpen(false)}
+          expanded={expanded}
+          onSetExpanded={() => setExpanded(!expanded)}
+        />
       </div>
 
       {/* Main content */}

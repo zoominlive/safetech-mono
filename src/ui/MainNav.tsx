@@ -15,12 +15,20 @@ import { Link, useLocation, useNavigate } from "react-router";
 type SidebarItemProps = {
   icon: React.ElementType;
   label: string;
+  showLabel: boolean;
   path: string;
   active?: boolean;
   onClick?: () => void;
 };
 
-const SidebarItem = ({ icon: Icon, label, path, active, onClick }: SidebarItemProps) => {
+const SidebarItem = ({
+  icon: Icon,
+  label,
+  showLabel,
+  path,
+  active,
+  onClick,
+}: SidebarItemProps) => {
   return (
     <Link
       to={path}
@@ -28,32 +36,35 @@ const SidebarItem = ({ icon: Icon, label, path, active, onClick }: SidebarItemPr
         "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors",
         active
           ? "bg-safetech-gray text-gray-900"
-          : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+          : "text-gray-500 hover:text-gray-900 hover:bg-gray-100",
+        showLabel ? "" : "justify-center"
       )}
       onClick={onClick}
     >
       <Icon className="w-5 h-5" />
-      <span>{label}</span>
+      {showLabel && <span>{label}</span>}
+      {/* <span>{label}</span> */}
     </Link>
   );
 };
 
 interface MainNavProps {
   onItemClick?: () => void;
+  expanded: boolean;
 }
 
-function MainNav({ onItemClick }: MainNavProps) {
+function MainNav({ onItemClick, expanded }: MainNavProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const currentPath = location.pathname;
+  const currentPath = "/" + location.pathname.slice(1).split("/").at(0);
 
   const handleSignOut = async () => {
     try {
-      console.log('token', useAuthStore.getState().token);
+      console.log("token", useAuthStore.getState().token);
       useAuthStore.getState().logout();
-      navigate('/login');
+      navigate("/login");
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error("Error signing out:", error);
     }
   };
 
@@ -77,19 +88,23 @@ function MainNav({ onItemClick }: MainNavProps) {
             return (
               <div
                 key={item.label}
-                className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 cursor-not-allowed"
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 cursor-not-allowed",
+                  expanded ? "" : "justify-center"
+                )}
               >
                 <Icon className="w-5 h-5" />
-                <span>{item.label}</span>
+                {expanded && <span>{item.label}</span>}
               </div>
             );
           }
-          
+
           return (
             <SidebarItem
               key={item.label}
               icon={item.icon}
               label={item.label}
+              showLabel={expanded}
               path={item.path}
               active={currentPath === item.path}
               onClick={onItemClick}
@@ -100,6 +115,7 @@ function MainNav({ onItemClick }: MainNavProps) {
       <div className="mt-auto px-2">
         <SidebarItem
           path=""
+          showLabel={expanded}
           icon={CircleArrowOutUpLeft}
           label="Sign Out"
           onClick={handleSignOut}
