@@ -76,6 +76,9 @@ exports.getAllProjects = async (req, res, next) => {
       ...filters.filter,
       ...filters.search,
     };
+    if (req.query.statusFilter !== "all" && req.query.statusFilter !== undefined) {
+      whereCondition.status = req.query.statusFilter;
+    }
     const options = {
       where: whereCondition,
       order: filters.sort,
@@ -83,10 +86,10 @@ exports.getAllProjects = async (req, res, next) => {
       offset: filters.page ? (filters.page - 1) * filters.limit : undefined,
     };
     options.include = [
-      { model: Customer, as: "company", attributes: ["name"] },
-      { model: User, as: "technician", attributes: ["name"] },
-      { model: User, as: "pm", attributes: ["name"] },
-      { model: Location, as: "location", attributes: ["name"] },
+      { model: Customer, as: "company", attributes: ["id", "name"] },
+      { model: User, as: "technician", attributes: ["id", "name"] },
+      { model: User, as: "pm", attributes: ["id", "name"] },
+      { model: Location, as: "location", attributes: ["id", "name"] },
       { model: Report, as: "report", attributes: ["id", "name"] },
     ];
     const projects = await Project.findAndCountAll(options);    
@@ -106,10 +109,10 @@ exports.getProjectById = async (req, res, next) => {
     const { id } = req.params;
     const project = await Project.findByPk(id, {
       include: [
-        { model: Customer, as: "company", attributes: ["name"] },
-        { model: User, as: "technician", attributes: ["name"] },
-        { model: User, as: "pm", attributes: ["name"] },
-        { model: Location, as: "location", attributes: ["name"] },
+        { model: Customer, as: "company", attributes: ["id", "name"] },
+        { model: User, as: "technician", attributes: ["id", "name"] },
+        { model: User, as: "pm", attributes: ["id", "name"] },
+        { model: Location, as: "location", attributes: ["id", "name"] },
         { model: Report, as: "report", attributes: ["id", "name"] },
       ]
     });
