@@ -26,12 +26,6 @@ module.exports = {
       status: {
         type: Sequelize.BOOLEAN
       },
-      project_id: {
-        type: Sequelize.INTEGER,
-        references: { model: 'projects', key: 'id' },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
-      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,

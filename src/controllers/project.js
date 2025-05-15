@@ -14,7 +14,7 @@ const {
 } = require("../helpers/constants");
 const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
-const { sequelize, Project, User, Customer } = require("../models");
+const { sequelize, Project, User, Customer, Location, Report } = require("../models");
 
 exports.createProject = async (req, res, next) => {
   const transaction = await sequelize.transaction();
@@ -28,6 +28,7 @@ exports.createProject = async (req, res, next) => {
       site_email,
       status,
       location_id,
+      report_id,
       pm_id,
       technician_id,
       customer_id,
@@ -46,6 +47,7 @@ exports.createProject = async (req, res, next) => {
         status: status,
         site_email: site_email,
         location_id: location_id,
+        report_id: report_id,
         pm_id: pm_id,
         technician_id: technician_id,
         customer_id: customer_id,
@@ -83,6 +85,9 @@ exports.getAllProjects = async (req, res, next) => {
     options.include = [
       { model: Customer, as: "company", attributes: ["name"] },
       { model: User, as: "technician", attributes: ["name"] },
+      { model: User, as: "pm", attributes: ["name"] },
+      { model: Location, as: "location", attributes: ["name"] },
+      { model: Report, as: "report", attributes: ["id", "name"] },
     ];
     const projects = await Project.findAndCountAll(options);    
     return res.status(OK).json({
@@ -99,7 +104,15 @@ exports.getAllProjects = async (req, res, next) => {
 exports.getProjectById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const project = await Project.findByPk(id);
+    const project = await Project.findByPk(id, {
+      include: [
+        { model: Customer, as: "company", attributes: ["name"] },
+        { model: User, as: "technician", attributes: ["name"] },
+        { model: User, as: "pm", attributes: ["name"] },
+        { model: Location, as: "location", attributes: ["name"] },
+        { model: Report, as: "report", attributes: ["id", "name"] },
+      ]
+    });
 
     if (!project) {
       return res
@@ -125,6 +138,7 @@ exports.updateProject = async (req, res, next) => {
       status,
       site_email,
       location_id,
+      report_id,
       pm_id,
       technician_id,
       customer_id,
@@ -153,6 +167,7 @@ exports.updateProject = async (req, res, next) => {
           status: status,
           site_email: site_email,
           location_id: location_id,
+          report_id: report_id,
           pm_id: pm_id,
           technician_id: technician_id,
           customer_id: customer_id,

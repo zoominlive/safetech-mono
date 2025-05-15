@@ -124,6 +124,12 @@ exports.getAllUsers = async (req, res, next) => {
       ...filters.filter,
       ...filters.search,
     };
+    
+    // Add role filtering if role parameter is provided
+    if (req.query.role) {
+      whereCondition.role = req.query.role;
+    }
+    
     const options = {
       where: whereCondition,
       order: filters.sort,

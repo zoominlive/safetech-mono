@@ -1,5 +1,7 @@
 'use strict';
 
+const report = require('../models/report');
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
@@ -10,6 +12,7 @@ module.exports = {
         site_email: 'contact@example.com',
         status: 'New',
         location_id: 1,
+        report_id: 1,
         pm_id: 2,
         technician_id: 1,
         customer_id: 1,

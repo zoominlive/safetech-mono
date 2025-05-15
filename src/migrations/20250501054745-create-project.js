@@ -32,6 +32,12 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
       },
+      report_id: {
+        type: Sequelize.INTEGER,
+        references: { model: 'reports', key: 'id' },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL',
+      },
       pm_id: {
         type: Sequelize.INTEGER,
         references: { model: 'users', key: 'id' },
@@ -75,6 +81,7 @@ module.exports = {
     await queryInterface.addIndex('projects', ['customer_id']);
     await queryInterface.addIndex('projects', ['technician_id']);
     await queryInterface.addIndex('projects', ['pm_id']);
+    await queryInterface.addIndex('projects', ['report_id']);
     await queryInterface.addIndex('projects', ['location_id']);
   },
 

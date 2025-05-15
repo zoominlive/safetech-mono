@@ -14,7 +14,7 @@ const {
 } = require("../helpers/constants");
 const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
-const { sequelize, Report } = require("../models");
+const { sequelize, Report, Project } = require("../models");
 
 exports.createReport = async (req, res, next) => {
   const transaction = await sequelize.transaction();
@@ -24,8 +24,7 @@ exports.createReport = async (req, res, next) => {
       name,
       answers,
       photos,
-      status,
-      project_id
+      status
     } = req.body;
 
     if (user.role == USER_ROLE.TECHNICIAN) {
@@ -38,8 +37,7 @@ exports.createReport = async (req, res, next) => {
         name: name,
         answers: answers,
         photos: photos,
-        status: status,
-        project_id: project_id, 
+        status: status
       },
       { transaction }
     );
@@ -70,6 +68,9 @@ exports.getAllReports = async (req, res, next) => {
       limit: filters.limit,
       offset: filters.page ? (filters.page - 1) * filters.limit : undefined,
     };
+    options.include = [
+      { model: Project, as: 'projects', attributes: ["name"] },
+    ];
     const reports = await Report.findAndCountAll(options);
     res.status(OK).json({
       data: reports,
@@ -85,7 +86,9 @@ exports.getAllReports = async (req, res, next) => {
 exports.getReportById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const report = await Report.findByPk(id);
+    const report = await Report.findByPk(id, {
+      include: [{ model: Project, as: "projects", attributes: ["name"] }],
+    });
 
     if (!report) {
       return res
@@ -109,8 +112,7 @@ exports.updateReport = async (req, res, next) => {
       name,
       answers,
       photos,
-      status,
-      project_id
+      status
     } = req.body;
 
     if (user.role == USER_ROLE.TECHNICIAN) {
@@ -133,8 +135,7 @@ exports.updateReport = async (req, res, next) => {
         name: name,
         answers: answers,
         photos: photos,
-        status: status,
-        project_id: project_id, 
+        status: status
       },
       {
         where: { id: id },

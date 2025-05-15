@@ -22,6 +22,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       type: DataTypes.STRING
     },
+    report_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
     location_id: {
       type: DataTypes.INTEGER,
       allowNull: false
@@ -70,8 +74,8 @@ module.exports = (sequelize, DataTypes) => {
     Project.belongsTo(models.User, { foreignKey: 'pm_id', as: 'pm' });
     Project.belongsTo(models.User, { foreignKey: 'technician_id', as: 'technician' });
     Project.belongsTo(models.Customer, { foreignKey: 'customer_id', as: 'company' });
-    Project.belongsTo(models.Location, { foreignKey: 'location_id' });
-    Project.hasOne(models.Report, { foreignKey: 'project_id' }); // Assuming Report has project_id
+    Project.belongsTo(models.Location, { foreignKey: 'location_id', as: 'location' });
+    Project.belongsTo(models.Report, { foreignKey: 'report_id', as: 'report' }); // Assuming Report has project_id
   };
 
   return Project;

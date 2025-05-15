@@ -21,10 +21,6 @@ module.exports = (sequelize, DataTypes) => {
     status: {
       type: DataTypes.BOOLEAN
     },
-    project_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
     created_at: {
       allowNull: false,
       type: DataTypes.DATE,
@@ -50,7 +46,7 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   Report.associate = models => {
-    Report.belongsTo(models.Project, { foreignKey: 'project_id' });
+    Report.hasMany(models.Project, { foreignKey: 'report_id', as: 'projects' });
   };
 
   return Report;
