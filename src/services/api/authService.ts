@@ -36,6 +36,17 @@ interface ResetPasswordResponse {
   success: boolean;
 }
 
+interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+interface ChangePasswordResponse {
+  message: string;
+  success: boolean;
+}
+
 export const authService = {
   
   login: async (data: LoginRequest): Promise<LoginResponse> => {
@@ -71,5 +82,10 @@ export const authService = {
       authService.logout();
       return false;
     }
+  },
+
+  changePassword: async (data: ChangePasswordRequest): Promise<ChangePasswordResponse> => {
+    const response: AxiosResponse<ChangePasswordResponse> = await BaseClient.post('/auth/change-password', data);
+    return response.data;
   }
 };
