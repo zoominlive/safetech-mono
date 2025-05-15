@@ -9,7 +9,6 @@ import CreateCustomerForm from "./CreateCustomerForm";
 import CustomerDetails from "./CustomerDetails";
 import { customerService } from "@/services/api/customerService";
 import { toast } from "@/components/ui/use-toast";
-import { useNavigate } from "react-router";
 import { CardSkeleton } from "@/components/ui/skeletons/CardSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -38,7 +37,6 @@ const columns: Column<Project>[] = [
 
 function CustomerLayout() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [customerData, setCustomerData] = useState({

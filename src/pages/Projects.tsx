@@ -1,6 +1,7 @@
 import ProjectTable from "@/features/projects/ProjectTable";
 import ProjectTableOperations from "@/features/projects/ProjectTableOperations";
 import { ColumnDef } from "@tanstack/react-table";
+import { useState } from "react";
 
 type Project = {
   id: string;
@@ -35,10 +36,21 @@ export const columns: ColumnDef<Project>[] = [
 ];
 
 function Projects() {
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  });
+  
   return (
     <div className="space-y-4">
-      <ProjectTableOperations />
-      <ProjectTable />
+      <ProjectTableOperations 
+        onSearch={setSearchQuery} 
+        onFilterStatus={setStatusFilter}
+        onDateRangeChange={setDateRange}
+      />
+      <ProjectTable searchQuery={searchQuery} statusFilter={statusFilter} />
     </div>
   );
 }

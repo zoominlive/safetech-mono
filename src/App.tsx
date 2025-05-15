@@ -42,6 +42,9 @@ function App() {
           <Route index element={<Navigate replace to="dashboard" />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="projects" element={<Projects />} />
+          <Route path="projects/create" element={<Project />} />
+          <Route path="projects/:id" element={<ProjectDetails />} />
+          <Route path="projects/:id/edit" element={<Project />} />
           <Route path="customers" element={<Customers />} />
           <Route path="customers/add" element={<Customer />} />
           <Route path="customers/:id" element={<Customer />} />

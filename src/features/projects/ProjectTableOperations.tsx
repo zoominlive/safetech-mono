@@ -13,17 +13,30 @@ import {
 import { CirclePlus } from "lucide-react";
 import { Link } from "react-router";
 
-function ProjectTableOperations() {
+interface ProjectTableOperationsProps {
+  onSearch?: (query: string) => void;
+  onFilterStatus?: (status: string) => void;
+  onDateRangeChange?: (dateRange: { from: Date | undefined; to: Date | undefined }) => void;
+}
+
+function ProjectTableOperations({
+  onSearch,
+  onFilterStatus,
+  onDateRangeChange
+}: ProjectTableOperationsProps) {
   return (
     <>
       <div className="flex flex-col lg:flex-row items-start lg:items-center w-full gap-4 lg:gap-6 mb-4">
         <div className="w-full lg:w-auto">
-          <DatePickerWithRange />
+          <DatePickerWithRange onDateChange={onDateRangeChange} />
         </div>
         <div className="w-full lg:w-auto">
-          <SearchInput placeholder="Type customer name..." />
+          <SearchInput 
+            placeholder="Type customer name..." 
+            onSearch={(value: string) => onSearch && onSearch(value)}
+          />
         </div>
-        <Select>
+        <Select onValueChange={(value) => onFilterStatus && onFilterStatus(value)}>
           <SelectTrigger className="w-full lg:w-auto py-7.5 bg-safetech-gray">
             <SelectValue placeholder="Select project status" />
           </SelectTrigger>
@@ -31,10 +44,10 @@ function ProjectTableOperations() {
             <SelectGroup>
               <SelectLabel>Status</SelectLabel>
               <SelectItem value="new">New</SelectItem>
-              <SelectItem value="resent">Resent</SelectItem>
+              <SelectItem value="in progress">In Progress</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="started">Started</SelectItem>
-              <SelectItem value="sent">Sent</SelectItem>
+              <SelectItem value="on hold">On Hold</SelectItem>
+              <SelectItem value="all">All Statuses</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>

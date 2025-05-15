@@ -10,16 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, SquarePen, Trash2 } from "lucide-react";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Eye, SquarePen, Trash } from "lucide-react";
 
 export interface Column<T> {
   header: string;
@@ -120,32 +111,35 @@ function Table<T>({
                   ))}
                   {hasActions && (
                     <TableCell>
-                      <div>
+                      <div className="flex space-x-2">
                         {onDetails && (
-                          <Button
-                            variant="outline"
-                            className="rounded-r-none"
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
                             onClick={() => onDetails(row)}
+                            className="px-2 py-1 h-8"
                           >
-                            <Eye />
+                            <Eye className="h-4 w-4" />
                           </Button>
                         )}
                         {onEdit && (
-                          <Button
-                            variant="outline"
-                            className="rounded-none"
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
                             onClick={() => onEdit(row)}
+                            className="px-2 py-1 h-8"
                           >
-                            <SquarePen />
+                            <SquarePen className="h-4 w-4" />
                           </Button>
                         )}
                         {onDelete && (
-                          <Button
-                            variant="outline"
-                            className="rounded-l-none"
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
                             onClick={() => onDelete(row)}
+                            className="px-2 py-1 h-8 text-red-500 hover:text-red-700"
                           >
-                            <Trash2 className="text-red-400" />
+                            <Trash className="h-4 w-4" />
                           </Button>
                         )}
                       </div>
@@ -155,44 +149,35 @@ function Table<T>({
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="text-center py-6 text-gray-500"
+                <TableCell 
+                  colSpan={columns.length + (hasActions ? 1 : 0)}
+                  className="text-center py-8"
                 >
                   No data available
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
-          {pagination && (
+          {pagination && data.length > 0 && (
             <TableFooter>
               <TableRow>
-                <TableCell colSpan={3}>Showing 1-12 of 100</TableCell>
-                <TableCell colSpan={2}>
-                  <Pagination className="justify-end">
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious href="#" />
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationLink href="#">1</PaginationLink>
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationLink href="#" isActive>
-                          2
-                        </PaginationLink>
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationLink href="#">3</PaginationLink>
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationNext href="#" />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
+                <TableCell colSpan={columns.length + (hasActions ? 1 : 0)} className="py-2">
+                  <div className="flex items-center justify-between">
+                    <span>
+                      Showing {Math.min(1, data.length)}-{data.length} of {data.length}
+                    </span>
+                    <div className="flex items-center space-x-6">
+                      <Button variant="outline" size="sm" disabled>
+                        Previous
+                      </Button>
+                      <span>
+                        Page <strong>1</strong> of <strong>1</strong>
+                      </span>
+                      <Button variant="outline" size="sm" disabled>
+                        Next
+                      </Button>
+                    </div>
+                  </div>
                 </TableCell>
               </TableRow>
             </TableFooter>
