@@ -164,6 +164,32 @@ exports.updateReport = async (req, res, next) => {
   }
 }
 
+exports.toggleStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const report = await Report.findByPk(id);
+
+    if (!report) {
+      return res
+        .status(NOT_FOUND)
+        .json({ code: NOT_FOUND, message: NO_RECORD_FOUND, success: false });
+    }
+
+    report.status = status;
+    await report.update({ status: status }, { where: { id: id } });
+
+    res.status(OK).json({
+      code: OK,
+      message: RECORD_UPDATED,
+      data: report,
+      success: true,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 exports.deleteReport = async (req, res, next) => {
   try {
     const { id } = req.params;
