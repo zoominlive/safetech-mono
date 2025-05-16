@@ -17,6 +17,9 @@ import Analytics from "./pages/Analytics";
 import { useAuthStore } from "./store";
 import ForgotPassword from "./pages/ForgotPassword";
 import Settings from "./pages/Settings";
+import Users from "./pages/Users";
+import UserForm from "./features/users/UserForm";
+import UserDetails from "./features/users/UserDetails";
 
 function App() {
   const { isAuthenticated } = useAuthStore();
@@ -54,7 +57,10 @@ function App() {
           <Route path="customers/:id/edit" element={<Customer />} />
           <Route path="settings" element={<Settings />} />
           <Route path="reports" element={<div>Reports Page</div>} />
-          <Route path="staff" element={<div>Staff Page</div>} />
+          <Route path="staff" element={<Users />} />
+          <Route path="staff/add" element={<UserForm />} />
+          <Route path="staff/:id" element={<UserDetails />} />
+          <Route path="staff/:id/edit" element={<UserForm />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="support" element={<div>Support Page</div>} />
         </Route>

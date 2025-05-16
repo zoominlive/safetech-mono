@@ -7,7 +7,7 @@ function Customers() {
   const [sortBy, setSortBy] = useState<string>("");
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <CustomersTableOperations 
         onSearch={setSearchQuery} 
         onSort={setSortBy} 

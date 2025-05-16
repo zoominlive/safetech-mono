@@ -36,6 +36,13 @@ export interface CustomerResponse {
     name: string,
     email: string,
     phone: string,
+    projects: Array<{
+      id: number,
+      name: string,
+      start_date: string,
+      end_date: string | null,
+      status: string,
+    }>,
     status: boolean,
     created_at: string,
     updated_at: string,
@@ -44,10 +51,13 @@ export interface CustomerResponse {
 }
 
 export const customerService = {
-  getAllCustomers: async (searchQuery?: string, sortBy?: string): Promise<CustomersResponse> => {
+  getAllCustomers: async (searchQuery?: string, sortBy?: string, filter?: string, limit?: number, page?: number): Promise<CustomersResponse> => {
     const params = new URLSearchParams();
     if (searchQuery) params.append('search', searchQuery);
-    if (sortBy) params.append('sortBy', sortBy);
+    if (sortBy) params.append('sort', sortBy);
+    if (filter) params.append('filter', filter);
+    if (limit) params.append('limit', limit.toString()); // Convert number to string
+    if (page) params.append('page', page.toString());    // Convert number to string
     
     const response: AxiosResponse<CustomersResponse> = await BaseClient.get(
       `/customers/all?${params.toString()}`

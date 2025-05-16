@@ -64,14 +64,19 @@ function ProjectTable({ searchQuery, sortBy, statusFilter }: ProjectTableProps) 
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const token = useAuthStore.getState().token;
 
+   // Pagination state
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [totalCount, setTotalCount] = useState<number>(0);
+
   useEffect(() => {
     fetchProjects();
-  }, [token, searchQuery, sortBy, statusFilter]);
+  }, [token, searchQuery, sortBy, statusFilter, currentPage, pageSize]);
 
   const fetchProjects = async () => {
     try {
       setIsLoading(true);
-      const response = await projectService.getAllProjects(searchQuery, sortBy, statusFilter);
+      const response = await projectService.getAllProjects(searchQuery, sortBy, statusFilter, pageSize, currentPage);
       
       if (response.success) {
         const mappedProjects = response.data.rows.map(project => ({
@@ -84,6 +89,7 @@ function ProjectTable({ searchQuery, sortBy, statusFilter }: ProjectTableProps) 
         }));
         
         setProjects(mappedProjects);
+        setTotalCount(response.data.count);
         setError(null);
       } else {
         setError(response.message || "Failed to load projects data");
@@ -94,6 +100,17 @@ function ProjectTable({ searchQuery, sortBy, statusFilter }: ProjectTableProps) 
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1); // Reset to first page when changing page size
   };
 
   const formatDate = (dateString: string) => {
@@ -169,6 +186,11 @@ function ProjectTable({ searchQuery, sortBy, statusFilter }: ProjectTableProps) 
           onDelete={openDeleteDialog}
           onEdit={handleEdit}
           pagination={true}
+          currentPage={currentPage}
+          pageSize={pageSize}
+          totalCount={totalCount}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
         />
       </div>
       

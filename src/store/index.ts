@@ -9,6 +9,8 @@ export interface User {
   email: string;
   role: string;
   profile_picture: string;
+  last_login: string;
+  deactivated_user: boolean;
   phone: string;
   token: string;
 }

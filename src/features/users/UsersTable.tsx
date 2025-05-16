@@ -1,7 +1,7 @@
 import Table, { Column, StatusBadge } from "@/ui/Table";
 import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
-import { customerService } from "@/services/api/customerService";
+import { userService } from "@/services/api/userService";
 import { useAuthStore } from "@/store";
 import { toast } from "@/components/ui/use-toast";
 import { TableSkeleton } from "@/components/ui/skeletons/TableSkeleton";
@@ -15,82 +15,95 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-interface Customer {
+interface User {
   id: string;
-  companyName: string;
+  name: string;
   email: string;
-  phoneNumber: string;
+  role: string;
   status: string;
+  profile_picture?: string;
 }
 
-interface CustomersTableProps {
+interface UsersTableProps {
   searchQuery?: string;
   sortBy?: string;
 }
 
-const columns: Column<Customer>[] = [
-  {
-    header: "Company Name",
-    accessorKey: "companyName",
-  },
-  {
-    header: "Email",
-    accessorKey: "email",
-  },
-  {
-    header: "Phone Number",
-    accessorKey: "phoneNumber",
-  },
-  {
-    header: "Status",
-    accessorKey: "status",
-    cell: (customer) => <StatusBadge status={customer.status} />,
-  },
-];
-
-export function CustomersTable({ searchQuery, sortBy }: CustomersTableProps) {
+function UsersTable({ searchQuery, sortBy }: UsersTableProps) {
   const navigate = useNavigate();
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const token = useAuthStore.getState().token;
-
+  
   // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
   const [totalCount, setTotalCount] = useState<number>(0);
 
+  const columns: Column<User>[] = [
+    {
+      header: "User",
+      accessorKey: "name",
+      cell: (user) => (
+        <div className="flex items-center space-x-3">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={user.profile_picture} />
+            <AvatarFallback>{user.name?.charAt(0) || "U"}</AvatarFallback>
+          </Avatar>
+          <span>{user.name}</span>
+        </div>
+      ),
+    },
+    {
+      header: "Email",
+      accessorKey: "email",
+    },
+    {
+      header: "Role",
+      accessorKey: "role",
+      cell: (user) => <span className="capitalize">{user.role}</span>,
+    },
+    {
+      header: "Status",
+      accessorKey: "status",
+      cell: (user) => <StatusBadge status={user.status} />,
+    },
+  ];
+
   useEffect(() => {
-    fetchCustomers();
+    fetchUsers();
   }, [token, searchQuery, sortBy, currentPage, pageSize]);
 
-  const fetchCustomers = async () => {
+  const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      const response = await customerService.getAllCustomers(searchQuery, sortBy, undefined, pageSize, currentPage);
+      const response = await userService.getAllUsers(searchQuery, sortBy, undefined, pageSize, currentPage);
       
       if (response.success) {
-        // Map API response to our Customer interface
-        const mappedCustomers = response.data.rows.map(customer => ({
-          id: customer.id.toString(),
-          companyName: customer.name,
-          email: customer.email,
-          phoneNumber: customer.phone,
-          status: customer.status === true ? 'active' : 'inactive',
+        // Map API response to our User interface
+        const mappedUsers = response.data.rows.map(user => ({
+          id: user.id.toString(),
+          name: user.name,
+          email: user.email,
+          role: user.role || 'user',
+          status: user.deactivated_user ? 'inactive' : 'active',
+          profile_picture: user.profile_picture,
         }));
         
-        setCustomers(mappedCustomers);
+        setUsers(mappedUsers);
         setTotalCount(response.data.count);
         setError(null);
       } else {
-        setError(response.message || "Failed to load customers data");
+        setError(response.message || "Failed to load users data");
       }
     } catch (err) {
-      console.error("Error fetching customers data:", err);
-      setError("Failed to load customers data");
+      console.error("Error fetching users data:", err);
+      setError("Failed to load users data");
     } finally {
       setIsLoading(false);
     }
@@ -107,44 +120,44 @@ export function CustomersTable({ searchQuery, sortBy }: CustomersTableProps) {
     setCurrentPage(1); // Reset to first page when changing page size
   };
 
-  const handleDetails = (customer: Customer) => {
-    navigate(`/customers/${customer.id}`);
+  const handleDetails = (user: User) => {
+    navigate(`/staff/${user.id}`);
   };
   
-  const handleEdit = (customer: Customer) => {
-    navigate(`/customers/${customer.id}/edit`);
+  const handleEdit = (user: User) => {
+    navigate(`/staff/${user.id}/edit`);
   };
   
-  const openDeleteDialog = (customer: Customer) => {
-    setCustomerToDelete(customer);
+  const openDeleteDialog = (user: User) => {
+    setUserToDelete(user);
     setIsDeleteDialogOpen(true);
   };
   
   const handleDelete = async () => {
-    if (!customerToDelete) return;
+    if (!userToDelete) return;
     
     try {
       setIsLoading(true);
-      const response = await customerService.deleteCustomer(customerToDelete.id);
+      const response = await userService.deleteUser(userToDelete.id);
       
       if (response.success) {
         toast({
           title: "Success",
-          description: "Customer deleted successfully",
+          description: "User deleted successfully",
         });
-        fetchCustomers();
+        fetchUsers();
       } else {
         toast({
           title: "Error",
-          description: response.message || "Failed to delete customer",
+          description: response.message || "Failed to delete user",
           variant: "destructive",
         });
       }
     } catch (err: any) {
-      console.error("Error deleting customer:", err);      
+      console.error("Error deleting user:", err);      
       const errorMessage = err?.data?.message ||
         err.message ||
-        "Failed to delete customer";
+        "Failed to delete user";
       toast({
         title: "Error",
         description: errorMessage,
@@ -153,15 +166,15 @@ export function CustomersTable({ searchQuery, sortBy }: CustomersTableProps) {
     } finally {
       setIsLoading(false);
       setIsDeleteDialogOpen(false);
-      setCustomerToDelete(null);
+      setUserToDelete(null);
     }
   };
 
-  if (isLoading && customers.length === 0) {
+  if (isLoading && users.length === 0) {
     return <TableSkeleton columns={4} rows={5} hasActions={true} />;
   }
 
-  if (error && customers.length === 0) {
+  if (error && users.length === 0) {
     return <div className="text-red-500 text-center py-8">{error}</div>;
   }
 
@@ -170,7 +183,7 @@ export function CustomersTable({ searchQuery, sortBy }: CustomersTableProps) {
       <div>
         <Table
           columns={columns}
-          data={customers}
+          data={users}
           hasActions={true}
           onDetails={handleDetails}
           onDelete={openDeleteDialog}
@@ -189,7 +202,7 @@ export function CustomersTable({ searchQuery, sortBy }: CustomersTableProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete {customerToDelete?.companyName} and remove their data from our servers.
+              This will permanently delete {userToDelete?.name}'s account and remove their data from our servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -203,3 +216,5 @@ export function CustomersTable({ searchQuery, sortBy }: CustomersTableProps) {
     </>
   );
 }
+
+export default UsersTable;

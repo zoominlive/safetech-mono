@@ -27,6 +27,28 @@ interface UsersResponse {
   success: boolean
 }
 
+interface UserResponse {
+  data: {
+    id: number,
+    name: string,
+    profile_picture: string,
+    role: string,
+    email: string,
+    phone: string,
+    last_login: string,
+    is_verified: boolean,
+    deactivated_user: boolean,
+    password: string,
+    created_at: string,
+    updated_at: string,
+    deleted_at: string,
+    created_by: string
+  }
+  code: number,
+  message: string,
+  success: boolean
+}
+
 export interface UpdateProfileRequest {
   name: string;
   email: string;
@@ -39,10 +61,13 @@ interface UpdateProfileResponse {
 }
 
 export const userService = {
-  getAllUsers: async (searchQuery?: string, sortBy?: string): Promise<UsersResponse> => {
+  getAllUsers: async (searchQuery?: string, sortBy?: string, filter?: string, limit?: number, page?: number): Promise<UsersResponse> => {
       const params = new URLSearchParams();
       if (searchQuery) params.append('search', searchQuery);
-      if (sortBy) params.append('sortBy', sortBy);
+      if (sortBy) params.append('sort', sortBy);
+      if (filter) params.append('filter', filter);
+      if (limit) params.append('limit', limit.toString()); // Convert number to string
+      if (page) params.append('page', page.toString());    // Convert number to string
       
       const response: AxiosResponse<UsersResponse> = await BaseClient.get(
         `/users/all?${params.toString()}`
@@ -50,10 +75,26 @@ export const userService = {
       return response.data;
     },
 
+  createUser: async (data: User): Promise<User> => {
+    const response: AxiosResponse<User> = await BaseClient.post('/users/add', data);
+    return response.data;
+  },
+  
+  deleteUser: async (id: string): Promise<{ success: boolean; message: string }> => {
+    const response: AxiosResponse<{ success: boolean; message: string }> = await BaseClient.delete(`/users/delete/${id}`);
+    return response.data;
+  },
+
   updateProfile: async (id: string, data: UpdateProfileRequest): Promise<UpdateProfileResponse> => {
     const response: AxiosResponse<UpdateProfileResponse> = await BaseClient.put(`/users/edit/${id}`, data);
     return response.data;
   },
+
+  getUserById: async (id: string): Promise<UserResponse> => {
+    const response: AxiosResponse<UserResponse> = await BaseClient.get(`/users/get-user-details/${id}`);
+    return response.data;
+  },
+  
   uploadProfilePicture: async (userId: string, formData: FormData) => {
     try {
       const response = await BaseClient.post(`/users/${userId}/profile-picture`, formData, {

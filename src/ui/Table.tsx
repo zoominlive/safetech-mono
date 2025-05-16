@@ -29,6 +29,12 @@ interface TableProps<T> {
   onEdit?: (row: T) => void;
   onDelete?: (row: T) => void;
   pagination?: boolean;
+  // New pagination props
+  currentPage?: number;
+  pageSize?: number;
+  totalCount?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
 }
 
 export const StatusBadge = ({ status }: { status: string }) => {
@@ -71,10 +77,20 @@ function Table<T>({
   title,
   hasActions = false,
   pagination = false,
+  currentPage = 1,
+  pageSize = 10,
+  totalCount = 0,
+  onPageChange,
+  onPageSizeChange,
   onEdit,
   onDelete,
   onDetails,
 }: TableProps<T>) {
+  // Calculate pagination values
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const startIndex = (currentPage - 1) * pageSize + 1;
+  const endIndex = Math.min(startIndex + data.length - 1, totalCount);
+  
   return (
     <>
       {title && <h2 className="font-semibold text-xl mb-7">{title}</h2>}
@@ -164,16 +180,26 @@ function Table<T>({
                 <TableCell colSpan={columns.length + (hasActions ? 1 : 0)} className="py-2">
                   <div className="flex items-center justify-between">
                     <span>
-                      Showing {Math.min(1, data.length)}-{data.length} of {data.length}
+                      Showing {startIndex}-{endIndex} of {totalCount}
                     </span>
                     <div className="flex items-center space-x-6">
-                      <Button variant="outline" size="sm" disabled>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        disabled={currentPage <= 1}
+                        onClick={() => onPageChange && onPageChange(currentPage - 1)}
+                      >
                         Previous
                       </Button>
                       <span>
-                        Page <strong>1</strong> of <strong>1</strong>
+                        Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
                       </span>
-                      <Button variant="outline" size="sm" disabled>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        disabled={currentPage >= totalPages}
+                        onClick={() => onPageChange && onPageChange(currentPage + 1)}
+                      >
                         Next
                       </Button>
                     </div>

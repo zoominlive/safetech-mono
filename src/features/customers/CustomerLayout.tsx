@@ -4,13 +4,24 @@ import { Column } from "@/types/table";
 import Table from "@/ui/Table";
 import { SquarePen } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import CreateCustomerForm from "./CreateCustomerForm";
 import CustomerDetails from "./CustomerDetails";
 import { customerService } from "@/services/api/customerService";
 import { toast } from "@/components/ui/use-toast";
 import { CardSkeleton } from "@/components/ui/skeletons/CardSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { projectService } from "@/services/api/projectService";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const columns: Column<Project>[] = [
   {
@@ -19,23 +30,24 @@ const columns: Column<Project>[] = [
   },
   {
     header: "Company",
-    accessorKey: "projectName",
+    accessorKey: "company",
   },
   {
     header: "Start Date",
-    accessorKey: "projectName",
+    accessorKey: "startDate",
   },
   {
     header: "End Date",
-    accessorKey: "projectName",
+    accessorKey: "endDate",
   },
   {
     header: "Status",
-    accessorKey: "projectName",
+    accessorKey: "status",
   },
 ];
 
 function CustomerLayout() {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -44,7 +56,10 @@ function CustomerLayout() {
     status: "",
     email: "",
     phoneNumber: "",
+    projects: [] as (Project & { companyName: string })[],
   });
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -54,17 +69,30 @@ function CustomerLayout() {
 
   const fetchCustomerDetails = async () => {
     if (!id) return;
-    
+
     try {
       setLoading(true);
       const response = await customerService.getCustomerById(id);
-      
+
       if (response.success) {
+        const customerName = response.data.name;
+        // Add companyName to each project
+        const projectsWithCompany =
+          response.data.projects?.map((project: any) => ({
+            ...project,
+            projectName: project.name,
+            startDate: project.start_date,
+            status: project.status,
+            company: customerName,
+            endDate: null, // Keeping end date null for now as requested
+          })) || [];
+
         setCustomerData({
-          customerName: response.data.name,
+          customerName: customerName,
           status: response.data.status ? "active" : "inactive",
           email: response.data.email,
           phoneNumber: response.data.phone,
+          projects: projectsWithCompany,
         });
       } else {
         toast({
@@ -82,6 +110,56 @@ function CustomerLayout() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDetails = (project: Project) => {
+    navigate(`/projects/${project.id}`);
+  };
+
+  const handleEdit = (project: Project) => {
+      navigate(`/staff/${project.id}/edit`);
+    };
+    
+  const openDeleteDialog = (project: Project) => {
+    setProjectToDelete(project);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const handleDelete = async () => {
+    if (!projectToDelete) return;
+    
+    try {
+      setLoading(true);
+      const response = await projectService.deleteProject(projectToDelete.id);
+      
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "User deleted successfully",
+        });
+        fetchCustomerDetails();
+      } else {
+        toast({
+          title: "Error",
+          description: response.message || "Failed to delete user",
+          variant: "destructive",
+        });
+      }
+    } catch (err: any) {
+      console.error("Error deleting user:", err);      
+      const errorMessage = err?.data?.message ||
+        err.message ||
+        "Failed to delete user";
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+      setIsDeleteDialogOpen(false);
+      setProjectToDelete(null);
     }
   };
 
@@ -116,8 +194,8 @@ function CustomerLayout() {
           )}
         </div>
         {isEdit && id ? (
-          <CreateCustomerForm 
-            customerId={id} 
+          <CreateCustomerForm
+            customerId={id}
             onCancel={() => {
               setIsEdit(false);
               fetchCustomerDetails();
@@ -135,12 +213,33 @@ function CustomerLayout() {
         )}
       </div>
       {id && (
-        <Table 
-          title="Projects" 
-          columns={columns} 
-          data={[]} 
-          hasActions={true}
-        />
+        <>
+          <Table
+            title="Projects"
+            columns={columns}
+            data={customerData.projects}
+            hasActions={true}
+            onDetails={handleDetails}
+            onDelete={openDeleteDialog}
+            onEdit={handleEdit}
+          />
+          <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete {projectToDelete?.projectName}'s account and remove their data from our servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </>
       )}
     </div>
   );

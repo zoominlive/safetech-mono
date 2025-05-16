@@ -17,6 +17,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { CustomerData, customerService } from "@/services/api/customerService";
 import { toast } from "@/components/ui/use-toast";
+import { Formik, Form, FormikHelpers } from "formik";
+import * as Yup from "yup";
 
 interface CreateCustomerFormProps {
   customerId?: string;
@@ -26,11 +28,18 @@ interface CreateCustomerFormProps {
 function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [customerData, setCustomerData] = useState<CustomerData>({
+  const [initialValues, setInitialValues] = useState<CustomerData>({
     name: "",
     email: "",
     phone: "",
     status: true,
+  });
+
+  // Define validation schema using Yup
+  const validationSchema = Yup.object({
+    name: Yup.string().required("Customer name is required"),
+    email: Yup.string().email("Invalid email format").required("Email is required"),
+    phone: Yup.string(),
   });
 
   useEffect(() => {
@@ -42,7 +51,7 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
           const response = await customerService.getCustomerById(customerId);
           
           if (response.success) {
-            setCustomerData({
+            setInitialValues({
               name: response.data.name,
               email: response.data.email,
               phone: response.data.phone,
@@ -71,30 +80,13 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
     }
   }, [customerId]);
 
-  const handleChange = (field: keyof CustomerData, value: string | boolean) => {
-    setCustomerData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleSubmit = async () => {
+  const handleSubmit = async (values: CustomerData, { setSubmitting }: FormikHelpers<CustomerData>) => {
     try {
       setIsLoading(true);
       
-      // Validate form
-      if (!customerData.name || !customerData.email) {
-        toast({
-          title: "Validation Error",
-          description: "Please fill all required fields",
-          variant: "destructive",
-        });
-        return;
-      }
-      
       const response = customerId
-        ? await customerService.updateCustomer(customerId, customerData)
-        : await customerService.createCustomer(customerData);
+        ? await customerService.updateCustomer(customerId, values)
+        : await customerService.createCustomer(values);
       
       if (response.success) {
         toast({
@@ -118,6 +110,7 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
       });
     } finally {
       setIsLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -134,77 +127,104 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
   }
 
   return (
-    <Card>
-      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-14">
-        <div className="grid w-full items-center gap-3">
-          <Label htmlFor="customerName">Customer Name</Label>
-          <Input
-            type="text"
-            id="customerName"
-            placeholder="Company name"
-            className="py-7.5"
-            value={customerData.name}
-            onChange={(e) => handleChange("name", e.target.value)}
-          />
-        </div>
-        <div className="grid w-full items-center gap-3">
-          <Label htmlFor="status">Status</Label>
-          <Select 
-            value={customerData.status ? "active" : "inactive"}
-            onValueChange={(value) => handleChange("status", value === "active")}
-          >
-            <SelectTrigger className="w-full py-7.5">
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Status</SelectLabel>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="grid w-full items-center gap-3">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            type="email"
-            id="email"
-            placeholder="company@example.com"
-            className="py-7.5"
-            value={customerData.email}
-            onChange={(e) => handleChange("email", e.target.value)}
-          />
-        </div>
-        <div className="grid w-full items-center gap-3">
-          <Label htmlFor="phoneNumber">Phone Number</Label>
-          <Input
-            type="tel"
-            id="phoneNumber"
-            placeholder="Phone number"
-            className="py-7.5"
-            value={customerData.phone}
-            onChange={(e) => handleChange("phone", e.target.value)}
-          />
-        </div>
-      </CardContent>
-      <CardFooter className="flex justify-end space-x-6">
-        <Button 
-          className="bg-sf-gray-600 text-white w-[150px] h-[48px]"
-          onClick={handleSubmit}
-          disabled={isLoading}
-        >
-          {isLoading ? "Saving..." : "Save"} <Bookmark />
-        </Button>
-        <Button 
-          className="w-[150px] h-[48px] bg-sf-secondary text-black"
-          onClick={handleCancel}
-          disabled={isLoading}
-        >
-          Cancel <CircleX />
-        </Button>
-      </CardFooter>
-    </Card>
+    <Formik
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={handleSubmit}
+      enableReinitialize
+    >
+      {({ values, errors, touched, handleChange, handleBlur, setFieldValue, isSubmitting }) => (
+        <Form>
+          <Card>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-14">
+              <div className="grid w-full items-center gap-3">
+                <Label htmlFor="name">Customer Name</Label>
+                <Input
+                  type="text"
+                  id="name"
+                  name="name"
+                  placeholder="Company name"
+                  className="py-7.5"
+                  value={values.name}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+                {errors.name && touched.name && (
+                  <div className="text-red-500 text-sm">{errors.name}</div>
+                )}
+              </div>
+              <div className="grid w-full items-center gap-3">
+                <Label htmlFor="status">Status</Label>
+                <Select 
+                  value={values.status ? "active" : "inactive"}
+                  onValueChange={(value) => setFieldValue("status", value === "active")}
+                >
+                  <SelectTrigger className="w-full py-7.5">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Status</SelectLabel>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid w-full items-center gap-3">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="company@example.com"
+                  className="py-7.5"
+                  value={values.email}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+                {errors.email && touched.email && (
+                  <div className="text-red-500 text-sm">{errors.email}</div>
+                )}
+              </div>
+              <div className="grid w-full items-center gap-3">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  placeholder="Phone number"
+                  className="py-7.5"
+                  value={values.phone}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+                {errors.phone && touched.phone && (
+                  <div className="text-red-500 text-sm">{errors.phone}</div>
+                )}
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-end space-x-6">
+              <Button 
+                type="submit"
+                className="bg-sf-gray-600 text-white w-[150px] h-[48px]"
+                disabled={isSubmitting || isLoading}
+              >
+                {isSubmitting || isLoading ? "Saving..." : "Save"} <Bookmark />
+              </Button>
+              <Button 
+                type="button"
+                className="w-[150px] h-[48px] bg-sf-secondary text-black"
+                onClick={handleCancel}
+                disabled={isSubmitting || isLoading}
+              >
+                Cancel <CircleX />
+              </Button>
+            </CardFooter>
+          </Card>
+        </Form>
+      )}
+    </Formik>
   );
 }
 
