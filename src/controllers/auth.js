@@ -51,6 +51,12 @@ exports.login = async (req, res, next) => {
       return res.status(UNAUTHORIZED).json({ message: 'Invalid credentials' });
     }
 
+    // Update last_login field
+    await User.update(
+      { last_login: new Date() },
+      { where: { id: user.id } }
+    );
+
     const token = generateToken({ id: user.id, role: user.role, email: user.email });
     res.json({ token, user });
   } catch (err) {

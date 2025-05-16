@@ -14,7 +14,7 @@ const {
 } = require("../helpers/constants");
 const { ErrorHandler } = require('../helpers/errorHandler');
 const { useFilter } = require('../helpers/pagination');
-const { sequelize, Customer } = require('../models');
+const { sequelize, Customer, Project } = require('../models');
 
 exports.createCustomer = async (req, res, next) => {
   const transaction = await sequelize.transaction();
@@ -74,7 +74,11 @@ exports.getAllCustomers = async (req, res, next) => {
 exports.getCustomerById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const customer = await Customer.findByPk(id);
+    const customer = await Customer.findByPk(id, {
+      include: [
+        { model: Project, as: "projects", attributes: ["id", "name", "status", "start_date"] },
+      ]
+    });
 
     if (!customer) {
       return res.status(NOT_FOUND).json({ code: NOT_FOUND, message: NO_RECORD_FOUND, success: false });

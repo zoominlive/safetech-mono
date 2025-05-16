@@ -14,7 +14,7 @@ const {
 } = require("../helpers/constants");
 const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
-const { sequelize, User } = require("../models");
+const { sequelize, User, Sequelize } = require("../models");
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
@@ -123,6 +123,7 @@ exports.getAllUsers = async (req, res, next) => {
     let whereCondition = {
       ...filters.filter,
       ...filters.search,
+      id: { [Sequelize.Op.not]: req.user.id }, // This excludes the current user
     };
     
     // Add role filtering if role parameter is provided
