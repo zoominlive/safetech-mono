@@ -167,8 +167,14 @@ exports.updateReport = async (req, res, next) => {
 exports.toggleStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const { user } = req;
     const { status } = req.body;
     const report = await Report.findByPk(id);
+
+    if (user.role == USER_ROLE.TECHNICIAN) {
+      const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
+      return ErrorHandler(ApiError, req, res, next);
+    }
 
     if (!report) {
       return res

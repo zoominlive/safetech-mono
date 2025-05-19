@@ -174,10 +174,10 @@ exports.updateUser = async (req, res, next) => {
     const { id } = req.params;
     const { name, email, phone, role, created_by } = req.body;
 
-    // if (user.role == USER_ROLE.TECHNICIAN) {
-    //   const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
-    //   return ErrorHandler(ApiError, req, res, next);
-    // }
+    if (user.role == USER_ROLE.TECHNICIAN && user.id != id) {
+      const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
+      return ErrorHandler(ApiError, req, res, next);
+    }
 
     const updated = await User.update(
       { name: name, email: email, phone: phone, role: role, created_by: created_by },

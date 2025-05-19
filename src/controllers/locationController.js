@@ -1,8 +1,18 @@
+const APIError = require('../helpers/apiError');
+const { USER_ROLE, NOT_ACCESS, BAD_REQUEST } = require('../helpers/constants');
+const { ErrorHandler } = require('../helpers/errorHandler');
 const { Location } = require('../models');
 
 // Create a new location
 exports.createLocation = async (req, res) => {
   try {
+    const { user } = req;
+
+    if (user.role == USER_ROLE.TECHNICIAN) {
+      const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
+      return ErrorHandler(ApiError, req, res, next);
+    }
+
     const location = await Location.create(req.body);
     return res.status(201).json({
       success: true,
@@ -66,6 +76,13 @@ exports.getLocationById = async (req, res) => {
 // Update location
 exports.updateLocation = async (req, res) => {
   try {
+    const { user } = req;
+
+    if (user.role == USER_ROLE.TECHNICIAN) {
+      const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
+      return ErrorHandler(ApiError, req, res, next);
+    }
+
     const [updated] = await Location.update(req.body, {
       where: { id: req.params.id }
     });
@@ -96,6 +113,13 @@ exports.updateLocation = async (req, res) => {
 // Delete location (soft delete)
 exports.deleteLocation = async (req, res) => {
   try {
+    const { user } = req;
+
+    if (user.role == USER_ROLE.TECHNICIAN) {
+      const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
+      return ErrorHandler(ApiError, req, res, next);
+    }
+    
     const location = await Location.findByPk(req.params.id);
     
     if (!location) {
