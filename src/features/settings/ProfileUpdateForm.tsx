@@ -9,6 +9,7 @@ import { userService } from "@/services/api/userService";
 import { toast } from "@/components/ui/use-toast";
 import { Loader2, Save, Upload } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 const ProfileUpdateForm = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -120,9 +121,27 @@ const ProfileUpdateForm = () => {
     }
   };
 
+  // Get appropriate role display name and color
+  const getRoleBadgeProps = () => {
+    const role = user?.role?.toLowerCase() || 'technician';
+    
+    const variants: Record<string, { label: string, variant: "default" | "secondary" | "destructive" | "outline" }> = {
+      "super admin": { label: "Super Admin", variant: "destructive" },
+      "project manager": { label: "Project Manager", variant: "secondary" },
+      "technician": { label: "Technician", variant: "outline" }
+    };
+
+    return variants[role] || { label: role.charAt(0).toUpperCase() + role.slice(1), variant: "outline" };
+  };
+
+  const roleBadge = getRoleBadgeProps();
+
   return (
     <div className="space-y-4">
-      <h3 className="text-xl font-medium">Profile Information</h3>
+      <div className="flex flex-row justify-between items-center">
+        <h3 className="text-xl font-medium">Profile Information</h3>
+        <Badge variant={roleBadge.variant}>{roleBadge.label}</Badge>
+      </div>
       <p className="text-gray-500 mb-6">
         Update your account's profile information and email address.
       </p>
@@ -155,6 +174,20 @@ const ProfileUpdateForm = () => {
             </p>
           </div>
         </div>
+      </div>
+      
+      {/* Add role information display */}
+      <div className="p-4 rounded-md bg-gray-50 border mb-6">
+        <div className="flex items-center">
+          <div className="mr-2 text-gray-600">Current Role:</div>
+          <Badge variant={roleBadge.variant} className="ml-auto">
+            {roleBadge.label}
+          </Badge>
+        </div>
+        <p className="text-sm text-gray-500 mt-2">
+          Your role determines what actions you can perform in the system.
+          {user?.role?.toLowerCase() === 'super admin' && " As an administrator, you have full access to all features."}
+        </p>
       </div>
       
       <Formik

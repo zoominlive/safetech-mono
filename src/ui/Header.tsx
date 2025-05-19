@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store";
-import { BellDot, ChevronLeft, Settings } from "lucide-react";
+import { BellDot, Settings } from "lucide-react";
 import { useLocation, useNavigate } from "react-router";
 
 // Backend base URL - should ideally come from environment variables
@@ -49,7 +49,7 @@ function Header() {
               referrerPolicy="no-referrer"
               crossOrigin="anonymous"
             />
-            <AvatarFallback>MS</AvatarFallback>
+            <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
           </Avatar>
         </div>
       </div>

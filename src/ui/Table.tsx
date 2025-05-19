@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye, SquarePen, Trash } from "lucide-react";
+import { useAuthStore } from "@/store";
 
 export interface Column<T> {
   header: string;
@@ -90,6 +91,7 @@ function Table<T>({
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const startIndex = (currentPage - 1) * pageSize + 1;
   const endIndex = Math.min(startIndex + data.length - 1, totalCount);
+  const { user } = useAuthStore();
   
   return (
     <>
@@ -138,7 +140,7 @@ function Table<T>({
                             <Eye className="h-4 w-4" />
                           </Button>
                         )}
-                        {onEdit && (
+                        {onEdit && user?.role !== 'Technician' && (
                           <Button 
                             variant="outline" 
                             size="sm" 
@@ -148,7 +150,7 @@ function Table<T>({
                             <SquarePen className="h-4 w-4" />
                           </Button>
                         )}
-                        {onDelete && (
+                        {onDelete && user?.role !== 'Technician' && (
                           <Button 
                             variant="outline" 
                             size="sm" 

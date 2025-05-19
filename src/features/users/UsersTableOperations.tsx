@@ -10,6 +10,7 @@ import {
 import { CirclePlus } from "lucide-react";
 import { Link } from "react-router";
 import { useState } from "react";
+import { useAuthStore } from "@/store";
 
 interface UsersTableOperationsProps {
   onSearch: (query: string) => void;
@@ -18,6 +19,7 @@ interface UsersTableOperationsProps {
 
 function UsersTableOperations({ onSearch, onSort }: UsersTableOperationsProps) {
   const [sortValue, setSortValue] = useState<string>("");
+  const { user } = useAuthStore();
 
   const handleSortChange = (value: string) => {
     setSortValue(value);
@@ -41,11 +43,13 @@ function UsersTableOperations({ onSearch, onSort }: UsersTableOperationsProps) {
           <SelectItem value="created_at_desc">Newest First</SelectItem>
         </SelectContent>
       </Select>
+      {user?.role !== "Technician" && 
       <Button className="md:ml-auto py-7.5 md:w-[200px] bg-sf-gray-600" asChild>
         <Link to="/staff/add">
           Add User <CirclePlus />
         </Link>
       </Button>
+      }
     </div>
   );
 }

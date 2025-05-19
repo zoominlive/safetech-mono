@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuthStore } from "@/store";
 import { CirclePlus } from "lucide-react";
 import { Link } from "react-router";
 
@@ -24,6 +25,9 @@ function ProjectTableOperations({
   onFilterStatus,
   onDateRangeChange
 }: ProjectTableOperationsProps) {
+  
+  const { user } = useAuthStore();
+  
   return (
     <>
       <div className="flex flex-col lg:flex-row items-start lg:items-center w-full gap-4 lg:gap-6 mb-4">
@@ -51,6 +55,7 @@ function ProjectTableOperations({
             </SelectGroup>
           </SelectContent>
         </Select>
+        {user?.role !== "Technician" && 
         <Button
           className="lg:ml-auto h-[60px] w-[200px] bg-sf-gray-600 hover:bg-sf-gray-600"
           asChild
@@ -59,6 +64,7 @@ function ProjectTableOperations({
             Add Project <CirclePlus />
           </Link>
         </Button>
+        }
       </div>
     </>
   );

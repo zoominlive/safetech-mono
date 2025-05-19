@@ -1,12 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CardSkeleton } from "@/components/ui/skeletons/CardSkeleton";
 import { toast } from "@/components/ui/use-toast";
 import { projectService } from "@/services/api/projectService";
+import { Formik, Form, Field, FormikHelpers } from "formik";
 import { SquarePen } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface ProjectDetails {
   id: number;
@@ -26,6 +29,21 @@ interface ProjectDetails {
     name: string;
   };
   start_date: string;
+  // Add report details
+  report_id: string;
+  report: {
+    id: number;
+    name: string;
+  };
+}
+
+interface ReportFormValues {
+  report_name: string;
+  date_of_assessment: Date | undefined;
+  site_contact_name: string;
+  site_contact_title: string;
+  assessment_due_to: string;
+  date_of_loss: Date | undefined;
 }
 
 const ProjectDetail: React.FC = () => {
@@ -69,6 +87,27 @@ const ProjectDetail: React.FC = () => {
     if (!dateString) return '-';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
+  const handleSaveReport = async (values: ReportFormValues, actions: FormikHelpers<ReportFormValues>) => {
+    try {
+      // Handle the form submission here
+      // Example: await projectService.saveProjectReport(id, values);
+      
+      toast({
+        title: "Success",
+        description: "Report saved successfully",
+      });
+      actions.setSubmitting(false);
+    } catch (error) {
+      console.error("Error saving report:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save report",
+        variant: "destructive",
+      });
+      actions.setSubmitting(false);
+    }
   };
 
   if (isLoading) {
@@ -133,6 +172,108 @@ const ProjectDetail: React.FC = () => {
               <Label htmlFor="status">Status</Label>
               <p className="text-sf-gray-500 font-normal capitalize">{project.status}</p>
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Project Report Section */}
+      <div className="space-y-6">
+        <h2 className="font-semibold text-xl">Project Report</h2>
+        <Card>
+          <CardContent className="p-6">
+            <Formik<ReportFormValues>
+              initialValues={{
+                report_name: project?.report?.name || "",
+                date_of_assessment: undefined,
+                site_contact_name: "",
+                site_contact_title: "",
+                assessment_due_to: "",
+                date_of_loss: undefined,
+              }}
+              onSubmit={handleSaveReport}
+              enableReinitialize
+            >
+              {({ values, setFieldValue, isSubmitting }) => (
+                <Form className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Report Name */}
+                  <div className="space-y-2">
+                    <Label htmlFor="report_name">Report name</Label>
+                    <Field
+                      as={Input}
+                      id="report_name"
+                      name="report_name"
+                      className="bg-gray-50"
+                      readOnly
+                    />
+                  </div>
+                  
+                  {/* Date of Assessment */}
+                  <div className="space-y-2">
+                    <Label htmlFor="date_of_assessment">Date of Assessment</Label>
+                    <DatePicker 
+                      date={values.date_of_assessment} 
+                      setDate={(date) => setFieldValue("date_of_assessment", date)}
+                    />
+                  </div>
+                  
+                  {/* Site Contact Name */}
+                  <div className="space-y-2">
+                    <Label htmlFor="site_contact_name">Site Contact Name</Label>
+                    <Field
+                      as={Input}
+                      id="site_contact_name"
+                      name="site_contact_name"
+                    />
+                  </div>
+                  
+                  {/* Site Contact Title */}
+                  <div className="space-y-2">
+                    <Label htmlFor="site_contact_title">Site Contact Title</Label>
+                    <Field
+                      as={Input}
+                      id="site_contact_title"
+                      name="site_contact_title"
+                    />
+                  </div>
+                  
+                  {/* Assessment Due To */}
+                  <div className="space-y-2">
+                    <Label htmlFor="assessment_due_to">Assessment Due To</Label>
+                    <Field
+                      as={Input}
+                      id="assessment_due_to"
+                      name="assessment_due_to"
+                    />
+                  </div>
+                  
+                  {/* Date of Loss */}
+                  <div className="space-y-2">
+                    <Label htmlFor="date_of_loss">Date of Loss</Label>
+                    <DatePicker 
+                      date={values.date_of_loss} 
+                      setDate={(date) => setFieldValue("date_of_loss", date)}
+                    />
+                  </div>
+                  
+                  <div className="mt-6 flex justify-end md:col-span-2">
+                    <Button 
+                      type="submit" 
+                      className="bg-safetech-gray text-black font-medium px-10"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "Saving..." : "Save"}
+                    </Button>
+                    <Button 
+                      type="button" 
+                      className="ml-4 bg-gray-100 text-black font-medium px-8"
+                      onClick={() => window.history.back()}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </Form>
+              )}
+            </Formik>
           </CardContent>
         </Card>
       </div>

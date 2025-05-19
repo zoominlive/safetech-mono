@@ -10,6 +10,7 @@ export interface Option {
 
 interface MultiSelectProps {
   options: Option[];
+  selected?: Option[];
   placeholder?: string;
   onChange?: (selectedOptions: Option[]) => void;
   className?: string;
@@ -17,13 +18,21 @@ interface MultiSelectProps {
 
 export function MultiSelect({
   options,
+  selected,
   placeholder = "Select options...",
   onChange,
   className,
 }: MultiSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOptions, setSelectedOptions] = useState<Option[]>([]);
+  const [selectedOptions, setSelectedOptions] = useState<Option[]>(selected || []);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Update internal state when selected prop changes
+  useEffect(() => {
+    if (selected !== undefined) {
+      setSelectedOptions(selected);
+    }
+  }, [selected]);
 
   const handleClickOutside = useCallback((event: MouseEvent) => {
     if (
