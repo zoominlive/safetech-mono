@@ -22,19 +22,25 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING
       },
+      site_contact_name: {
+        allowNull: true,
+        type: Sequelize.STRING
+      },
+      site_contact_title : {
+        allowNull: true,
+        type: Sequelize.STRING
+      },
       status: {
         allowNull: true,
         type: Sequelize.STRING
       },
+      report_template_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+      },
       location_id: {
         type: Sequelize.INTEGER,
         references: { model: 'locations', key: 'id' },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
-      },
-      report_id: {
-        type: Sequelize.INTEGER,
-        references: { model: 'reports', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
       },
@@ -81,7 +87,6 @@ module.exports = {
     await queryInterface.addIndex('projects', ['customer_id']);
     await queryInterface.addIndex('projects', ['technician_id']);
     await queryInterface.addIndex('projects', ['pm_id']);
-    await queryInterface.addIndex('projects', ['report_id']);
     await queryInterface.addIndex('projects', ['location_id']);
   },
 

@@ -37,10 +37,25 @@ module.exports = {
       return JSON.stringify(photos);
     };
     
+    // Get counts of available records to reference
+    const [projects] = await queryInterface.sequelize.query('SELECT COUNT(id) as count FROM projects;');
+    const [reportTemplates] = await queryInterface.sequelize.query('SELECT COUNT(id) as count FROM report_templates;');
+    
+    const projectCount = projects[0]?.count || 100; // Default to 100 if query fails
+    const templateCount = reportTemplates[0]?.count || 10; // Default to 10 if query fails
+    
     // Generate 80 unique report records
     const reports = Array(80).fill().map(() => {
+      const lossDate = new Date(new Date().setDate(new Date().getDate() - Math.floor(Math.random() * 90)));
+      const assessmentDate = new Date(new Date().setDate(lossDate.getDate() + Math.floor(Math.random() * 14)));
+      
       return {
         name: generateRandomReportName(),
+        project_id: Math.floor(Math.random() * projectCount) + 1,
+        report_template_id: Math.floor(Math.random() * templateCount) + 1,
+        assessment_due_to: ['Water Damage', 'Fire Damage', 'Mold', 'Storm Damage', 'Structural Issue'][Math.floor(Math.random() * 5)],
+        date_of_loss: lossDate,
+        date_of_assessment: assessmentDate,
         answers: generateRandomAnswers(),
         photos: generateRandomPhotos(),
         status: Math.random() > 0.1, // Status 1 or 0

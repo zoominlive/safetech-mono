@@ -10,6 +10,26 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       type: DataTypes.STRING
     },
+    project_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    report_template_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    assessment_due_to: {
+      allowNull: true,
+      type: DataTypes.STRING
+    },
+    date_of_loss: {
+      allowNull: true,
+      type: DataTypes.DATE
+    },
+    date_of_assessment: {
+      allowNull: true,
+      type: DataTypes.DATE
+    },
     answers: {
       allowNull: true,
       type: DataTypes.JSON
@@ -46,7 +66,8 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   Report.associate = models => {
-    Report.hasMany(models.Project, { foreignKey: 'report_id', as: 'projects' });
+    Report.belongsTo(models.Project, { foreignKey: 'project_id', as: 'project' });
+    Report.belongsTo(models.ReportTemplate, { foreignKey: 'report_template_id', as: 'template' });
   };
 
   return Report;

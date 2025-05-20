@@ -15,6 +15,28 @@ module.exports = {
         allowNull: true,
         type: Sequelize.STRING
       },
+      project_id: {
+        type: Sequelize.INTEGER,
+        references: { model: 'projects', key: 'id' },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL',
+      },
+      report_template_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+      },
+      assessment_due_to: {
+        allowNull: true,
+        type: Sequelize.STRING
+      },
+      date_of_loss: {
+        allowNull: true,
+        type: Sequelize.DATE
+      },
+      date_of_assessment: {
+        allowNull: true,
+        type: Sequelize.DATE
+      },
       answers: {
         allowNull: true,
         type: Sequelize.JSON

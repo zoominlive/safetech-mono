@@ -14,7 +14,7 @@ const {
 } = require("../helpers/constants");
 const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
-const { sequelize, Project, User, Customer, Location, Report } = require("../models");
+const { sequelize, Project, User, Customer, Location, Report, ReportTemplate } = require("../models");
 
 exports.createProject = async (req, res, next) => {
   const transaction = await sequelize.transaction();
@@ -25,6 +25,9 @@ exports.createProject = async (req, res, next) => {
     const {
       name,
       site_name,
+      site_contact_name,
+      site_contact_title,
+      report_template_id,
       site_email,
       status,
       location_id,
@@ -44,6 +47,9 @@ exports.createProject = async (req, res, next) => {
       {
         name: name,
         site_name: site_name,
+        site_contact_name,
+        site_contact_title,
+        report_template_id,
         status: status,
         site_email: site_email,
         location_id: location_id,
@@ -90,7 +96,7 @@ exports.getAllProjects = async (req, res, next) => {
       { model: User, as: "technician", attributes: ["id", "name"] },
       { model: User, as: "pm", attributes: ["id", "name"] },
       { model: Location, as: "location", attributes: ["id", "name"] },
-      { model: Report, as: "report", attributes: ["id", "name"] },
+      { model: Report, as: "reports", attributes: ["id", "name"] },
     ];
     const projects = await Project.findAndCountAll(options);    
     return res.status(OK).json({
@@ -113,7 +119,8 @@ exports.getProjectById = async (req, res, next) => {
         { model: User, as: "technician", attributes: ["id", "name"] },
         { model: User, as: "pm", attributes: ["id", "name"] },
         { model: Location, as: "location", attributes: ["id", "name"] },
-        { model: Report, as: "report", attributes: ["id", "name"] },
+        { model: Report, as: "reports", attributes: ["id", "name", "date_of_assessment", "date_of_loss", "assessment_due_to"] },
+        { model: ReportTemplate, as: "reportTemplate", attributes: ["id", "name"] },
       ]
     });
 
@@ -138,6 +145,9 @@ exports.updateProject = async (req, res, next) => {
     const {       
       name,
       site_name,
+      site_contact_name,
+      site_contact_title,
+      report_template_id,
       status,
       site_email,
       location_id,
@@ -167,6 +177,9 @@ exports.updateProject = async (req, res, next) => {
         {
           name: name,
           site_name: site_name,
+          site_contact_name,
+          site_contact_title,
+          report_template_id,
           status: status,
           site_email: site_email,
           location_id: location_id,

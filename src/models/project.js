@@ -14,6 +14,14 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       type: DataTypes.STRING
     },
+    site_contact_name: {
+      allowNull: true,
+      type: DataTypes.STRING
+    },
+    site_contact_title : {
+      allowNull: true,
+      type: DataTypes.STRING
+    },
     site_email: {
       allowNull: true,
       type: DataTypes.STRING
@@ -22,9 +30,9 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       type: DataTypes.STRING
     },
-    report_id: {
+    report_template_id: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: false
     },
     location_id: {
       type: DataTypes.INTEGER,
@@ -75,7 +83,8 @@ module.exports = (sequelize, DataTypes) => {
     Project.belongsTo(models.User, { foreignKey: 'technician_id', as: 'technician' });
     Project.belongsTo(models.Customer, { foreignKey: 'customer_id', as: 'company' });
     Project.belongsTo(models.Location, { foreignKey: 'location_id', as: 'location' });
-    Project.belongsTo(models.Report, { foreignKey: 'report_id', as: 'report' }); // Assuming Report has project_id
+    Project.belongsTo(models.ReportTemplate, { foreignKey: 'report_template_id', as: 'reportTemplate' });
+    Project.hasMany(models.Report, { foreignKey: 'project_id', as: 'reports' }); // Assuming Report has project_id
   };
 
   return Project;

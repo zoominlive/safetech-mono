@@ -14,7 +14,7 @@ const {
 } = require("../helpers/constants");
 const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
-const { sequelize, Report, Project } = require("../models");
+const { sequelize, Report, Project, ReportTemplate } = require("../models");
 
 exports.createReport = async (req, res, next) => {
   const transaction = await sequelize.transaction();
@@ -22,6 +22,11 @@ exports.createReport = async (req, res, next) => {
     const { user } = req;
     const {
       name,
+      project_id,
+      report_template_id,
+      assessment_due_to,
+      date_of_loss,
+      date_of_assessment,
       answers,
       photos,
       status
@@ -35,6 +40,11 @@ exports.createReport = async (req, res, next) => {
     const reportCreated = await Report.create(
       {
         name: name,
+        project_id,
+        report_template_id,
+        assessment_due_to,
+        date_of_loss,
+        date_of_assessment,
         answers: answers,
         photos: photos,
         status: status
@@ -69,7 +79,8 @@ exports.getAllReports = async (req, res, next) => {
       offset: filters.page ? (filters.page - 1) * filters.limit : undefined,
     };
     options.include = [
-      { model: Project, as: 'projects', attributes: ["name"] },
+      { model: Project, as: 'project', attributes: ["name"] },
+      { model: ReportTemplate, as: 'template' },
     ];
     const reports = await Report.findAndCountAll(options);
     res.status(OK).json({
@@ -87,10 +98,13 @@ exports.getReportById = async (req, res, next) => {
   try {
     const { id } = req.params;
     const report = await Report.findByPk(id, {
-      include: [{ model: Project, as: "projects", attributes: ["name"] }],
+      include: [
+      { model: Project, as: 'project', attributes: ["name"] },
+      { model: ReportTemplate, as: 'template' },
+    ],
     });
 
-    if (!report) {
+    if (!report) {  
       return res
         .status(NOT_FOUND)
         .json({ code: NOT_FOUND, message: NO_RECORD_FOUND, success: false });
@@ -110,6 +124,11 @@ exports.updateReport = async (req, res, next) => {
     const { id } = req.params;
     const {       
       name,
+      project_id,
+      report_template_id,
+      assessment_due_to,
+      date_of_loss,
+      date_of_assessment,
       answers,
       photos,
       status
@@ -133,6 +152,11 @@ exports.updateReport = async (req, res, next) => {
     const updated = await Report.update(
       {
         name: name,
+        project_id,
+        report_template_id,
+        assessment_due_to,
+        date_of_loss,
+        date_of_assessment,
         answers: answers,
         photos: photos,
         status: status
