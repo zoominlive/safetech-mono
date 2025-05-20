@@ -10,11 +10,14 @@ import { SquarePen } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ProjectDetails {
   id: number;
   name: string;
   site_name: string;
+  site_contact_name: string;
+  site_contact_title: string;
   site_email: string;
   status: string;
   location_id: string;
@@ -29,12 +32,16 @@ interface ProjectDetails {
     name: string;
   };
   start_date: string;
-  // Add report details
-  report_id: string;
-  report: {
+  // Report details
+  reports: Array<{
     id: number;
     name: string;
-  };
+    date_of_assessment: string;
+    date_of_loss: string;
+    site_contact_name?: string;
+    site_contact_title?: string;
+    assessment_due_to: string;
+  }>;
 }
 
 interface ReportFormValues {
@@ -50,6 +57,7 @@ const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [project, setProject] = useState<ProjectDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedReportIndex, setSelectedReportIndex] = useState(0);
 
   useEffect(() => {
     const fetchProjectDetails = async () => {
@@ -178,102 +186,132 @@ const ProjectDetail: React.FC = () => {
 
       {/* Project Report Section */}
       <div className="space-y-6">
-        <h2 className="font-semibold text-xl">Project Report</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="font-semibold text-xl">Project Report</h2>
+          {project?.reports && project.reports.length > 1 && (
+            <div className="w-64">
+              <Select
+                value={selectedReportIndex.toString()}
+                onValueChange={(value) => setSelectedReportIndex(parseInt(value))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Report" />
+                </SelectTrigger>
+                <SelectContent>
+                  {project.reports.map((report, index) => (
+                    <SelectItem key={report.id} value={index.toString()}>
+                      {report.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+        
         <Card>
           <CardContent className="p-6">
-            <Formik<ReportFormValues>
-              initialValues={{
-                report_name: project?.report?.name || "",
-                date_of_assessment: undefined,
-                site_contact_name: "",
-                site_contact_title: "",
-                assessment_due_to: "",
-                date_of_loss: undefined,
-              }}
-              onSubmit={handleSaveReport}
-              enableReinitialize
-            >
-              {({ values, setFieldValue, isSubmitting }) => (
-                <Form className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Report Name */}
-                  <div className="space-y-2">
-                    <Label htmlFor="report_name">Report name</Label>
-                    <Field
-                      as={Input}
-                      id="report_name"
-                      name="report_name"
-                      className="bg-gray-50"
-                      readOnly
-                    />
-                  </div>
-                  
-                  {/* Date of Assessment */}
-                  <div className="space-y-2">
-                    <Label htmlFor="date_of_assessment">Date of Assessment</Label>
-                    <DatePicker 
-                      date={values.date_of_assessment} 
-                      setDate={(date) => setFieldValue("date_of_assessment", date)}
-                    />
-                  </div>
-                  
-                  {/* Site Contact Name */}
-                  <div className="space-y-2">
-                    <Label htmlFor="site_contact_name">Site Contact Name</Label>
-                    <Field
-                      as={Input}
-                      id="site_contact_name"
-                      name="site_contact_name"
-                    />
-                  </div>
-                  
-                  {/* Site Contact Title */}
-                  <div className="space-y-2">
-                    <Label htmlFor="site_contact_title">Site Contact Title</Label>
-                    <Field
-                      as={Input}
-                      id="site_contact_title"
-                      name="site_contact_title"
-                    />
-                  </div>
-                  
-                  {/* Assessment Due To */}
-                  <div className="space-y-2">
-                    <Label htmlFor="assessment_due_to">Assessment Due To</Label>
-                    <Field
-                      as={Input}
-                      id="assessment_due_to"
-                      name="assessment_due_to"
-                    />
-                  </div>
-                  
-                  {/* Date of Loss */}
-                  <div className="space-y-2">
-                    <Label htmlFor="date_of_loss">Date of Loss</Label>
-                    <DatePicker 
-                      date={values.date_of_loss} 
-                      setDate={(date) => setFieldValue("date_of_loss", date)}
-                    />
-                  </div>
-                  
-                  <div className="mt-6 flex justify-end md:col-span-2">
-                    <Button 
-                      type="submit" 
-                      className="bg-safetech-gray text-black font-medium px-10"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? "Saving..." : "Save"}
-                    </Button>
-                    <Button 
-                      type="button" 
-                      className="ml-4 bg-gray-100 text-black font-medium px-8"
-                      onClick={() => window.history.back()}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
+            {project?.reports && project.reports.length > 0 ? (
+              <Formik<ReportFormValues>
+                initialValues={{
+                  report_name: project.reports[selectedReportIndex]?.name || "",
+                  date_of_assessment: project.reports[selectedReportIndex]?.date_of_assessment 
+                    ? new Date(project.reports[selectedReportIndex].date_of_assessment) 
+                    : undefined,
+                  site_contact_name: project.site_contact_name || "",
+                  site_contact_title: project.site_contact_title || "",
+                  assessment_due_to: project.reports[selectedReportIndex]?.assessment_due_to || "",
+                  date_of_loss: project.reports[selectedReportIndex]?.date_of_loss 
+                    ? new Date(project.reports[selectedReportIndex].date_of_loss) 
+                    : undefined,
+                }}
+                onSubmit={handleSaveReport}
+                enableReinitialize
+              >
+                {({ values, setFieldValue, isSubmitting }) => (
+                  <Form className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Report Name */}
+                    <div className="space-y-2">
+                      <Label htmlFor="report_name">Report name</Label>
+                      <Field
+                        as={Input}
+                        id="report_name"
+                        name="report_name"
+                        className="bg-gray-50"
+                        readOnly
+                      />
+                    </div>
+                    
+                    {/* Date of Assessment */}
+                    <div className="space-y-2">
+                      <Label htmlFor="date_of_assessment">Date of Assessment</Label>
+                      <DatePicker 
+                        date={values.date_of_assessment} 
+                        setDate={(date) => setFieldValue("date_of_assessment", date)}
+                      />
+                    </div>
+                    
+                    {/* Site Contact Name */}
+                    <div className="space-y-2">
+                      <Label htmlFor="site_contact_name">Site Contact Name</Label>
+                      <Field
+                        as={Input}
+                        id="site_contact_name"
+                        name="site_contact_name"
+                      />
+                    </div>
+                    
+                    {/* Site Contact Title */}
+                    <div className="space-y-2">
+                      <Label htmlFor="site_contact_title">Site Contact Title</Label>
+                      <Field
+                        as={Input}
+                        id="site_contact_title"
+                        name="site_contact_title"
+                      />
+                    </div>
+                    
+                    {/* Assessment Due To */}
+                    <div className="space-y-2">
+                      <Label htmlFor="assessment_due_to">Assessment Due To</Label>
+                      <Field
+                        as={Input}
+                        id="assessment_due_to"
+                        name="assessment_due_to"
+                      />
+                    </div>
+                    
+                    {/* Date of Loss */}
+                    <div className="space-y-2">
+                      <Label htmlFor="date_of_loss">Date of Loss</Label>
+                      <DatePicker 
+                        date={values.date_of_loss} 
+                        setDate={(date) => setFieldValue("date_of_loss", date)}
+                      />
+                    </div>
+                    
+                    <div className="mt-6 flex justify-end md:col-span-2">
+                      <Button 
+                        type="submit" 
+                        className="bg-safetech-gray text-black font-medium px-10"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? "Saving..." : "Save"}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        className="ml-4 bg-gray-100 text-black font-medium px-8"
+                        onClick={() => window.history.back()}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </Form>
+                )}
+              </Formik>
+            ) : (
+              <div className="text-center py-8 text-gray-500">No reports available for this project</div>
+            )}
           </CardContent>
         </Card>
       </div>

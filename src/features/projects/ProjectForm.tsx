@@ -75,8 +75,8 @@ const ProjectForm: React.FC = () => {
     status: "new",
     location_id: "",
     pm_id: "",
-    report_id: "",
-    report: {
+    report_template_id: "",
+    reportTemplate: {
       id: 1,
       name: ""
     },
@@ -117,7 +117,7 @@ const ProjectForm: React.FC = () => {
         }
 
         // Fetch reports
-        const reportsResponse = await reportService.getAllReports();
+        const reportsResponse = await reportService.getAllReportTemplates();
         if (reportsResponse.success) {
           setReports(reportsResponse.data.rows.map(report => ({
             id: report.id,
@@ -157,9 +157,9 @@ const ProjectForm: React.FC = () => {
                 id: projectDetails.pm.id,
                 name: projectDetails.pm.name,
               },
-              report: {
-                id: projectDetails.report.id,
-                name: projectDetails.report.name,
+              reportTemplate: {
+                id: projectDetails.reportTemplate.id,
+                name: projectDetails.reportTemplate.name,
               },
               location: {
                 id: projectDetails.location.id,
@@ -169,7 +169,7 @@ const ProjectForm: React.FC = () => {
               site_email: projectDetails.site_email,
               status: projectDetails.status,
               location_id: projectDetails.location_id,
-              report_id: projectDetails.report_id,
+              report_template_id: projectDetails.report_template_id,
               pm_id: projectDetails.pm_id,
               technician_id: projectDetails.technician_id,
               customer_id: projectDetails.customer_id,
@@ -361,11 +361,11 @@ const ProjectForm: React.FC = () => {
                 </div>
 
                 <div className="grid w-full items-center gap-3">
-                  <Label htmlFor="report_id">Report Type</Label>
+                  <Label htmlFor="report_template_id">Report Type</Label>
                   <Select 
-                    value={values.report_id?.toString()} 
+                    value={values.report_template_id?.toString()} 
                     onValueChange={(value) => {
-                      setFieldValue("report_id", value);
+                      setFieldValue("report_template_id", value);
                       const selectedReport = reports.find(r => r.id.toString() === value);
                       if (selectedReport) {
                         setFieldValue("report", {

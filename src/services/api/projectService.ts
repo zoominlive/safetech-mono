@@ -44,8 +44,8 @@ export interface ProjectData {
     id: number;
     name: string;
   }
-  report_id: string;
-  report: {
+  report_template_id: string;
+  reportTemplate: {
     id: number;
     name: string;
   },
@@ -75,6 +75,13 @@ export interface ProjectResponse {
     id: number,
     name: string,
     site_name: string,
+    site_contact_name: string;
+    site_contact_title: string;
+    reportTemplate: {
+      id: number;
+      name: string;
+    },
+    report_template_id: string;
     site_email: string,
     status: string,
     location_id: string,
@@ -101,6 +108,15 @@ export interface ProjectResponse {
       id: number;
       name: string;
     },
+    reports: Array<{
+    id: number;
+    name: string;
+    date_of_assessment: string;
+    date_of_loss: string;
+    site_contact_name?: string;
+    site_contact_title?: string;
+    assessment_due_to: string;
+  }>;
     customer_id: string,
     start_date: string,
     created_at: string,

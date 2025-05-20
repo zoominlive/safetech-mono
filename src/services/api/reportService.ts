@@ -16,6 +16,22 @@ interface ReportsResponse {
       answers: Record<string, any> | null,
     }>;
   }
+}
+
+interface ReportTemplatesResponse {
+  code: number;
+  message: string;
+  success: boolean;
+  data: {
+    count: number;
+    rows: Array<{
+      id: number,
+      name: string,
+      schema: any,
+      created_at: string,
+      updated_at: string
+    }>;
+  }
 } 
 
 export interface ReportData {
@@ -80,6 +96,13 @@ export const reportService = {
     
     const response: AxiosResponse<ReportsResponse> = await BaseClient.get(
       `/reports/all?${params.toString()}`
+    );
+    return response.data;
+  },
+
+  getAllReportTemplates: async (): Promise<ReportTemplatesResponse> => {    
+    const response: AxiosResponse<ReportTemplatesResponse> = await BaseClient.get(
+      '/report-templates/all'
     );
     return response.data;
   },
