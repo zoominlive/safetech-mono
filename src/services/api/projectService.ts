@@ -38,6 +38,8 @@ export interface ProjectData {
   name: string;
   site_name: string;
   site_email: string;
+  site_contact_name: string;
+  site_contact_title: string;
   status: string;
   location_id: string;
   location: {

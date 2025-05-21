@@ -24,6 +24,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Formik, Form, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import BackButton from "@/components/BackButton";
+import { useAuthStore } from "@/store";
 
 interface User {
   id: number;
@@ -48,6 +49,7 @@ interface Location {
 const ProjectForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [technicians, setTechnicians] = useState<User[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -73,6 +75,8 @@ const ProjectForm: React.FC = () => {
     },
     site_name: "",
     site_email: "",
+    site_contact_name: "",
+    site_contact_title: "",
     status: "new",
     location_id: "",
     pm_id: "",
@@ -90,6 +94,8 @@ const ProjectForm: React.FC = () => {
   const validationSchema = Yup.object({
     name: Yup.string().required("Project name is required"),
     site_name: Yup.string().required("Site name is required"),
+    site_contact_name: Yup.string().required("Site contact name is required"),
+    site_contact_title: Yup.string().required("Site contact title is required"),
     customer_id: Yup.string().required("Customer is required"),
     technician_id: Yup.string().required("Technician is required"),
     site_email: Yup.string().email("Invalid email address"),
@@ -168,6 +174,8 @@ const ProjectForm: React.FC = () => {
               },
               site_name: projectDetails.site_name,
               site_email: projectDetails.site_email,
+              site_contact_name: projectDetails.site_contact_name,
+              site_contact_title: projectDetails.site_contact_title,
               status: projectDetails.status,
               location_id: projectDetails.location_id,
               report_template_id: projectDetails.report_template_id,
@@ -196,7 +204,16 @@ const ProjectForm: React.FC = () => {
   const handleSubmit = async (values: ProjectData, { setSubmitting }: FormikHelpers<ProjectData>) => {
     try {
       setIsLoading(true);
-      values.pm_id = "1"; // Assuming PM ID is always 1 for now
+      // If user is Project Manager, set pm_id to their user id
+      if (user && user.role && user.role.toLowerCase() === "project manager") {
+        values.pm_id = user.id;
+        values.pm = {
+          id: parseInt(user.id),
+          name: user.name,
+        }
+      } else {
+        values.pm_id = "1"; // fallback or default
+      }
       const response = id
         ? await projectService.updateProject(id, values)
         : await projectService.createProject(values);
@@ -361,6 +378,38 @@ const ProjectForm: React.FC = () => {
                   />
                   {errors.site_email && touched.site_email && (
                     <div className="text-red-500 text-sm">{errors.site_email}</div>
+                  )}
+                </div>
+
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="site_contact_name">Contact Name</Label>
+                  <Input
+                    type="text"
+                    id="site_contact_name"
+                    name="site_contact_name"
+                    placeholder="Enter site contact name"
+                    className="py-7.5"
+                    value={values.site_contact_name}
+                    onChange={handleChange}
+                  />
+                  {errors.site_contact_name && touched.site_contact_name && (
+                    <div className="text-red-500 text-sm">{errors.site_contact_name}</div>
+                  )}
+                </div>
+
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="site_contact_title">Contact Title</Label>
+                  <Input
+                    type="text"
+                    id="site_contact_title"
+                    name="site_contact_title"
+                    placeholder="Enter site contact title"
+                    className="py-7.5"
+                    value={values.site_contact_title}
+                    onChange={handleChange}
+                  />
+                  {errors.site_contact_title && touched.site_contact_title && (
+                    <div className="text-red-500 text-sm">{errors.site_contact_title}</div>
                   )}
                 </div>
 
