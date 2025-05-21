@@ -53,9 +53,33 @@ exports.getAllCustomers = async (req, res, next) => {
       ...filters.filter,
       ...filters.search,
     };
+    
+    // Custom sorting based on sortBy parameter
+    let orderClause = [];
+    if (req.query.sort)  {
+      switch (req.query.sort) {
+        case 'name_asc':
+          orderClause = [['name', 'ASC']];
+          break;
+        case 'name_desc':
+          orderClause = [['name', 'DESC']];
+          break;
+        case 'created_asc':
+          orderClause = [['created_at', 'ASC']];
+          break;
+        case 'created_desc':
+          orderClause = [['created_at', 'DESC']];
+          break;
+        default:
+          orderClause = [['created_at', 'DESC']]; // Default sort
+      }
+    } else {
+      orderClause = [['created_at', 'DESC']]; // Default sort when no sortBy parameter
+    }
+    
     const options = {
       where: whereCondition,
-      order: filters.sort,
+      order: orderClause,
       limit: filters.limit,
       offset: filters.page ? (filters.page - 1) * filters.limit : undefined,
     };

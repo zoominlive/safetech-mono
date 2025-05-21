@@ -125,7 +125,28 @@ exports.getAllUsers = async (req, res, next) => {
       ...filters.search,
       id: { [Sequelize.Op.not]: req.user.id }, // This excludes the current user
     };
-    
+    // Custom sorting based on sortBy parameter
+    let orderClause = [];
+    if (req.query.sort)  {
+      switch (req.query.sort) {
+        case 'name_asc':
+          orderClause = [['name', 'ASC']];
+          break;
+        case 'name_desc':
+          orderClause = [['name', 'DESC']];
+          break;
+        case 'created_asc':
+          orderClause = [['created_at', 'ASC']];
+          break;
+        case 'created_desc':
+          orderClause = [['created_at', 'DESC']];
+          break;
+        default:
+          orderClause = [['created_at', 'DESC']]; // Default sort
+      }
+    } else {
+      orderClause = [['created_at', 'DESC']]; // Default sort when no sortBy parameter
+    }
     // Add role filtering if role parameter is provided
     if (req.query.role) {
       whereCondition.role = req.query.role;
@@ -133,7 +154,7 @@ exports.getAllUsers = async (req, res, next) => {
     
     const options = {
       where: whereCondition,
-      order: filters.sort,
+      order: orderClause,
       limit: filters.limit,
       offset: filters.page ? (filters.page - 1) * filters.limit : undefined,
     };
