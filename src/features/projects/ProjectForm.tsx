@@ -25,6 +25,7 @@ import { Formik, Form, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import BackButton from "@/components/BackButton";
 import { useAuthStore } from "@/store";
+import { Combobox } from "@/components/Combobox";
 
 interface User {
   id: number;
@@ -100,6 +101,28 @@ const ProjectForm: React.FC = () => {
     technician_id: Yup.string().required("Technician is required"),
     site_email: Yup.string().email("Invalid email address"),
   });
+
+  const fetchCustomers = async (query: string) => {
+    const res = await customerService.getAllCustomers(query, undefined, undefined, 10, 1);
+    if (res.success) {
+      return res.data.rows.map((c: any) => ({ value: c.id, label: c.name }));
+    }
+    return [];
+  };
+  const fetchReports = async () => {
+    const res = await reportService.getAllReportTemplates();
+    if (res.success) {
+      return res.data.rows.map((r: any) => ({ value: r.id, label: r.name }));
+    }
+    return [];
+  };
+  const fetchTechnicians = async (query: string) => {
+    const res = await userService.getAllUsers(query, undefined, undefined, 10, 1);
+    if (res.success) {
+      return res.data.rows.map((u: any) => ({ value: u.id, label: u.name }));
+    }
+    return [];
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -272,32 +295,15 @@ const ProjectForm: React.FC = () => {
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-14 h-[calc(100vh-350px)] overflow-y-auto pt-6">
                 <div className="grid w-full items-center gap-3">
                   <Label htmlFor="customer_id">Customer *</Label>
-                  <Select 
-                    value={values.customer_id?.toString()} 
-                    onValueChange={(value) => {
-                      setFieldValue("customer_id", value);
-                      const selectedCustomer = customers.find(c => c.id.toString() === value);
-                      if (selectedCustomer) {
-                        setFieldValue("company", {
-                          id: selectedCustomer.id,
-                          name: selectedCustomer.name
-                        });
-                      }
+                  <Combobox
+                    value={values.customer_id}
+                    onChange={(val, option) => {
+                      setFieldValue("customer_id", val);
+                      if (option) setFieldValue("company", { id: option.value, name: option.label });
                     }}
-                  >
-                    <SelectTrigger className="w-full py-7.5">
-                      <SelectValue placeholder="Select customer" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {customers.map((customer) => (
-                          <SelectItem key={customer.id} value={customer.id.toString()}>
-                            {customer.name}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                    fetchOptions={fetchCustomers}
+                    placeholder="Select customer"
+                  />
                   {errors.customer_id && touched.customer_id && (
                     <div className="text-red-500 text-sm">{errors.customer_id}</div>
                   )}
@@ -415,32 +421,15 @@ const ProjectForm: React.FC = () => {
 
                 <div className="grid w-full items-center gap-3">
                   <Label htmlFor="report_template_id">Report Type</Label>
-                  <Select 
-                    value={values.report_template_id?.toString()} 
-                    onValueChange={(value) => {
-                      setFieldValue("report_template_id", value);
-                      const selectedReport = reports.find(r => r.id.toString() === value);
-                      if (selectedReport) {
-                        setFieldValue("report", {
-                          id: selectedReport.id,
-                          name: selectedReport.name
-                        });
-                      }
+                  <Combobox
+                    value={values.report_template_id}
+                    onChange={(val, option) => {
+                      setFieldValue("report_template_id", val);
+                      if (option) setFieldValue("report", { id: option.value, name: option.label });
                     }}
-                  >
-                    <SelectTrigger className="w-full py-7.5">
-                      <SelectValue placeholder="Select report type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {reports.map((report) => (
-                          <SelectItem key={report.id} value={report.id.toString()}>
-                            {report.name}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                    fetchOptions={fetchReports}
+                    placeholder="Select report type"
+                  />
                 </div>
 
                 <div className="grid w-full items-center gap-3">
@@ -458,32 +447,15 @@ const ProjectForm: React.FC = () => {
 
                 <div className="grid w-full items-center gap-3">
                   <Label htmlFor="technician_id">Technician *</Label>
-                  <Select 
-                    value={values.technician_id?.toString()} 
-                    onValueChange={(value) => {
-                      setFieldValue("technician_id", value);
-                      const selectedTechnician = technicians.find(t => t.id.toString() === value);
-                      if (selectedTechnician) {
-                        setFieldValue("technician", {
-                          id: selectedTechnician.id,
-                          name: selectedTechnician.name
-                        });
-                      }
+                  <Combobox
+                    value={values.technician_id}
+                    onChange={(val, option) => {
+                      setFieldValue("technician_id", val);
+                      if (option) setFieldValue("technician", { id: option.value, name: option.label });
                     }}
-                  >
-                    <SelectTrigger className="w-full py-7.5">
-                      <SelectValue placeholder="Select technician" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {technicians.map((technician) => (
-                          <SelectItem key={technician.id} value={technician.id.toString()}>
-                            {technician.name}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                    fetchOptions={fetchTechnicians}
+                    placeholder="Select technician"
+                  />
                   {errors.technician_id && touched.technician_id && (
                     <div className="text-red-500 text-sm">{errors.technician_id}</div>
                   )}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Search } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -15,6 +15,7 @@ export function SearchInput({
   className,
 }: SearchInputProps) {
   const [query, setQuery] = useState("");
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const handleSearch = () => {
     if (onSearch) {
@@ -28,6 +29,15 @@ export function SearchInput({
     }
   };
 
+  // Debounced search on every keystroke
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    debounceTimeout.current = setTimeout(() => {
+      if (onSearch) onSearch(e.target.value);
+    }, 300);
+  };
+
   return (
     <div
       className={`flex w-full lg:w-auto items-center space-x-2 ${className}`}
@@ -37,7 +47,7 @@ export function SearchInput({
           type="text"
           placeholder={placeholder}
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={handleChange}
           onKeyDown={handleKeyDown}
           className="w-full pr-12 bg-safetech-gray h-[60px]"
         />
