@@ -77,7 +77,12 @@ exports.createProject = async (req, res, next) => {
 
 exports.getAllProjects = async (req, res, next) => {
   try {   
-    const filters = useFilter(req.query, Project);
+    // Add associations for company and technician search
+    const associations = [
+      { alias: "company", model: Customer, fields: ["name"] },
+      { alias: "technician", model: User, fields: ["name"] },
+    ];
+    const filters = useFilter(req.query, Project, associations);
     let whereCondition = {
       ...filters.filter,
       ...filters.search,
@@ -92,8 +97,8 @@ exports.getAllProjects = async (req, res, next) => {
       offset: filters.page ? (filters.page - 1) * filters.limit : undefined,
     };
     options.include = [
-      { model: Customer, as: "company", attributes: ["id", "name"] },
-      { model: User, as: "technician", attributes: ["id", "name"] },
+      { model: Customer, as: "company", attributes: ["id", "name"], required: true },
+      { model: User, as: "technician", attributes: ["id", "name"], required: true },
       { model: User, as: "pm", attributes: ["id", "name"] },
       { model: Location, as: "location", attributes: ["id", "name"] },
       { model: Report, as: "reports", attributes: ["id", "name"] },
