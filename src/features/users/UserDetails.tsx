@@ -1,3 +1,4 @@
+import BackButton from "@/components/BackButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -72,7 +73,10 @@ const UserDetail: React.FC = () => {
     <div className="space-y-8">
       <div className="space-y-6">
         <div className="flex justify-between">
-          <h2 className="font-semibold text-xl">User Details</h2>
+          <div className="flex items-center gap-4">
+            <BackButton/>
+            <h2 className="font-semibold text-xl">User Details</h2>
+          </div>
           <div className="space-x-4">
             <Button
               className="bg-sf-secondary-300 px-4 py-2.5 text-black"

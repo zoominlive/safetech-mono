@@ -17,6 +17,7 @@ import { SquarePen } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { Skeleton } from "@/components/ui/skeleton";
+import BackButton from "@/components/BackButton";
 
 interface UploadedData {
   sample_id: string;
@@ -106,9 +107,12 @@ const ReportDetail: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-[22px] text-sf-black-300">
-          View Report
-        </h2>
+        <div className="flex items-center gap-4">
+          <BackButton/>
+          <h2 className="font-semibold text-[22px] text-sf-black-300">
+            View Report
+          </h2>
+        </div>
         <Button
           className="bg-safetech-gray text-black"
           onClick={() => navigate(`/reports/${id}/edit`)}

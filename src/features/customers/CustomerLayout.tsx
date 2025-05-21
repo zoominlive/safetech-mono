@@ -22,6 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import BackButton from "@/components/BackButton";
 
 const columns: Column<Project>[] = [
   {
@@ -181,9 +182,12 @@ function CustomerLayout() {
     <div className="space-y-9">
       <div className="space-y-7">
         <div className="flex justify-between items-center">
-          <h2 className="font-semibold text-xl">
-            {id ? "Customer Details" : "Add New Customer"}
-          </h2>
+          <div className="flex items-center gap-4">
+            <BackButton/>
+            <h2 className="font-semibold text-xl">
+              {id ? "Customer Details" : "Add New Customer"}
+            </h2>
+          </div>
           {id && !isEdit && (
             <Button
               className="bg-sf-secondary-300 text-black w-[150px] h-[48px]"

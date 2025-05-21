@@ -20,6 +20,7 @@ import { toast } from "@/components/ui/use-toast";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import BackButton from "@/components/BackButton";
 
 interface UserFormProps {
   userId?: string;
@@ -235,171 +236,179 @@ function UserForm({ onCancel }: UserFormProps) {
   }
 
   return (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={userSchema}
-      onSubmit={handleSubmit}
-      enableReinitialize
-    >
-      {({ values, setFieldValue }) => (
-        <Form>
-          <Card>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6 pt-6">
-              {/* Profile Picture Section */}
-              <div className="space-y-4 md:col-span-2 mb-4">
-                <Label>Profile Picture</Label>
-                <div className="flex items-center space-x-4">
-                  <Avatar className="h-24 w-24">
-                    <AvatarImage src={imagePreview || values.profile_picture} />
-                    <AvatarFallback>{values.name?.charAt(0) || "U"}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <Label htmlFor="profile-picture" className="cursor-pointer">
-                      <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
-                        <Upload size={18} />
-                        <span>{uploadingImage ? "Uploading..." : "Change picture"}</span>
-                      </div>
-                    </Label>
-                    <input
-                      id="profile-picture"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => handleImageChange(e, setFieldValue)}
-                      disabled={uploadingImage}
-                    />
-                    <p className="text-sm text-gray-500 mt-2">
-                      JPG, PNG or GIF. Max size 2MB.
-                    </p>
+    <div className="flex flex-col h-full">
+      <div className="flex items-center gap-4 mb-8">
+        <BackButton/>
+        <h2 className="font-semibold text-xl text-sf-black-300">
+          {id ? "Edit Staff" : "Add Staff"}
+        </h2>
+      </div>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={userSchema}
+        onSubmit={handleSubmit}
+        enableReinitialize
+      >
+        {({ values, setFieldValue }) => (
+          <Form>
+            <Card>
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6 pt-6">
+                {/* Profile Picture Section */}
+                <div className="space-y-4 md:col-span-2 mb-4">
+                  <Label>Profile Picture</Label>
+                  <div className="flex items-center space-x-4">
+                    <Avatar className="h-24 w-24">
+                      <AvatarImage src={imagePreview || values.profile_picture} />
+                      <AvatarFallback>{values.name?.charAt(0) || "U"}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <Label htmlFor="profile-picture" className="cursor-pointer">
+                        <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
+                          <Upload size={18} />
+                          <span>{uploadingImage ? "Uploading..." : "Change picture"}</span>
+                        </div>
+                      </Label>
+                      <input
+                        id="profile-picture"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleImageChange(e, setFieldValue)}
+                        disabled={uploadingImage}
+                      />
+                      <p className="text-sm text-gray-500 mt-2">
+                        JPG, PNG or GIF. Max size 2MB.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="grid w-full items-center gap-3">
-                <Label htmlFor="name">Name *</Label>
-                <Field
-                  as={Input}
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder="Full name"
-                  className="py-7.5"
-                />
-                <ErrorMessage
-                  name="name"
-                  component="div"
-                  className="text-red-500 text-sm"
-                />
-              </div>
+                
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="name">Name *</Label>
+                  <Field
+                    as={Input}
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="Full name"
+                    className="py-7.5"
+                  />
+                  <ErrorMessage
+                    name="name"
+                    component="div"
+                    className="text-red-500 text-sm"
+                  />
+                </div>
 
-              <div className="grid w-full items-center gap-3">
-                <Label htmlFor="email">Email *</Label>
-                <Field
-                  as={Input}
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="Email address"
-                  className="py-7.5"
-                />
-                <ErrorMessage
-                  name="email"
-                  component="div"
-                  className="text-red-500 text-sm"
-                />
-              </div>
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="email">Email *</Label>
+                  <Field
+                    as={Input}
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="Email address"
+                    className="py-7.5"
+                  />
+                  <ErrorMessage
+                    name="email"
+                    component="div"
+                    className="text-red-500 text-sm"
+                  />
+                </div>
 
-              <div className="grid w-full items-center gap-3">
-                <Label htmlFor="phone">Phone</Label>
-                <Field
-                  as={Input}
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  placeholder="Phone number"
-                  className="py-7.5"
-                />
-                <ErrorMessage
-                  name="phone"
-                  component="div"
-                  className="text-red-500 text-sm"
-                />
-              </div>
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Field
+                    as={Input}
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    placeholder="Phone number"
+                    className="py-7.5"
+                  />
+                  <ErrorMessage
+                    name="phone"
+                    component="div"
+                    className="text-red-500 text-sm"
+                  />
+                </div>
 
-              <div className="grid w-full items-center gap-3">
-                <Label htmlFor="role">Role *</Label>
-                <Field name="role">
-                  {({ field }: any) => (
-                    <Select 
-                      value={field.value} 
-                      onValueChange={(value) => setFieldValue("role", value)}
-                    >
-                      <SelectTrigger className="w-full py-7.5">
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>Role</SelectLabel>
-                          <SelectItem value="super admin">Super Admin</SelectItem>
-                          <SelectItem value="project manager">Project Manager</SelectItem>
-                          <SelectItem value="technician">Technician</SelectItem>
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  )}
-                </Field>
-                <ErrorMessage
-                  name="role"
-                  component="div"
-                  className="text-red-500 text-sm"
-                />
-              </div>
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="role">Role *</Label>
+                  <Field name="role">
+                    {({ field }: any) => (
+                      <Select 
+                        value={field.value} 
+                        onValueChange={(value) => setFieldValue("role", value)}
+                      >
+                        <SelectTrigger className="w-full py-7.5">
+                          <SelectValue placeholder="Select role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Role</SelectLabel>
+                            <SelectItem value="super admin">Super Admin</SelectItem>
+                            <SelectItem value="project manager">Project Manager</SelectItem>
+                            <SelectItem value="technician">Technician</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </Field>
+                  <ErrorMessage
+                    name="role"
+                    component="div"
+                    className="text-red-500 text-sm"
+                  />
+                </div>
 
-              <div className="grid w-full items-center gap-3">
-                <Label htmlFor="status">Status</Label>
-                <Field name="deactivated_user">
-                  {({ field }: any) => (
-                    <Select 
-                      value={field.value ? "inactive" : "active"}
-                      onValueChange={(value) => setFieldValue("deactivated_user", value === "inactive")}
-                    >
-                      <SelectTrigger className="w-full py-7.5">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>Status</SelectLabel>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="inactive">Inactive</SelectItem>
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  )}
-                </Field>
-              </div>
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="status">Status</Label>
+                  <Field name="deactivated_user">
+                    {({ field }: any) => (
+                      <Select 
+                        value={field.value ? "inactive" : "active"}
+                        onValueChange={(value) => setFieldValue("deactivated_user", value === "inactive")}
+                      >
+                        <SelectTrigger className="w-full py-7.5">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Status</SelectLabel>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </Field>
+                </div>
 
-            </CardContent>
-            <CardFooter className="flex justify-end space-x-6">
-              <Button 
-                className="bg-sf-gray-600 text-white w-[150px] h-[48px]"
-                type="submit"
-                disabled={isLoading}
-              >
-                {isLoading ? "Saving..." : "Save"} <Bookmark />
-              </Button>
-              <Button 
-                className="w-[150px] h-[48px] bg-sf-secondary text-black"
-                onClick={handleCancel}
-                type="button"
-                disabled={isLoading}
-              >
-                Cancel <CircleX />
-              </Button>
-            </CardFooter>
-          </Card>
-        </Form>
-      )}
-    </Formik>
+              </CardContent>
+              <CardFooter className="flex justify-end space-x-6">
+                <Button 
+                  className="bg-sf-gray-600 text-white w-[150px] h-[48px]"
+                  type="submit"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Saving..." : "Save"} <Bookmark />
+                </Button>
+                <Button 
+                  className="w-[150px] h-[48px] bg-sf-secondary text-black"
+                  onClick={handleCancel}
+                  type="button"
+                  disabled={isLoading}
+                >
+                  Cancel <CircleX />
+                </Button>
+              </CardFooter>
+            </Card>
+          </Form>
+        )}
+      </Formik>
+    </div>
   );
 }
 

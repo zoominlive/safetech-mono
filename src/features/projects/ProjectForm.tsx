@@ -23,6 +23,7 @@ import { locationService } from "@/services/api/locationService";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Formik, Form, FormikHelpers } from "formik";
 import * as Yup from "yup";
+import BackButton from "@/components/BackButton";
 
 interface User {
   id: number;
@@ -236,9 +237,12 @@ const ProjectForm: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <h2 className="font-semibold text-xl text-sf-black-300 mb-8">
-        {id ? "Edit Project" : "Add Project"}
-      </h2>
+      <div className="flex items-center gap-4 mb-8">
+        <BackButton/>
+        <h2 className="font-semibold text-xl text-sf-black-300">
+          {id ? "Edit Project" : "Add Project"}
+        </h2>
+      </div>
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}

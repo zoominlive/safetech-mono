@@ -18,6 +18,7 @@ import { reportService } from "@/services/api/reportService";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { formatDate } from "@/lib/utils";
+import BackButton from "@/components/BackButton";
 
 const moistureStatusOptions = [
   { id: "ms1", name: "Very High Moisture" },
@@ -184,9 +185,12 @@ export const ReportForm: React.FC<ReportFormProps> = ({ onCancel }) => {
   return (
     <div className="space-y-8">
       <div className="flex items-center">
-        <h2 className="font-semibold text-xl text-sf-black-300 me-2">
-          Report Attribute Editor
-        </h2>
+        <div className="flex items-center gap-4">
+          <BackButton/>
+          <h2 className="font-semibold text-xl text-sf-black-300 me-2">
+            Report Attribute Editor
+          </h2>
+        </div>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>

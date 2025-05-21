@@ -6,11 +6,12 @@ import { CardSkeleton } from "@/components/ui/skeletons/CardSkeleton";
 import { toast } from "@/components/ui/use-toast";
 import { projectService } from "@/services/api/projectService";
 import { Formik, Form, Field, FormikHelpers } from "formik";
-import { SquarePen } from "lucide-react";
+import { ArrowLeft, SquarePen } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import BackButton from "@/components/BackButton";
 
 interface ProjectDetails {
   id: number;
@@ -129,8 +130,11 @@ const ProjectDetail: React.FC = () => {
   return (
     <div className="space-y-8">
       <div className="space-y-6">
-        <div className="flex justify-between">
-          <h2 className="font-semibold text-xl">Project Details</h2>
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <BackButton/>
+            <h2 className="font-semibold text-xl">Project Details</h2>
+          </div>
           <div className="space-x-4">
             <Button
               className="bg-sf-secondary-300 px-4 py-2.5 text-black"
