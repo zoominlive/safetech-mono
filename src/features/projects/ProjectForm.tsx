@@ -52,10 +52,10 @@ const ProjectForm: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
-  const [technicians, setTechnicians] = useState<User[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [_technicians, setTechnicians] = useState<User[]>([]);
+  const [_customers, setCustomers] = useState<Customer[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
-  const [reports, setReports] = useState<Report[]>([]);
+  const [_reports, setReports] = useState<Report[]>([]);
   const [initialValues, setInitialValues] = useState<ProjectData>({
     name: "",
     company: {

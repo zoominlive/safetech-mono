@@ -37,7 +37,6 @@ interface AwaitingReviewProject {
 }
 
 // Project type can be either in progress or awaiting review
-type Project = InProgressProject | AwaitingReviewProject;
 
 function DashboardLayout() {
   const [overview, setOverview] = useState({

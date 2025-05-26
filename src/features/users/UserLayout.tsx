@@ -10,7 +10,7 @@ import { SquarePen } from "lucide-react";
 function UserLayout() {
   const { id } = useParams<{ id: string }>();
   const [isEdit, setIsEdit] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, _setLoading] = useState<boolean>(false);
 
   if (loading && id) {
     return (

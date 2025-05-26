@@ -82,7 +82,6 @@ function Table<T>({
   pageSize = 10,
   totalCount = 0,
   onPageChange,
-  onPageSizeChange,
   onEdit,
   onDelete,
   onDetails,

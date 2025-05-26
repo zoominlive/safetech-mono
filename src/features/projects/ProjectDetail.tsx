@@ -6,7 +6,7 @@ import { CardSkeleton } from "@/components/ui/skeletons/CardSkeleton";
 import { toast } from "@/components/ui/use-toast";
 import { projectService } from "@/services/api/projectService";
 import { Formik, Form, Field, FormikHelpers } from "formik";
-import { ArrowLeft, SquarePen } from "lucide-react";
+import { SquarePen } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -98,7 +98,7 @@ const ProjectDetail: React.FC = () => {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
-  const handleSaveReport = async (values: ReportFormValues, actions: FormikHelpers<ReportFormValues>) => {
+  const handleSaveReport = async (_values: ReportFormValues, actions: FormikHelpers<ReportFormValues>) => {
     try {
       // Handle the form submission here
       // Example: await projectService.saveProjectReport(id, values);

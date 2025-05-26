@@ -50,7 +50,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({ searchQuery, sortBy }) => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const [pageSize, _setPageSize] = useState<number>(10);
   const [totalCount, setTotalCount] = useState<number>(0);
 
   useEffect(() => {

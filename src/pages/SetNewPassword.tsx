@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useAuthStore } from "@/store";
@@ -20,7 +20,6 @@ const setNewPasswordSchema = Yup.object({
 
 const SetNewPassword = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const navigate = useNavigate();
   const { resetPassword, loading, error, clearError } = useAuthStore();
 
   const handleSubmit = async (values: { password: string; confirmPassword: string }) => {
