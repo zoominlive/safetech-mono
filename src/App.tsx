@@ -21,6 +21,7 @@ import Settings from "./pages/Settings";
 import Users from "./pages/Users";
 import UserForm from "./features/users/UserForm";
 import UserDetails from "./features/users/UserDetails";
+import Support from "./pages/Support";
 
 function App() {
   const { isAuthenticated } = useAuthStore();
@@ -139,7 +140,7 @@ function App() {
 
           <Route path="settings" element={<Settings />} />
           <Route path="analytics" element={<Analytics />} />
-          <Route path="support" element={<div>Support Page</div>} />
+          <Route path="support" element={<Support/>} />
         </Route>
 
         {/* Fallback redirect */}
