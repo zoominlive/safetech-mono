@@ -8,8 +8,8 @@ import { useLocation, useNavigate } from "react-router";
 console.log('window.location.hostname =>', window.location.hostname);
 
 const BACKEND_URL = window.location.hostname === 'localhost' ? 
-  'http://localhost:8000' : 
-  'http://15.156.127.37';
+  'http://localhost:8000/api/v1' : 
+  'http://15.156.127.37/api/v1';
 
 function Header() {
   const navigate = useNavigate();
