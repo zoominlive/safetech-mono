@@ -10,8 +10,9 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 
 interface UserDetails {
-  id: number;
-  name: string;
+  id: string;
+  first_name: string;
+  last_name: string;
   email: string;
   role: string;
   phone: string;
@@ -93,7 +94,7 @@ const UserDetail: React.FC = () => {
             <div className="grid w-full items-center gap-3">
               <Label htmlFor="userName">Name</Label>
               <strong className="text-sf-gray-500 font-medium">
-                {user.name}
+                {user.first_name + ' ' + user.last_name}
               </strong>
             </div>
             <div className="grid w-full items-center gap-3">

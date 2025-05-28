@@ -76,7 +76,7 @@ export function CustomersTable({ searchQuery, sortBy }: CustomersTableProps) {
         // Map API response to our Customer interface
         const mappedCustomers = response.data.rows.map(customer => ({
           id: customer.id.toString(),
-          companyName: customer.name,
+          companyName: customer.first_name + " " + customer.last_name,
           email: customer.email,
           phoneNumber: customer.phone,
           status: customer.status === true ? 'active' : 'inactive',

@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 interface Project {
-  id: number;
+  id: string;
   projectName: string;
   company: string;
   startDate: string;
@@ -80,11 +80,11 @@ function ProjectTable({ searchQuery, sortBy, statusFilter }: ProjectTableProps) 
       
       if (response.success) {
         const mappedProjects = response.data.rows.map(project => ({
-          id: Number(project.id),
+          id: project.id,
           projectName: project.name,
-          company: project.company?.name || '-',
+          company: project.company?.first_name + ' ' +  project.company?.last_name || '-',
           startDate: formatDate(project.start_date),
-          technician: project.technician?.name || '-',
+          technician: project.technician?.first_name + ' ' + project.technician?.last_name || '-',
           status: project.status || 'new',
         }));
         

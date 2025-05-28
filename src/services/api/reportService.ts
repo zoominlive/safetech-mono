@@ -8,7 +8,7 @@ interface ReportsResponse {
   data: {
     count: number;
     rows: Array<{
-      id: number,
+      id: string,
       name: string,
       created_at: string,
       completed_reports: number,
@@ -25,7 +25,7 @@ interface ReportTemplatesResponse {
   data: {
     count: number;
     rows: Array<{
-      id: number,
+      id: string,
       name: string,
       schema: any,
       created_at: string,
@@ -47,7 +47,7 @@ export interface ReportData {
 
 export interface ReportResponse {
   data: {
-    id: number,
+    id: string,
     name: string,
     created_at: string,
     updated_at: string,

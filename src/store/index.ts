@@ -5,7 +5,8 @@ import { BaseClient } from '@/lib/api/ApiClient'; // Import BaseClient
 // Types
 export interface User {
   id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   role: string;
   profile_picture: string;

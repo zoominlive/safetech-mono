@@ -28,22 +28,24 @@ import { useAuthStore } from "@/store";
 import { Combobox } from "@/components/Combobox";
 
 interface User {
-  id: number;
-  name: string;
+  id: string;
+  first_name: string;
+  last_name: string;
 }
 
 interface Customer {
-  id: number;
-  name: string;
+  id: string;
+  first_name: string;
+  last_name: string;
 }
 
 interface Report {
-  id: number;
+  id: string;
   name: string;
 }
 
 interface Location {
-  id: number;
+  id: string;
   name: string;
 }
 
@@ -59,19 +61,22 @@ const ProjectForm: React.FC = () => {
   const [initialValues, setInitialValues] = useState<ProjectData>({
     name: "",
     company: {
-      id: 1,
-      name: "",
+      id: "",
+      first_name: "",
+      last_name: "",
     },
     technician: {
-      id: 1,
-      name: ""
+      id: "",
+      first_name: "",
+      last_name: "",
     },
     pm: {
-      id: 1,
-      name: "",
+      id: "",
+      first_name: "",
+      last_name: "",
     },
     location: {
-      id: 1,
+      id: "",
       name: "",
     },
     site_name: "",
@@ -83,7 +88,7 @@ const ProjectForm: React.FC = () => {
     pm_id: "",
     report_template_id: "",
     reportTemplate: {
-      id: 1,
+      id: "",
       name: ""
     },
     technician_id: "",
@@ -105,7 +110,7 @@ const ProjectForm: React.FC = () => {
   const fetchCustomers = async (query: string) => {
     const res = await customerService.getAllCustomers(query, undefined, undefined, 10, 1);
     if (res.success) {
-      return res.data.rows.map((c: any) => ({ value: c.id, label: c.name }));
+      return res.data.rows.map((c: any) => ({ value: c.id, label: c.first_name + " " + c.last_name }));
     }
     return [];
   };
@@ -119,7 +124,7 @@ const ProjectForm: React.FC = () => {
   const fetchTechnicians = async (query: string) => {
     const res = await userService.getAllUsers(query, undefined, undefined, 10, 1);
     if (res.success) {
-      return res.data.rows.map((u: any) => ({ value: u.id, label: u.name }));
+      return res.data.rows.map((u: any) => ({ value: u.id, label: u.first_name + " " + u.last_name }));
     }
     return [];
   };
@@ -133,7 +138,8 @@ const ProjectForm: React.FC = () => {
         if (usersResponse.success) {
           setTechnicians(usersResponse.data.rows.map(user => ({
             id: user.id,
-            name: user.name
+            first_name: user.first_name,
+            last_name: user.last_name
           })));
         }
 
@@ -142,7 +148,8 @@ const ProjectForm: React.FC = () => {
         if (customersResponse.success) {
           setCustomers(customersResponse.data.rows.map(customer => ({
             id: customer.id, 
-            name: customer.name
+            first_name: customer.first_name,
+            last_name: customer.last_name
           })));
         }
 
@@ -177,15 +184,18 @@ const ProjectForm: React.FC = () => {
               name: projectDetails.name,
               company: {
                 id: projectDetails.company.id,
-                name: projectDetails.company.name,
+                first_name: projectDetails.company.first_name,
+                last_name: projectDetails.company.last_name,
               },
               technician: {
                 id: projectDetails.technician.id,
-                name: projectDetails.technician.name,
+                first_name: projectDetails.technician.first_name,
+                last_name: projectDetails.technician.last_name,
               },
               pm: {
                 id: projectDetails.pm.id,
-                name: projectDetails.pm.name,
+                first_name: projectDetails.pm.first_name,
+                last_name: projectDetails.pm.last_name,
               },
               reportTemplate: {
                 id: projectDetails.reportTemplate.id,
@@ -231,8 +241,9 @@ const ProjectForm: React.FC = () => {
       if (user && user.role && user.role.toLowerCase() === "project manager") {
         values.pm_id = user.id;
         values.pm = {
-          id: parseInt(user.id),
-          name: user.name,
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
         }
       } else {
         values.pm_id = "1"; // fallback or default

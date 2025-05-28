@@ -29,7 +29,8 @@ interface UserFormProps {
 
 // Define the validation schema
 const userSchema = Yup.object({
-  name: Yup.string().required("Name is required"),
+  first_name: Yup.string().required("First name is required"),
+  last_name: Yup.string().required("Last name is required"),
   email: Yup.string().email("Invalid email format").required("Email is required"),
   phone: Yup.string(),
   role: Yup.string().required("Role is required"),
@@ -51,7 +52,8 @@ function UserForm({ onCancel }: UserFormProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
   const [initialValues, setInitialValues] = useState({
-    name: "",
+    first_name: "",
+    last_name: "",
     email: "",
     phone: "",
     role: "technician",
@@ -73,7 +75,8 @@ function UserForm({ onCancel }: UserFormProps) {
             console.log("userData", userData.role.toLowerCase());
             
             setInitialValues({
-              name: userData.name || "",
+              first_name: userData.first_name || "",
+              last_name: userData.last_name || "",
               email: userData.email || "",
               phone: userData.phone || "",
               role: userData.role.toLowerCase(),
@@ -177,7 +180,8 @@ function UserForm({ onCancel }: UserFormProps) {
       setIsLoading(true);
       
       const userData = {
-        name: values.name,
+        first_name: values.first_name,
+        last_name: values.last_name,
         email: values.email,
         phone: values.phone,
         role: values.role,
@@ -259,7 +263,7 @@ function UserForm({ onCancel }: UserFormProps) {
                   <div className="flex items-center space-x-4">
                     <Avatar className="h-24 w-24">
                       <AvatarImage src={imagePreview || values.profile_picture} />
-                      <AvatarFallback>{values.name?.charAt(0) || "U"}</AvatarFallback>
+                      <AvatarFallback>{values.first_name?.charAt(0) || "U"}</AvatarFallback>
                     </Avatar>
                     <div>
                       <Label htmlFor="profile-picture" className="cursor-pointer">
@@ -284,17 +288,34 @@ function UserForm({ onCancel }: UserFormProps) {
                 </div>
                 
                 <div className="grid w-full items-center gap-3">
-                  <Label htmlFor="name">Name *</Label>
+                  <Label htmlFor="first_name">First Name *</Label>
                   <Field
                     as={Input}
-                    id="name"
-                    name="name"
+                    id="first_name"
+                    name="first_name"
                     type="text"
-                    placeholder="Full name"
+                    placeholder="First name"
                     className="py-7.5"
                   />
                   <ErrorMessage
-                    name="name"
+                    name="first_name"
+                    component="div"
+                    className="text-red-500 text-sm"
+                  />
+                </div>
+
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="last_name">Last Name *</Label>
+                  <Field
+                    as={Input}
+                    id="last_name"
+                    name="last_name"
+                    type="text"
+                    placeholder="Last name"
+                    className="py-7.5"
+                  />
+                  <ErrorMessage
+                    name="last_name"
                     component="div"
                     className="text-red-500 text-sm"
                   />

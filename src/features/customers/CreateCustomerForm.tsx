@@ -29,7 +29,8 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [initialValues, setInitialValues] = useState<CustomerData>({
-    name: "",
+    first_name: "",
+    last_name: "",
     email: "",
     phone: "",
     status: true,
@@ -37,7 +38,8 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
 
   // Define validation schema using Yup
   const validationSchema = Yup.object({
-    name: Yup.string().required("Customer name is required"),
+    first_name: Yup.string().required("First name is required"),
+    last_name: Yup.string().required("Last name is required"),
     email: Yup.string().email("Invalid email format").required("Email is required"),
     phone: Yup.string(),
   });
@@ -52,7 +54,8 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
           
           if (response.success) {
             setInitialValues({
-              name: response.data.name,
+              first_name: response.data.first_name || "",
+              last_name: response.data.last_name || "",
               email: response.data.email,
               phone: response.data.phone,
               status: response.data.status,
@@ -138,19 +141,35 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
           <Card>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-14">
               <div className="grid w-full items-center gap-3">
-                <Label htmlFor="name">Customer Name</Label>
+                <Label htmlFor="first_name">First Name</Label>
                 <Input
                   type="text"
-                  id="name"
-                  name="name"
-                  placeholder="Company name"
+                  id="first_name"
+                  name="first_name"
+                  placeholder="First name"
                   className="py-7.5"
-                  value={values.name}
+                  value={values.first_name}
                   onChange={handleChange}
                   onBlur={handleBlur}
                 />
-                {errors.name && touched.name && (
-                  <div className="text-red-500 text-sm">{errors.name}</div>
+                {errors.first_name && touched.first_name && (
+                  <div className="text-red-500 text-sm">{errors.first_name}</div>
+                )}
+              </div>
+              <div className="grid w-full items-center gap-3">
+                <Label htmlFor="last_name">Last Name</Label>
+                <Input
+                  type="text"
+                  id="last_name"
+                  name="last_name"
+                  placeholder="Last name"
+                  className="py-7.5"
+                  value={values.last_name}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+                {errors.last_name && touched.last_name && (
+                  <div className="text-red-500 text-sm">{errors.last_name}</div>
                 )}
               </div>
               <div className="grid w-full items-center gap-3">

@@ -28,7 +28,7 @@ interface UploadedData {
 }
 
 interface ReportDetails {
-  id: number;
+  id: string;
   name: string;
   created_at: string;
   site_contact_name: string;

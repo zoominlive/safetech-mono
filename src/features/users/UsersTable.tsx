@@ -19,7 +19,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface User {
   id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   role: string;
   status: string;
@@ -48,14 +49,14 @@ function UsersTable({ searchQuery, sortBy }: UsersTableProps) {
   const columns: Column<User>[] = [
     {
       header: "User",
-      accessorKey: "name",
+      accessorKey: "first_name",
       cell: (user) => (
         <div className="flex items-center space-x-3">
           <Avatar className="h-8 w-8">
             <AvatarImage src={user.profile_picture} />
-            <AvatarFallback>{user.name?.charAt(0) || "U"}</AvatarFallback>
+            <AvatarFallback>{user.first_name?.charAt(0) + '' + user.last_name?.charAt(0) || "U"}</AvatarFallback>
           </Avatar>
-          <span>{user.name}</span>
+          <span>{user.first_name + ' ' + user.last_name}</span>
         </div>
       ),
     },
@@ -88,7 +89,8 @@ function UsersTable({ searchQuery, sortBy }: UsersTableProps) {
         // Map API response to our User interface
         const mappedUsers = response.data.rows.map(user => ({
           id: user.id.toString(),
-          name: user.name,
+          first_name: user.first_name,
+          last_name: user.last_name,
           email: user.email,
           role: user.role || 'user',
           status: user.deactivated_user ? 'inactive' : 'active',
@@ -202,7 +204,7 @@ function UsersTable({ searchQuery, sortBy }: UsersTableProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete {userToDelete?.name}'s account and remove their data from our servers.
+              This will permanently delete {userToDelete?.first_name}'s account and remove their data from our servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

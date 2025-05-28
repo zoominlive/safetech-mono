@@ -10,7 +10,8 @@ interface LoginRequest {
 interface LoginResponse {
   user: {
     id: string;
-    name: string;
+    first_name: string;
+    last_name: string;
     email: string;
     role: string;
   };

@@ -29,7 +29,7 @@ import { toast } from "@/components/ui/use-toast";
 import { TableSkeleton } from "@/components/ui/skeletons/TableSkeleton";
 
 interface Report {
-  id: number;
+  id: string;
   name: string;
   created_at: string;
   completed_reports: number;
@@ -82,7 +82,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({ searchQuery, sortBy }) => {
     }
   };
 
-  const handleToggleStatus = async (id: number, currentStatus: boolean) => {
+  const handleToggleStatus = async (id: string, currentStatus: boolean) => {
     try {
       const response = await reportService.toggleReportStatus(
         id.toString(),

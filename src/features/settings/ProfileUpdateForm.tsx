@@ -83,7 +83,7 @@ const ProfileUpdateForm = () => {
     }
   };
 
-  const handleSubmit = async (values: { name: string; email: string }) => {
+  const handleSubmit = async (values: { first_name: string; last_name: string; email: string }) => {
     try {
       setIsLoading(true);
       if (!user?.id) {
@@ -152,7 +152,7 @@ const ProfileUpdateForm = () => {
         <div className="flex items-center space-x-4">
           <Avatar className="h-24 w-24">
             <AvatarImage src={imagePreview ?? user?.profile_picture ?? undefined} />
-            <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+            <AvatarFallback>{user?.first_name?.charAt(0) + '' + user?.last_name?.charAt(0) || "U"}</AvatarFallback>
           </Avatar>
           <div>
             <Label htmlFor="profile-picture" className="cursor-pointer">
@@ -192,7 +192,8 @@ const ProfileUpdateForm = () => {
       
       <Formik
         initialValues={{
-          name: user?.name || "",
+          first_name: user?.first_name || "",
+          last_name: user?.last_name || "",
           email: user?.email || "",
           phone: user?.phone || "",
         }}
@@ -203,18 +204,36 @@ const ProfileUpdateForm = () => {
         {({ errors, touched }) => (
           <Form className="space-y-6">
             <div className="grid w-full items-center gap-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="first_name">First Name</Label>
               <Field
                 as={Input}
-                id="name"
-                name="name"
-                placeholder="Your name"
+                id="first_name"
+                name="first_name"
+                placeholder="Your first name"
                 className={`py-6 ${
-                  errors.name && touched.name ? "border-red-500" : ""
+                  errors.first_name && touched.first_name ? "border-red-500" : ""
                 }`}
               />
               <ErrorMessage
-                name="name"
+                name="first_name"
+                component="div"
+                className="text-red-500 text-sm"
+              />
+            </div>
+
+            <div className="grid w-full items-center gap-2">
+              <Label htmlFor="last_name">Last Name</Label>
+              <Field
+                as={Input}
+                id="last_name"
+                name="last_name"
+                placeholder="Your last name"
+                className={`py-6 ${
+                  errors.last_name && touched.last_name ? "border-red-500" : ""
+                }`}
+              />
+              <ErrorMessage
+                name="last_name"
                 component="div"
                 className="text-red-500 text-sm"
               />

@@ -16,7 +16,7 @@ function Sidebar({ onCloseMobileMenu, expanded, onSetExpanded }: SidebarProps) {
       className={cn("border-r border-sf-gray-400 h-screen bg-white w-full")}
     >
       <div className="border-b py-1 relative">
-        <Logo />
+        <Logo expanded={expanded} />
         <Button
           variant="outline"
           size="icon"

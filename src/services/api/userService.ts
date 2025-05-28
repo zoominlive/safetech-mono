@@ -6,8 +6,9 @@ interface UsersResponse {
   data: {
     count: number,
     rows: Array<{
-      id: number,
-      name: string,
+      id: string,
+      first_name: string,
+      last_name: string,
       profile_picture: string,
       role: string,
       email: string,
@@ -29,8 +30,9 @@ interface UsersResponse {
 
 interface UserResponse {
   data: {
-    id: number,
-    name: string,
+    id: string,
+    first_name: string,
+    last_name: string,
     profile_picture: string,
     role: string,
     email: string,
@@ -50,7 +52,8 @@ interface UserResponse {
 }
 
 export interface UpdateProfileRequest {
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
 }
 

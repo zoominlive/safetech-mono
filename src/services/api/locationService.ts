@@ -5,7 +5,7 @@ interface LocationsResponse {
   count: number;
   success: boolean;
   data: Array<{
-    id: number,
+    id: string,
     name: string,
     active: boolean,
     created_at: string,
@@ -22,7 +22,7 @@ export interface LocationData {
 export interface LocationResponse {
   success: boolean;
   data: {
-    id: number,
+    id: string,
     name: string,
     active: boolean,
     created_at: string,

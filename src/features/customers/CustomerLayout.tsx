@@ -76,7 +76,7 @@ function CustomerLayout() {
       const response = await customerService.getCustomerById(id);
 
       if (response.success) {
-        const customerName = response.data.name;
+        const customerName = response.data.first_name + " " + response.data.last_name;
         // Add companyName to each project
         const projectsWithCompany =
           response.data.projects?.map((project: any) => ({

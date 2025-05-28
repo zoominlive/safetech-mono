@@ -8,8 +8,9 @@ interface CustomersResponse {
   data: {
     count: number
     rows: Array<{
-      id: number,
-      name: string,
+      id: string,
+      first_name: string,
+      last_name: string,
       email: string,
       phone: string,
       status: boolean,
@@ -21,7 +22,8 @@ interface CustomersResponse {
 } 
 
 export interface CustomerData {
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   phone: string;
   status: boolean;
@@ -32,12 +34,13 @@ export interface CustomerResponse {
   message: string;
   success: boolean;
   data: {
-    id: number,
-    name: string,
+    id: string,
+    first_name: string,
+    last_name: string,
     email: string,
     phone: string,
     projects: Array<{
-      id: number,
+      id: string,
       name: string,
       start_date: string,
       end_date: string | null,

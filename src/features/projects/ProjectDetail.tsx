@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import BackButton from "@/components/BackButton";
 
 interface ProjectDetails {
-  id: number;
+  id: string;
   name: string;
   site_name: string;
   site_contact_name: string;
@@ -27,15 +27,17 @@ interface ProjectDetails {
   };
   pm_id: string;
   technician: {
-    name: string;
+    first_name: string;
+    last_name: string;
   };
   company: {
-    name: string;
+    first_name: string;
+    last_name: string;
   };
   start_date: string;
   // Report details
   reports: Array<{
-    id: number;
+    id: string;
     name: string;
     date_of_assessment: string;
     date_of_loss: string;
@@ -151,7 +153,7 @@ const ProjectDetail: React.FC = () => {
             <div className="grid w-full items-center gap-3">
               <Label htmlFor="customerName">Customer</Label>
               <strong className="text-sf-gray-500 font-medium">
-                {project.company?.name || '-'}
+                {project.company?.first_name + ' ' + project.company?.last_name || '-'}
               </strong>
             </div>
             <div className="grid w-full items-center gap-3">
@@ -174,7 +176,7 @@ const ProjectDetail: React.FC = () => {
             </div>
             <div className="grid w-full items-center gap-3">
               <Label htmlFor="technician">Technician</Label>
-              <p className="text-sf-gray-500 font-normal">{project.technician?.name || '-'}</p>
+              <p className="text-sf-gray-500 font-normal">{project.technician?.first_name + ' ' + project.technician?.last_name || '-'}</p>
             </div>
             <div className="grid w-full items-center gap-3">
               <Label htmlFor="startDate">Start Date</Label>

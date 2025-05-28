@@ -8,7 +8,7 @@ interface ProjectsResponse {
   data: {
     count: number
     rows: Array<{
-      id: number,
+      id: string,
       name: string,
       site_name: string,
       site_email: string,
@@ -16,14 +16,17 @@ interface ProjectsResponse {
       location_id: string,
       pm_id: string,
       pm: {
-        name: string;
+        first_name: string;
+        last_name: string;
       }
       technician_id: string,
       technician: {
-        name: string;
+        first_name: string;
+        last_name: string;
       },
       company: {
-        name: string;
+        first_name: string;
+        last_name: string;
       },
       customer_id: string,
       start_date: string,
@@ -43,28 +46,31 @@ export interface ProjectData {
   status: string;
   location_id: string;
   location: {
-    id: number;
+    id: string;
     name: string;
   }
   report_template_id: string;
   reportTemplate: {
-    id: number;
+    id: string;
     name: string;
   },
   pm_id: string;
   pm: {
-    id: number;
-    name: string;
+    id: string;
+    first_name: string;
+    last_name: string;
   };
   technician_id: string;
   technician: {
-    id: number;
-    name: string;
+    id: string;
+    first_name: string;
+    last_name: string;
   },
   customer_id: string;
   company: {
-    id: number;
-    name: string;
+    id: string;
+    first_name: string;
+    last_name: string;
   }
   start_date: string;
 }
@@ -74,13 +80,13 @@ export interface ProjectResponse {
   message: string;
   success: boolean;
   data: {
-    id: number,
+    id: string,
     name: string,
     site_name: string,
     site_contact_name: string;
     site_contact_title: string;
     reportTemplate: {
-      id: number;
+      id: string;
       name: string;
     },
     report_template_id: string;
@@ -89,29 +95,32 @@ export interface ProjectResponse {
     location_id: string,
     report_id: string,
     report: {
-      id: number;
+      id: string;
       name: string;
     },
     pm_id: string,
     technician_id: string,
     technician: {
-      id: number;
-      name: string;
+      id: string;
+      first_name: string;
+      last_name: string;
     },
     pm: {
-      id: number;
-      name: string;
+      id: string;
+      first_name: string;
+      last_name: string;
     },
     company: {
-      id: number;
-      name: string;
+      id: string;
+      first_name: string;
+      last_name: string;
     },
     location: {
-      id: number;
+      id: string;
       name: string;
     },
     reports: Array<{
-    id: number;
+    id: string;
     name: string;
     date_of_assessment: string;
     date_of_loss: string;
