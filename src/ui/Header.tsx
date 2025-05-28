@@ -40,7 +40,7 @@ function Header() {
           <BellDot className="size-4" />
         </Button>
         <div className="flex items-center gap-2">
-          <span className="hidden md:inline">{user?.name}</span>
+          <span className="hidden md:inline">{user?.first_name + ' ' + user?.last_name}</span>
           <Avatar>
             <AvatarImage 
               src={getProfilePictureUrl()} 
@@ -53,7 +53,7 @@ function Header() {
               referrerPolicy="no-referrer"
               crossOrigin="anonymous"
             />
-            <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+            <AvatarFallback>{user?.first_name?.charAt(0) + '' + user?.last_name?.charAt(0) || "U"}</AvatarFallback>
           </Avatar>
         </div>
       </div>
