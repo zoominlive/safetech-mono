@@ -7,22 +7,22 @@ module.exports = {
     await queryInterface.createTable('reports', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.literal('(UUID())'),
       },
       name: {
         allowNull: true,
         type: Sequelize.STRING
       },
       project_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         references: { model: 'projects', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
       },
       report_template_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: false
       },
       assessment_due_to: {

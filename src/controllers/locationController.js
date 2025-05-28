@@ -143,3 +143,5 @@ exports.deleteLocation = async (req, res) => {
     });
   }
 };
+
+// When including customer in location responses, ensure to include first_name and last_name fields if needed for the frontend.

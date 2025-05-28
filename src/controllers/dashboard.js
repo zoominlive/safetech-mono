@@ -52,8 +52,8 @@ exports.getDashboardSummary = async (req, res, next) => {
         status: { [Op.in]: ['New', 'In Progress'] }
       },
       include: [
-        { model: Customer, as: 'company', attributes: ['name'] },
-        { model: User, as: 'technician', attributes: ['name'] }
+        { model: Customer, as: 'company', attributes: ['first_name', 'last_name'] },
+        { model: User, as: 'technician', attributes: ['first_name', 'last_name'] }
       ],
       order: [['start_date', 'DESC']]
     });
@@ -63,6 +63,10 @@ exports.getDashboardSummary = async (req, res, next) => {
         status: 'Completed',
         pm_id: { [Op.ne]: null }
       },
+      include: [
+        { model: Customer, as: 'company', attributes: ['first_name', 'last_name'] },
+        { model: User, as: 'technician', attributes: ['first_name', 'last_name'] }
+      ],
       order: [['updated_at', 'DESC']]
     });
 
@@ -79,14 +83,14 @@ exports.getDashboardSummary = async (req, res, next) => {
         },
         inProgress: inProgress.map(p => ({
           projectName: p.name,
-          company: p.company.name,
+          company: p.company.first_name + ' ' + p.company.last_name,
           startDate: p.start_date,
-          technician: `${p.technician?.name}`,
+          technician: `${p.technician?.first_name}`,
           status: p.status
         })),
         awaitingReview: awaitingReview.map(p => ({
           projectName: p.name,
-          company: p.Customer?.company_name,
+          company: p.company.first_name + ' ' + p.company.last_name,
           completedDate: p.updated_at
         }))
       }

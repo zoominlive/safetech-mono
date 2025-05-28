@@ -6,11 +6,15 @@ module.exports = {
     await queryInterface.createTable('customers', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.literal('(UUID())'),
       },
-      name: {
+      first_name: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      last_name: {
         type: Sequelize.STRING,
         allowNull: true
       },
@@ -40,9 +44,9 @@ module.exports = {
         allowNull: true,
       }
     });
-
     await queryInterface.addIndex('customers', ['email']);
-    await queryInterface.addIndex('customers', ['name']);
+    await queryInterface.addIndex('customers', ['first_name']);
+    await queryInterface.addIndex('customers', ['last_name']);
     await queryInterface.addIndex('customers', ['id']);
   },
 

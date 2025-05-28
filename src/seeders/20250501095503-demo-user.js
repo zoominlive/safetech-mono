@@ -1,4 +1,5 @@
 'use strict';
+const { v4: uuidv4 } = require('uuid');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -26,10 +27,10 @@ module.exports = {
     
     const roles = ['Admin', 'Project Manager', 'Technician'];
     
-    // Generate 50 unique user records with distributed roles
+    // Generate 50 unique user records with distributed roles and UUIDs
     const users = Array(50).fill().map((_, index) => {
       const name = generateRandomName();
-      // Distribute roles somewhat evenly but ensure more technicians
+      const [firstName, lastName] = name.split(' ');
       let role;
       if (index < 5) {
         role = 'Super Admin';
@@ -38,20 +39,21 @@ module.exports = {
       } else {
         role = 'Technician';
       }
-      
       return {
-        name: name,
+        id: uuidv4(),
+        first_name: firstName,
+        last_name: lastName,
         email: generateRandomEmail(name),
         role: role,
         phone: generateRandomPhone(),
-        deactivated_user: Math.random() > 0.9, // 10% chance of being deactivated
+        deactivated_user: Math.random() > 0.9,
         password: null,
-        is_verified: Math.random() > 0.2, // 80% chance of being verified
+        is_verified: Math.random() > 0.2,
         created_at: new Date(),
         updated_at: new Date(),
+        created_by: null // or set to another UUID if you want to simulate relationships
       };
     });
-    
     await queryInterface.bulkInsert('users', users);
   },
 

@@ -1,4 +1,5 @@
 'use strict';
+const { v4: uuidv4 } = require('uuid');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -14,7 +15,7 @@ module.exports = {
       
       return `${reportType} - ${location} Property`;
     };
-    
+
     const generateRandomAnswers = () => {
       const questionCount = Math.floor(Math.random() * 5) + 5; // 5-10 questions
       const answers = {};
@@ -39,20 +40,25 @@ module.exports = {
     
     // Get counts of available records to reference
     const [projects] = await queryInterface.sequelize.query('SELECT COUNT(id) as count FROM projects;');
+    const [projectIds] = await queryInterface.sequelize.query('SELECT id FROM projects;');
     const [reportTemplates] = await queryInterface.sequelize.query('SELECT COUNT(id) as count FROM report_templates;');
+    const [report_template_ids] = await queryInterface.sequelize.query('SELECT id FROM report_templates;');
     
     const projectCount = projects[0]?.count || 100; // Default to 100 if query fails
     const templateCount = reportTemplates[0]?.count || 10; // Default to 10 if query fails
-    
+    const projectIDs = projectIds.map(t => t.id);
+    const reportTemplateIds = report_template_ids.map(t => t.id);
+
     // Generate 80 unique report records
     const reports = Array(80).fill().map(() => {
       const lossDate = new Date(new Date().setDate(new Date().getDate() - Math.floor(Math.random() * 90)));
       const assessmentDate = new Date(new Date().setDate(lossDate.getDate() + Math.floor(Math.random() * 14)));
       
       return {
+        id: uuidv4(),
         name: generateRandomReportName(),
-        project_id: Math.floor(Math.random() * projectCount) + 1,
-        report_template_id: Math.floor(Math.random() * templateCount) + 1,
+        project_id: projectIDs[Math.floor(Math.random() * projectIDs.length)],
+        report_template_id: reportTemplateIds[Math.floor(Math.random() * reportTemplateIds.length)],
         assessment_due_to: ['Water Damage', 'Fire Damage', 'Mold', 'Storm Damage', 'Structural Issue'][Math.floor(Math.random() * 5)],
         date_of_loss: lossDate,
         date_of_assessment: assessmentDate,

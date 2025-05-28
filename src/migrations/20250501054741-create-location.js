@@ -6,13 +6,40 @@ module.exports = {
     await queryInterface.createTable('locations', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.literal('(UUID())'),
       },
       name: {
         type: Sequelize.STRING,
         allowNull: true
+      },
+      address_line_1: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      address_line_2: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      city: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      province: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      postal_code: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      customer_id: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: { model: 'customers', key: 'id' },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
       },
       active: { 
         type: Sequelize.BOOLEAN, 

@@ -2,13 +2,41 @@ module.exports = (sequelize, DataTypes) => {
   const Location = sequelize.define('Location', {
     id: {
       allowNull: false,
-      autoIncrement: true,
       primaryKey: true,
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
     },
     name: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    address_line_1: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    address_line_2: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    city: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    province: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    postal_code: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    customer_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: 'customers',
+        key: 'id',
+      },
     },
     active: { 
       type: DataTypes.BOOLEAN, 
@@ -39,7 +67,8 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   Location.associate = models => {
-    Location.hasMany(models.Project, { foreignKey: 'pm_id', as: 'managedProjects' });
+    Location.belongsTo(models.Customer, { foreignKey: 'customer_id', as: 'customer' });
+    Location.hasMany(models.Project, { foreignKey: 'location_id', as: 'projects' });
   };
 
   return Location;

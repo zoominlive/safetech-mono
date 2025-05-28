@@ -6,9 +6,9 @@ module.exports = {
     await queryInterface.createTable('projects', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.literal('(UUID())'),
       },
       name: {
         allowNull: true,
@@ -35,29 +35,29 @@ module.exports = {
         type: Sequelize.STRING
       },
       report_template_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         allowNull: false
       },
       location_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         references: { model: 'locations', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
       },
       pm_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         references: { model: 'users', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
       },
       technician_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         references: { model: 'users', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
       },
       customer_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
         references: { model: 'customers', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',

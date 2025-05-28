@@ -1,4 +1,5 @@
 'use strict';
+const { v4: uuidv4 } = require('uuid');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -47,7 +48,7 @@ module.exports = {
     
     // Get available records to reference instead of just counts
     const [customers] = await queryInterface.sequelize.query('SELECT id FROM customers;');
-    const [locations] = await queryInterface.sequelize.query('SELECT id FROM locations;');
+    const [locations] = await queryInterface.sequelize.query('SELECT id, customer_id FROM locations;');
     const [reportTemplates] = await queryInterface.sequelize.query('SELECT id FROM report_templates;');
     const [pms] = await queryInterface.sequelize.query("SELECT id FROM users WHERE role = 'Project Manager';");
     const [technicians] = await queryInterface.sequelize.query("SELECT id FROM users WHERE role = 'Technician';");
@@ -72,19 +73,20 @@ module.exports = {
     const projects = Array(projectCount).fill().map(() => {
       const siteName = generateRandomSiteName();
       const startDate = new Date(new Date().setDate(new Date().getDate() - Math.floor(Math.random() * 180)));
-      
+      const location = locations[Math.floor(Math.random() * locations.length)];
       return {
+        id: uuidv4(),
         name: generateRandomProjectName(),
         site_name: siteName,
         site_contact_name: generateRandomContactName(),
         site_contact_title: generateRandomContactTitle(),
         site_email: generateRandomEmail(siteName),
         status: statuses[Math.floor(Math.random() * statuses.length)],
-        location_id: locationIds[Math.floor(Math.random() * locationIds.length)],
+        location_id: location.id,
         report_template_id: templateIds[Math.floor(Math.random() * templateIds.length)],
         pm_id: pmIds[Math.floor(Math.random() * pmIds.length)],
         technician_id: technicianIds[Math.floor(Math.random() * technicianIds.length)],
-        customer_id: customerIds[Math.floor(Math.random() * customerIds.length)],
+        customer_id: location.customer_id, // ensure project is linked to the customer of the location
         start_date: startDate,
         created_at: new Date(),
         updated_at: new Date(),

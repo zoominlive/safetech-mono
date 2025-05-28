@@ -28,12 +28,12 @@ const { updateUserWithLogs } = require('./user');
 
 exports.register = async (req, res, next) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { first_name, last_name, email, password, role } = req.body;
     const existing = await User.findOne({ where: { email } });
     if (existing) return res.status(BAD_REQUEST).json({ message: 'Email already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hashedPassword, role });
+    const user = await User.create({ first_name, last_name, email, password: hashedPassword, role });
 
     // Optionally send verification email here
 
@@ -106,7 +106,7 @@ exports.forgotPassword = async (req, res, next) => {
         to: isUserExists.email,
         subject: 'Reset Password Link',
         template_data: {
-          userName: isUserExists.name,
+          userName: isUserExists.first_name,
           resetPasswordLink: formatLink,
           supportEmail: 'abc@gmail.com',
         },
@@ -117,7 +117,7 @@ exports.forgotPassword = async (req, res, next) => {
         if (result?.res === 0) {
           logger.error(
             'Email not sent to user for password change: ' +
-              isUserExists.name +
+              isUserExists.first_name +
               '(' +
               isUserExists.id +
               ')' +
@@ -141,7 +141,7 @@ exports.forgotPassword = async (req, res, next) => {
       } catch (emailError) {
         logger.error(
           'Failed to send email to user: ' +
-            isUserExists.name +
+            isUserExists.first_name +
             '(' +
             isUserExists.id +
             ')' +
@@ -350,7 +350,7 @@ exports.verifyEmail = async (req, res, next) => {
             data: {
               user: {
                 id: isUserExists.id,
-                name: isUserExists.name,
+                first_name: isUserExists.first_name,
                 email: isUserExists.email,
                 role: isUserExists.role,
               },
@@ -400,7 +400,8 @@ exports.loginWithToken = async (req, res, next) => {
       let user = await User.findOne({
         attributes: [
           'id',
-          'name',
+          'first_name',
+          'last_name',
           'email',
           'role',
           'phone',

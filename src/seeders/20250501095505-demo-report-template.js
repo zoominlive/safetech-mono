@@ -1,10 +1,12 @@
 'use strict';
+const { v4: uuidv4 } = require('uuid');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
     const reportTemplates = [
       {
+        id: uuidv4(),
         name: 'Water Damage Assessment',
         schema: JSON.stringify({
           sections: [
@@ -36,6 +38,7 @@ module.exports = {
         updated_at: new Date()
       },
       {
+        id: uuidv4(),
         name: 'Fire Damage Assessment',
         schema: JSON.stringify({
           sections: [
@@ -66,6 +69,7 @@ module.exports = {
         updated_at: new Date()
       },
       {
+        id: uuidv4(),
         name: 'Mold Inspection',
         schema: JSON.stringify({
           sections: [
@@ -97,6 +101,7 @@ module.exports = {
         updated_at: new Date()
       },
       {
+        id: uuidv4(),
         name: 'Structural Assessment',
         schema: JSON.stringify({
           sections: [
@@ -128,6 +133,7 @@ module.exports = {
         updated_at: new Date()
       },
       {
+        id: uuidv4(),
         name: 'Insurance Claim Assessment',
         schema: JSON.stringify({
           sections: [
@@ -160,6 +166,7 @@ module.exports = {
         updated_at: new Date()
       },
       {
+        id: uuidv4(),
         name: 'Storm Damage Assessment',
         schema: JSON.stringify({
           sections: [
@@ -198,6 +205,7 @@ module.exports = {
         updated_at: new Date()
       },
       {
+        id: uuidv4(),
         name: 'Restoration Completion Report',
         schema: JSON.stringify({
           sections: [

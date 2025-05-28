@@ -85,7 +85,7 @@ exports.createUser = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
     const { user } = req;
-    const { name, email, phone, role, password } = req.body;
+    const { email, phone, role, password, first_name, last_name } = req.body;
 
     if (user.role == USER_ROLE.TECHNICIAN) {
       const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
@@ -94,12 +94,13 @@ exports.createUser = async (req, res, next) => {
 
     const userCreated = await User.create(
       {
-        name: name,
         email: email,
         phone: phone,
         role: role,
         password: password,
-        created_by: user.id
+        created_by: user.id,
+        first_name: first_name,
+        last_name: last_name
       },
       { transaction }
     );
@@ -130,10 +131,10 @@ exports.getAllUsers = async (req, res, next) => {
     if (req.query.sort)  {
       switch (req.query.sort) {
         case 'name_asc':
-          orderClause = [['name', 'ASC']];
+          orderClause = [['first_name', 'ASC']];
           break;
         case 'name_desc':
-          orderClause = [['name', 'DESC']];
+          orderClause = [['first_name', 'DESC']];
           break;
         case 'created_asc':
           orderClause = [['created_at', 'ASC']];
@@ -193,7 +194,7 @@ exports.updateUser = async (req, res, next) => {
   try {
     const { user } = req;
     const { id } = req.params;
-    const { name, email, phone, role, created_by } = req.body;
+    const { email, phone, role, created_by, first_name, last_name } = req.body;
 
     if (user.role == USER_ROLE.TECHNICIAN && user.id != id) {
       const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
@@ -201,7 +202,7 @@ exports.updateUser = async (req, res, next) => {
     }
 
     const updated = await User.update(
-      { name: name, email: email, phone: phone, role: role, created_by: created_by },
+      { email: email, phone: phone, role: role, created_by: created_by, first_name: first_name, last_name: last_name },
       {
         where: { id: id },
         returning: true,

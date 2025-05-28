@@ -2,20 +2,20 @@ module.exports = (sequelize, DataTypes) => {
   const Report = sequelize.define('Report', {
     id: {
       allowNull: false,
-      autoIncrement: true,
       primaryKey: true,
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
     },
     name: {
       allowNull: true,
       type: DataTypes.STRING
     },
     project_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false
     },
     report_template_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false
     },
     assessment_due_to: {

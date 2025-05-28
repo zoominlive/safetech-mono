@@ -2,9 +2,9 @@ module.exports = (sequelize, DataTypes) => {
   const Project = sequelize.define('Project', {
     id: {
       allowNull: false,
-      autoIncrement: true,
       primaryKey: true,
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
     },
     name: {
       allowNull: true,
@@ -31,23 +31,23 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING
     },
     report_template_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false
     },
     location_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false
     },
     pm_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false
     },
     technician_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false
     },
     customer_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false
     },
     start_date: {
@@ -84,7 +84,7 @@ module.exports = (sequelize, DataTypes) => {
     Project.belongsTo(models.Customer, { foreignKey: 'customer_id', as: 'company' });
     Project.belongsTo(models.Location, { foreignKey: 'location_id', as: 'location' });
     Project.belongsTo(models.ReportTemplate, { foreignKey: 'report_template_id', as: 'reportTemplate' });
-    Project.hasMany(models.Report, { foreignKey: 'project_id', as: 'reports' }); // Assuming Report has project_id
+    Project.hasMany(models.Report, { foreignKey: 'project_id', as: 'reports' });
   };
 
   return Project;

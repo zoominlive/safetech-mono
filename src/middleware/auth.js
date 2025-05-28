@@ -41,7 +41,8 @@ exports.authenticate = (req, res, next) => {
           let user = await User.findOne({
             attributes: [
               'id',
-              'name',
+              'first_name',
+              'last_name',
               'email',
               'role',
               'phone',

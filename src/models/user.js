@@ -2,11 +2,15 @@ module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('User', {
     id: {
       allowNull: false,
-      autoIncrement: true,
       primaryKey: true,
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
     },
-    name: {
+    first_name: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    last_name: {
       type: DataTypes.STRING,
       allowNull: true
     },
@@ -63,10 +67,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
     },
     created_by: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: true,
       references: {
-        model: 'users', // Assuming a self-referencing relation (created by another user)
+        model: 'users',
         key: 'id',
       },
     },

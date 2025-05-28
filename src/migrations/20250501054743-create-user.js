@@ -6,11 +6,15 @@ module.exports = {
     await queryInterface.createTable('users', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER,
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.literal('(UUID())'),
       },
-      name: {
+      first_name: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      last_name: {
         type: Sequelize.STRING,
         allowNull: true
       },
@@ -62,22 +66,22 @@ module.exports = {
         allowNull: false,
         defaultValue: Sequelize.NOW,
       },
-      created_by: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'users', // Assuming a self-referencing relation (created by another user)
-          key: 'id',
-        },
-      },
       deleted_at: {
         type: Sequelize.DATE,
         allowNull: true,
-      }
+      },
+      created_by: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: { model: 'users', key: 'id' },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL',
+      },
     });
 
     await queryInterface.addIndex('users', ['email']);
-    await queryInterface.addIndex('users', ['name']);
+    await queryInterface.addIndex('users', ['first_name']);
+    await queryInterface.addIndex('users', ['last_name']);
     await queryInterface.addIndex('users', ['id']);
   },
 

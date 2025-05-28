@@ -1,4 +1,5 @@
 'use strict';
+const { v4: uuidv4 } = require('uuid');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -35,11 +36,14 @@ module.exports = {
       return `${areaCode}-${prefix}-${lineNumber}`;
     };
     
-    // Generate 32 unique customer records
+    // Generate 32 unique customer records with UUIDs
     const customers = Array(32).fill().map(() => {
       const name = generateRandomName();
+      const [firstName, lastName] = name.split(' ');
       return {
-        name: name,
+        id: uuidv4(),
+        first_name: firstName,
+        last_name: lastName,
         email: generateRandomEmail(name),
         phone: generateRandomPhone(),
         status: Math.random() > 0.2, // 80% chance of being true
@@ -47,8 +51,9 @@ module.exports = {
         updated_at: new Date(),
       };
     });
-    
     await queryInterface.bulkInsert('customers', customers);
+    // Optionally return customers for use in other seeders
+    return customers;
   },
 
   async down (queryInterface, Sequelize) {
