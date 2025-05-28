@@ -5,7 +5,11 @@ import { BellDot, Settings } from "lucide-react";
 import { useLocation, useNavigate } from "react-router";
 
 // Backend base URL - should ideally come from environment variables
-const BACKEND_URL = "http://localhost:8000";
+console.log('window.location.hostname =>', window.location.hostname);
+
+const BACKEND_URL = window.location.hostname === 'localhost' ? 
+  'http://localhost:8000' : 
+  'http://15.156.127.37';
 
 function Header() {
   const navigate = useNavigate();
