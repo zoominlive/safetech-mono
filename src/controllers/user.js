@@ -85,7 +85,7 @@ exports.createUser = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
     const { user } = req;
-    const { email, phone, role, password, first_name, last_name } = req.body;
+    const { email, phone, role, password, first_name, last_name, profile_picture } = req.body;
 
     if (user.role == USER_ROLE.TECHNICIAN) {
       const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
@@ -100,7 +100,8 @@ exports.createUser = async (req, res, next) => {
         password: password,
         created_by: user.id,
         first_name: first_name,
-        last_name: last_name
+        last_name: last_name,
+        profile_picture: profile_picture,
       },
       { transaction }
     );
@@ -194,7 +195,7 @@ exports.updateUser = async (req, res, next) => {
   try {
     const { user } = req;
     const { id } = req.params;
-    const { email, phone, role, created_by, first_name, last_name } = req.body;
+    const { email, phone, role, created_by, first_name, last_name, profile_picture } = req.body;
 
     if (user.role == USER_ROLE.TECHNICIAN && user.id != id) {
       const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
@@ -202,7 +203,15 @@ exports.updateUser = async (req, res, next) => {
     }
 
     const updated = await User.update(
-      { email: email, phone: phone, role: role, created_by: created_by, first_name: first_name, last_name: last_name },
+      {
+        email: email,
+        phone: phone,
+        role: role,
+        created_by: created_by,
+        first_name: first_name,
+        last_name: last_name,
+        profile_picture: profile_picture,
+      },
       {
         where: { id: id },
         returning: true,
