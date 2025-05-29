@@ -1,6 +1,16 @@
 import * as React from "react";
-import { addDays, format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import {
+  addMonths,
+  format,
+  startOfToday,
+  subDays,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  subMonths,
+} from "date-fns";
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { DateRange } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
@@ -17,15 +27,76 @@ export interface DatePickerWithRangeProps
   onDateChange?: (dateRange: { from: Date | undefined; to: Date | undefined }) => void;
 }
 
+const quickRanges = [
+  {
+    label: "Today",
+    getRange: () => {
+      const today = startOfToday();
+      return { from: today, to: today };
+    },
+  },
+  {
+    label: "Yesterday",
+    getRange: () => {
+      const yest = subDays(startOfToday(), 1);
+      return { from: yest, to: yest };
+    },
+  },
+  {
+    label: "This week",
+    getRange: () => {
+      const today = startOfToday();
+      return { from: startOfWeek(today), to: endOfWeek(today) };
+    },
+  },
+  {
+    label: "Last week",
+    getRange: () => {
+      const today = startOfToday();
+      const lastWeekStart = startOfWeek(subDays(today, 7));
+      const lastWeekEnd = endOfWeek(subDays(today, 7));
+      return { from: lastWeekStart, to: lastWeekEnd };
+    },
+  },
+  {
+    label: "Last 7 Days",
+    getRange: () => {
+      const today = startOfToday();
+      return { from: subDays(today, 6), to: today };
+    },
+  },
+  {
+    label: "This Month",
+    getRange: () => {
+      const today = startOfToday();
+      return { from: startOfMonth(today), to: endOfMonth(today) };
+    },
+  },
+  {
+    label: "Last Month",
+    getRange: () => {
+      const today = startOfToday();
+      const lastMonth = subMonths(today, 1);
+      return { from: startOfMonth(lastMonth), to: endOfMonth(lastMonth) };
+    },
+  },
+  {
+    label: "Last 30 Days",
+    getRange: () => {
+      const today = startOfToday();
+      return { from: subDays(today, 29), to: today };
+    },
+  },
+];
+
 export function DatePickerWithRange({
   className,
   onDateChange,
   ...rest
 }: DatePickerWithRangeProps) {
-  const [date, setDate] = React.useState<DateRange | undefined>({
-    from: new Date(2022, 0, 20),
-    to: addDays(new Date(2022, 0, 20), 20),
-  });
+  const [date, setDate] = React.useState<DateRange | undefined>(undefined);
+  const [popoverOpen, setPopoverOpen] = React.useState(false);
+  const [currentMonth, setCurrentMonth] = React.useState<Date>(date?.from || startOfToday());
 
   const handleSelect = (range: DateRange | undefined) => {
     setDate(range);
@@ -34,9 +105,33 @@ export function DatePickerWithRange({
     }
   };
 
+  const handleQuickRange = (getRange: () => { from: Date; to: Date }) => {
+    const range = getRange();
+    setDate(range);
+    setCurrentMonth(range.from);
+    if (onDateChange) {
+      onDateChange(range);
+    }
+  };
+
+  const handleOk = () => {
+    setPopoverOpen(false);
+  };
+
+  // For showing current date
+  const today = startOfToday();
+
+  // For showing selection
+  let selectionLabel = "Pick a date";
+  if (date?.from && date?.to) {
+    selectionLabel = `${format(date.from, "LLL dd, y")} ~ ${format(date.to, "LLL dd, y")}`;
+  } else if (date?.from) {
+    selectionLabel = format(date.from, "LLL dd, y");
+  }
+
   return (
     <div className={cn("grid w-full md:w-[332px]", className)} {...rest}>
-      <Popover>
+      <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
         <PopoverTrigger asChild>
           <Button
             id="date"
@@ -46,35 +141,62 @@ export function DatePickerWithRange({
               !date && "text-muted-foreground"
             )}
           >
-            <span className="truncate">
-              {date?.from ? (
-                date.to ? (
-                  <>
-                    {format(date.from, "LLL dd, y")} ~{" "}
-                    {format(date.to, "LLL dd, y")}
-                  </>
-                ) : (
-                  format(date.from, "LLL dd, y")
-                )
-              ) : (
-                <span>Pick a date</span>
-              )}
-            </span>
+            <div className="flex flex-col w-full">
+              <span className="text-xs text-gray-400">Today: {format(today, "LLL dd, y")}</span>
+              <span className="truncate text-base font-medium text-gray-800">
+                {selectionLabel}
+              </span>
+            </div>
             <span className="ml-auto h-full min-w-[68px] bg-sf-prefix-btn flex items-center justify-center">
               <CalendarIcon className="" />
             </span>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            initialFocus
-            mode="range"
-            defaultMonth={date?.from}
-            selected={date}
-            onSelect={handleSelect}
-            numberOfMonths={2}
-            className="sm:max-w-none max-w-[300px] overflow-x-auto"
-          />
+          <div className="flex bg-white rounded-lg shadow-lg p-4 gap-4 min-w-[420px]">
+            <div className="flex flex-col items-center">
+              <div className="flex items-center justify-between w-full mb-2">
+                <Button variant="ghost" size="icon" onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}>
+                  <ChevronLeft />
+                </Button>
+                <span className="font-semibold text-lg">
+                  {format(currentMonth, "LLLL yyyy")}
+                </span>
+                <Button variant="ghost" size="icon" onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}>
+                  <ChevronRight />
+                </Button>
+              </div>
+              <Calendar
+                initialFocus
+                mode="range"
+                month={currentMonth}
+                onMonthChange={setCurrentMonth}
+                selected={date}
+                onSelect={handleSelect}
+                numberOfMonths={2}
+                className="sm:max-w-none max-w-[600px]"
+              />
+            </div>
+            <div className="flex flex-col gap-2 min-w-[150px]">
+              <span className="text-xs text-gray-400 mb-2">Quick Select</span>
+              {quickRanges.map((q) => (
+                <Button
+                  key={q.label}
+                  variant="ghost"
+                  className="justify-start w-full text-left px-2 py-1 text-[15px]"
+                  onClick={() => handleQuickRange(q.getRange)}
+                >
+                  {q.label}
+                </Button>
+              ))}
+              <Button
+                className="mt-2 bg-sf-gray-600 text-white w-full"
+                onClick={handleOk}
+              >
+                OK
+              </Button>
+            </div>
+          </div>
         </PopoverContent>
       </Popover>
     </div>

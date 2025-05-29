@@ -38,11 +38,15 @@ export const columns: ColumnDef<Project>[] = [
 function Projects() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
-  const [_dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined,
   });
-  
+
+  // Convert dateRange to ISO strings for filtering
+  const startDateFrom = dateRange.from ? dateRange.from.toISOString().split("T")[0] : undefined;
+  const startDateTo = dateRange.to ? dateRange.to.toISOString().split("T")[0] : undefined;
+
   return (
     <div className="space-y-4">
       <ProjectTableOperations 
@@ -50,7 +54,12 @@ function Projects() {
         onFilterStatus={setStatusFilter}
         onDateRangeChange={setDateRange}
       />
-      <ProjectTable searchQuery={searchQuery} statusFilter={statusFilter} />
+      <ProjectTable 
+        searchQuery={searchQuery} 
+        statusFilter={statusFilter} 
+        startDateFrom={startDateFrom}
+        startDateTo={startDateTo}
+      />
     </div>
   );
 }

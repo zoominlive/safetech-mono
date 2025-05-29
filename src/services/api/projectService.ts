@@ -137,13 +137,15 @@ export interface ProjectResponse {
 }
 
 export const projectService = {
-  getAllProjects: async (searchQuery?: string, sortBy?: string, statusFilter?: string, limit?: number, page?: number): Promise<ProjectsResponse> => {
+  getAllProjects: async (searchQuery?: string, sortBy?: string, statusFilter?: string, limit?: number, page?: number, startDateFrom?: string, startDateTo?: string): Promise<ProjectsResponse> => {
     const params = new URLSearchParams();
     if (searchQuery) params.append('search', searchQuery);
     if (sortBy) params.append('sortBy', sortBy);
     if (statusFilter) params.append('statusFilter', statusFilter);
     if (limit) params.append('limit', limit.toString()); // Convert number to string
     if (page) params.append('page', page.toString());    // Convert number to string
+    if (startDateFrom) params.append('start_date_from', startDateFrom);
+    if (startDateTo) params.append('start_date_to', startDateTo);
 
     const response: AxiosResponse<ProjectsResponse> = await BaseClient.get(
       `/projects/all?${params.toString()}`

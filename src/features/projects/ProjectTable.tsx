@@ -29,6 +29,8 @@ interface ProjectTableProps {
   searchQuery?: string;
   sortBy?: string;
   statusFilter?: string;
+  startDateFrom?: string;
+  startDateTo?: string;
 }
 
 const columns: Column<Project>[] = [
@@ -55,7 +57,7 @@ const columns: Column<Project>[] = [
   },
 ];
 
-function ProjectTable({ searchQuery, sortBy, statusFilter }: ProjectTableProps) {
+function ProjectTable({ searchQuery, sortBy, statusFilter, startDateFrom, startDateTo }: ProjectTableProps) {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -71,19 +73,28 @@ function ProjectTable({ searchQuery, sortBy, statusFilter }: ProjectTableProps) 
 
   useEffect(() => {
     fetchProjects();
-  }, [token, searchQuery, sortBy, statusFilter, currentPage, pageSize]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, searchQuery, sortBy, statusFilter, startDateFrom, startDateTo, currentPage, pageSize]);
 
   const fetchProjects = async () => {
     try {
       setIsLoading(true);
-      const response = await projectService.getAllProjects(searchQuery, sortBy, statusFilter, pageSize, currentPage);
+      const response = await projectService.getAllProjects(
+        searchQuery,
+        sortBy,
+        statusFilter,
+        pageSize,
+        currentPage,
+        startDateFrom,
+        startDateTo
+      );
       
       if (response.success) {
         const mappedProjects = response.data.rows.map(project => ({
           id: project.id,
           projectName: project.name,
           company: project.company?.first_name + ' ' +  project.company?.last_name || '-',
-          startDate: formatDate(project.start_date),
+          startDate: project.start_date,
           technician: project.technician?.first_name + ' ' + project.technician?.last_name || '-',
           status: project.status || 'new',
         }));
@@ -111,12 +122,6 @@ function ProjectTable({ searchQuery, sortBy, statusFilter }: ProjectTableProps) 
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
     setCurrentPage(1); // Reset to first page when changing page size
-  };
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
   const handleDetails = (project: Project) => {
