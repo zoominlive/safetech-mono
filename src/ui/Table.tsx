@@ -85,6 +85,7 @@ function Table<T>({
   onEdit,
   onDelete,
   onDetails,
+  onPageSizeChange,
 }: TableProps<T>) {
   // Calculate pagination values
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -184,6 +185,18 @@ function Table<T>({
                       Showing {startIndex}-{endIndex} of {totalCount}
                     </span>
                     <div className="flex items-center space-x-6">
+                      <div className="flex items-center space-x-2">
+                        <span>Rows per page:</span>
+                        <select
+                          className="border rounded px-2 py-1 text-sm focus:outline-none"
+                          value={pageSize}
+                          onChange={e => onPageSizeChange && onPageSizeChange(Number(e.target.value))}
+                        >
+                          {[5, 10, 20, 50, 100].map(size => (
+                            <option key={size} value={size}>{size}</option>
+                          ))}
+                        </select>
+                      </div>
                       <Button 
                         variant="outline" 
                         size="sm" 

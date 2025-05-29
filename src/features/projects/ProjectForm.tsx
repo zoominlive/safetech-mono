@@ -49,6 +49,11 @@ interface Location {
   name: string;
 }
 
+interface SelectOption {
+  value: string;
+  label: string;
+}
+
 const ProjectForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -107,12 +112,25 @@ const ProjectForm: React.FC = () => {
     site_email: Yup.string().email("Invalid email address"),
   });
 
-  const fetchCustomers = async (query: string) => {
+  const fetchCustomers = async (query: string, selectedId?: string) => {
     const res = await customerService.getAllCustomers(query, undefined, undefined, 10, 1);
+    let options:SelectOption[] = [];
     if (res.success) {
-      return res.data.rows.map((c: any) => ({ value: c.id, label: c.first_name + " " + c.last_name }));
+      options = res.data.rows.map((c: any) => ({ value: c.id, label: c.first_name + " " + c.last_name }));
     }
-    return [];
+    // If in edit mode and selectedId is not in options, fetch and append
+    if (selectedId && !options.some((opt) => opt.value === selectedId)) {
+      try {
+      const singleRes: { success: boolean; data: Customer } = await customerService.getCustomerById(selectedId);
+      if (singleRes.success) {
+        const c: Customer = singleRes.data;
+        options.push({ value: c.id, label: c.first_name + " " + c.last_name });
+      }
+      } catch (e: unknown) {
+      // ignore error
+      }
+    }
+    return options;
   };
   const fetchReports = async () => {
     const res = await reportService.getAllReportTemplates();
@@ -121,12 +139,25 @@ const ProjectForm: React.FC = () => {
     }
     return [];
   };
-  const fetchTechnicians = async (query: string) => {
-    const res = await userService.getAllUsers(query, undefined, undefined, 10, 1);
+  const fetchTechnicians = async (query: string, selectedId?: string) => {
+    const res = await userService.getAllUsers(query, undefined, undefined, 10, 1);    
+    let options: SelectOption[] = [];
     if (res.success) {
-      return res.data.rows.map((u: any) => ({ value: u.id, label: u.first_name + " " + u.last_name }));
+      options = res.data.rows.map((u: any) => ({ value: u.id, label: u.first_name + " " + u.last_name }));
     }
-    return [];
+    // If in edit mode and selectedId is not in options, fetch and append
+    if (selectedId && !options.some(opt => opt.value === selectedId)) {
+      try {
+        const singleRes = await userService.getUserById(selectedId);
+        if (singleRes.success) {
+          const u = singleRes.data;
+          options.push({ value: u.id, label: u.first_name + " " + u.last_name });
+        }
+      } catch (e) {
+        // ignore error
+      }
+    }
+    return options;
   };
 
   useEffect(() => {
@@ -312,7 +343,7 @@ const ProjectForm: React.FC = () => {
                       setFieldValue("customer_id", val);
                       if (option) setFieldValue("company", { id: option.value, name: option.label });
                     }}
-                    fetchOptions={fetchCustomers}
+                    fetchOptions={(q) => fetchCustomers(q, values.customer_id)}
                     placeholder="Select customer"
                   />
                   <div className="min-h-[20px] relative">
@@ -475,7 +506,7 @@ const ProjectForm: React.FC = () => {
                       setFieldValue("technician_id", val);
                       if (option) setFieldValue("technician", { id: option.value, name: option.label });
                     }}
-                    fetchOptions={fetchTechnicians}
+                    fetchOptions={(q) => fetchTechnicians(q, values.technician_id)}
                     placeholder="Select technician"
                   />
                   <div className="min-h-[20px] relative">
