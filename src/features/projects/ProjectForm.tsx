@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -302,9 +302,9 @@ const ProjectForm: React.FC = () => {
       >
         {({ values, errors, touched, handleChange, setFieldValue, isSubmitting }) => (
           <Form>
-            <Card>
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-14 h-[calc(100vh-350px)] overflow-y-auto pt-6">
-                <div className="grid w-full items-center gap-3">
+            <Card className="py-0">
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6 pt-6">
+                <div className="grid w-full items-center gap-3 relative">
                   <Label htmlFor="customer_id">Customer *</Label>
                   <Combobox
                     value={values.customer_id}
@@ -315,12 +315,14 @@ const ProjectForm: React.FC = () => {
                     fetchOptions={fetchCustomers}
                     placeholder="Select customer"
                   />
-                  {errors.customer_id && touched.customer_id && (
-                    <div className="text-red-500 text-sm">{errors.customer_id}</div>
-                  )}
+                  <div className="min-h-[20px] relative">
+                    {errors.customer_id && touched.customer_id && (
+                      <div className="text-red-500 text-sm absolute left-0 top-0">{errors.customer_id}</div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="grid w-full items-center gap-3">
+                <div className="grid w-full items-center gap-3 relative">
                   <Label htmlFor="name">Project Name *</Label>
                   <Input
                     type="text"
@@ -331,9 +333,11 @@ const ProjectForm: React.FC = () => {
                     value={values.name}
                     onChange={handleChange}
                   />
-                  {errors.name && touched.name && (
-                    <div className="text-red-500 text-sm">{errors.name}</div>
-                  )}
+                  <div className="min-h-[20px] relative">
+                    {errors.name && touched.name && (
+                      <div className="text-red-500 text-sm absolute left-0 top-0">{errors.name}</div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid w-full gap-3 col-span-2">
@@ -366,7 +370,7 @@ const ProjectForm: React.FC = () => {
                   </Select>
                 </div>
 
-                <div className="grid w-full items-center gap-3">
+                <div className="grid w-full items-center gap-3 relative">
                   <Label htmlFor="site_name">Site Name *</Label>
                   <Input
                     type="text"
@@ -377,12 +381,14 @@ const ProjectForm: React.FC = () => {
                     value={values.site_name}
                     onChange={handleChange}
                   />
-                  {errors.site_name && touched.site_name && (
-                    <div className="text-red-500 text-sm">{errors.site_name}</div>
-                  )}
+                  <div className="min-h-[20px] relative">
+                    {errors.site_name && touched.site_name && (
+                      <div className="text-red-500 text-sm absolute left-0 top-0">{errors.site_name}</div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="grid w-full items-center gap-3">
+                <div className="grid w-full items-center gap-3 relative">
                   <Label htmlFor="site_email">Site Email</Label>
                   <Input
                     type="email"
@@ -393,12 +399,14 @@ const ProjectForm: React.FC = () => {
                     value={values.site_email}
                     onChange={handleChange}
                   />
-                  {errors.site_email && touched.site_email && (
-                    <div className="text-red-500 text-sm">{errors.site_email}</div>
-                  )}
+                  <div className="min-h-[20px] relative">
+                    {errors.site_email && touched.site_email && (
+                      <div className="text-red-500 text-sm absolute left-0 top-0">{errors.site_email}</div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="grid w-full items-center gap-3">
+                <div className="grid w-full items-center gap-3 relative">
                   <Label htmlFor="site_contact_name">Contact Name</Label>
                   <Input
                     type="text"
@@ -409,12 +417,14 @@ const ProjectForm: React.FC = () => {
                     value={values.site_contact_name}
                     onChange={handleChange}
                   />
-                  {errors.site_contact_name && touched.site_contact_name && (
-                    <div className="text-red-500 text-sm">{errors.site_contact_name}</div>
-                  )}
+                  <div className="min-h-[20px] relative">
+                    {errors.site_contact_name && touched.site_contact_name && (
+                      <div className="text-red-500 text-sm absolute left-0 top-0">{errors.site_contact_name}</div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="grid w-full items-center gap-3">
+                <div className="grid w-full items-center gap-3 relative">
                   <Label htmlFor="site_contact_title">Contact Title</Label>
                   <Input
                     type="text"
@@ -425,9 +435,11 @@ const ProjectForm: React.FC = () => {
                     value={values.site_contact_title}
                     onChange={handleChange}
                   />
-                  {errors.site_contact_title && touched.site_contact_title && (
-                    <div className="text-red-500 text-sm">{errors.site_contact_title}</div>
-                  )}
+                  <div className="min-h-[20px] relative">
+                    {errors.site_contact_title && touched.site_contact_title && (
+                      <div className="text-red-500 text-sm absolute left-0 top-0">{errors.site_contact_title}</div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid w-full items-center gap-3">
@@ -452,11 +464,10 @@ const ProjectForm: React.FC = () => {
                         setFieldValue("start_date", date.toISOString().split('T')[0]);
                       }
                     }}
-                    className="py-7.5"
                   />
                 </div>
 
-                <div className="grid w-full items-center gap-3">
+                <div className="grid w-full items-center gap-3 relative">
                   <Label htmlFor="technician_id">Technician *</Label>
                   <Combobox
                     value={values.technician_id}
@@ -467,9 +478,11 @@ const ProjectForm: React.FC = () => {
                     fetchOptions={fetchTechnicians}
                     placeholder="Select technician"
                   />
-                  {errors.technician_id && touched.technician_id && (
-                    <div className="text-red-500 text-sm">{errors.technician_id}</div>
-                  )}
+                  <div className="min-h-[20px] relative">
+                    {errors.technician_id && touched.technician_id && (
+                      <div className="text-red-500 text-sm absolute left-0 top-0">{errors.technician_id}</div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid w-full items-center gap-3">
@@ -490,26 +503,28 @@ const ProjectForm: React.FC = () => {
                       </SelectGroup>
                     </SelectContent>
                   </Select>
+                  <div className="min-h-[20px] relative">
+                  </div>
                 </div>
               </CardContent>
+              <CardFooter className="flex justify-end space-x-6 pb-6">
+                <Button 
+                  type="submit"
+                  className="bg-sf-gray-600 text-white w-[150px] h-[48px]"
+                  disabled={isSubmitting || isLoading}
+                >
+                  {isSubmitting || isLoading ? "Saving..." : "Save"} <Bookmark />
+                </Button>
+                <Button 
+                  type="button"
+                  className="bg-sf-secondary text-black w-[150px] h-[48px]"
+                  onClick={handleCancel}
+                  disabled={isSubmitting || isLoading}
+                >
+                  Cancel <CircleX />
+                </Button>
+              </CardFooter>
             </Card>
-            <div className="text-end bg-white py-5 pe-8 space-x-6 absolute bottom-0 w-full left-0">
-              <Button 
-                type="submit"
-                className="bg-sf-gray-600 text-white w-[150px] h-[48px]"
-                disabled={isSubmitting || isLoading}
-              >
-                {isSubmitting || isLoading ? "Saving..." : "Save"} <Bookmark />
-              </Button>
-              <Button 
-                type="button"
-                className="bg-sf-secondary text-black w-[150px] h-[48px]"
-                onClick={handleCancel}
-                disabled={isSubmitting || isLoading}
-              >
-                Cancel <CircleX />
-              </Button>
-            </div>
           </Form>
         )}
       </Formik>

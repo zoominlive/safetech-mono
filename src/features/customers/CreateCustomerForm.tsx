@@ -157,7 +157,7 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
       {({ values, errors, touched, handleChange, handleBlur, setFieldValue, isSubmitting }) => (
         <Form>
           <Card>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-14">
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
               <div className="grid w-full items-center gap-3">
                 <Label htmlFor="first_name">First Name</Label>
                 <Input
@@ -170,9 +170,11 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
                   onChange={handleChange}
                   onBlur={handleBlur}
                 />
-                {errors.first_name && touched.first_name && (
-                  <div className="text-red-500 text-sm">{errors.first_name}</div>
-                )}
+                <div className="min-h-[20px] relative">
+                  {errors.first_name && touched.first_name && (
+                    <div className="text-red-500 text-sm absolute left-0 top-0">{errors.first_name}</div>
+                  )}
+                </div>
               </div>
               <div className="grid w-full items-center gap-3">
                 <Label htmlFor="last_name">Last Name</Label>
@@ -186,9 +188,11 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
                   onChange={handleChange}
                   onBlur={handleBlur}
                 />
-                {errors.last_name && touched.last_name && (
-                  <div className="text-red-500 text-sm">{errors.last_name}</div>
-                )}
+                <div className="min-h-[20px] relative">
+                  {errors.last_name && touched.last_name && (
+                    <div className="text-red-500 text-sm absolute left-0 top-0">{errors.last_name}</div>
+                  )}
+                </div>
               </div>
               <div className="grid w-full items-center gap-3">
                 <Label htmlFor="status">Status</Label>
@@ -207,6 +211,8 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
                     </SelectGroup>
                   </SelectContent>
                 </Select>
+                <div className="min-h-[20px] relative">
+                </div>
               </div>
               <div className="grid w-full items-center gap-3">
                 <Label htmlFor="email">Email</Label>
@@ -220,9 +226,11 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
                   onChange={handleChange}
                   onBlur={handleBlur}
                 />
-                {errors.email && touched.email && (
-                  <div className="text-red-500 text-sm">{errors.email}</div>
-                )}
+                <div className="min-h-[20px] relative">
+                  {errors.email && touched.email && (
+                    <div className="text-red-500 text-sm absolute left-0 top-0">{errors.email}</div>
+                  )}
+                </div>
               </div>
               <div className="grid w-full items-center gap-3">
                 <Label htmlFor="phone">Phone Number</Label>
@@ -236,9 +244,11 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
                   onChange={handleChange}
                   onBlur={handleBlur}
                 />
-                {errors.phone && touched.phone && (
-                  <div className="text-red-500 text-sm">{errors.phone}</div>
-                )}
+                <div className="min-h-[20px] relative">
+                  {errors.phone && touched.phone && (
+                    <div className="text-red-500 text-sm absolute left-0 top-0">{errors.phone}</div>
+                  )}
+                </div>
               </div>
             </CardContent>
             {/* Locations Section */}

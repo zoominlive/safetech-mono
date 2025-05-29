@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { dashboardService } from "@/services/api/dashboardService";
 import { TableSkeleton } from "@/components/ui/skeletons/TableSkeleton";
 import { StatsSkeleton } from "@/components/ui/skeletons/StatsSkeleton";
+import { formatDate } from "@/lib/utils";
 
 interface DashboardResponse {
   code: number;
@@ -90,6 +91,9 @@ function DashboardLayout() {
     {
       header: "Start Date",
       accessorKey: "startDate",
+      cell: (project) => {
+        return formatDate(project.startDate);
+      },
     },
     {
       header: "Technician",
@@ -114,6 +118,9 @@ function DashboardLayout() {
     {
       header: "Completed Date",
       accessorKey: "completedDate",
+      cell: (project) => {
+        return formatDate(project.completedDate);
+      },
     },
   ];
 

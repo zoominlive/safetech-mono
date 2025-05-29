@@ -41,7 +41,7 @@ function ProjectTableOperations({
           />
         </div>
         <Select onValueChange={(value) => onFilterStatus && onFilterStatus(value)}>
-          <SelectTrigger className="w-full lg:w-auto py-7.5 bg-safetech-gray">
+          <SelectTrigger className="w-full md:w-[332px] py-7.5 bg-safetech-gray">
             <SelectValue placeholder="Select project status" />
           </SelectTrigger>
           <SelectContent>

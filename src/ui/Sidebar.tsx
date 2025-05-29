@@ -20,7 +20,7 @@ function Sidebar({ onCloseMobileMenu, expanded, onSetExpanded }: SidebarProps) {
         <Button
           variant="outline"
           size="icon"
-          className="hidden md:flex absolute -right-4 -bottom-4 rounded-full"
+          className="hidden lg:flex absolute -right-4 -bottom-4 rounded-full"
           onClick={onSetExpanded}
         >
           {expanded ? <ChevronLeft /> : <ChevronRight />}

@@ -113,6 +113,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
     <div className={cn("relative", className)} ref={rootRef}>
       {label && <label className="block mb-1 text-sm font-medium">{label}</label>}
       <Input
+        className="py-7.5"
         value={selectedOption ? selectedOption.label : inputValue}
         onChange={(e) => {
           if (selectedOption && e.target.value === "") {

@@ -49,7 +49,7 @@ export function SearchInput({
           value={query}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          className="w-full pr-12 bg-safetech-gray h-[60px]"
+          className="w-full md:w-[332px] pr-12 bg-safetech-gray h-[60px]"
         />
         <Button
           type="submit"

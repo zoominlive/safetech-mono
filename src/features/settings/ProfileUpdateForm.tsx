@@ -10,11 +10,14 @@ import { toast } from "@/components/ui/use-toast";
 import { Loader2, Save, Upload } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { ImagePreviewModal } from "@/components/ImagePreviewModal";
+import { getProfilePictureUrl } from "@/utils/profilePicture";
 
 const ProfileUpdateForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [showImageModal, setShowImageModal] = useState(false);
   const { user, updateUserProfile } = useAuthStore();
 
   // Handle image file selection
@@ -30,6 +33,53 @@ const ProfileUpdateForm = () => {
       
       // Upload the image
       handleImageUpload(file);
+    }
+  };
+
+  // Remove profile picture handler
+  const handleRemoveProfilePicture = async (formikValues?: { first_name: string; last_name: string; email: string; phone: string }) => {
+    if (!user?.id) {
+      toast({
+        title: "Remove failed",
+        description: "User ID not found",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      setUploadingImage(true);
+      // Use Formik values if provided, else fallback to user values
+      const values = formikValues || {
+        first_name: user.first_name || "",
+        last_name: user.last_name || "",
+        email: user.email || "",
+        phone: user.phone || ""
+      };
+      // Call backend to remove profile picture (set to empty string)
+      const response = await userService.updateProfile(user.id, { ...values, profile_picture: "" });
+      if (response.success) {
+        updateUserProfile({ ...user, profile_picture: "" });
+        setImagePreview(null);
+        toast({
+          title: "Removed",
+          description: "Profile picture removed successfully",
+        });
+        setShowImageModal(false);
+      } else {
+        toast({
+          title: "Remove failed",
+          description: response.message || "Failed to remove profile picture",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Remove failed",
+        description: error?.data?.message || "An error occurred while removing the profile picture",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -83,7 +133,9 @@ const ProfileUpdateForm = () => {
     }
   };
 
-  const handleSubmit = async (values: { first_name: string; last_name: string; email: string }) => {
+  const handleSubmit = async (values: { first_name: string; last_name: string; email: string, phone: string }) => {
+    console.log('reached');
+    
     try {
       setIsLoading(true);
       if (!user?.id) {
@@ -150,8 +202,16 @@ const ProfileUpdateForm = () => {
       <div className="space-y-4 mb-8">
         <Label>Profile Picture</Label>
         <div className="flex items-center space-x-4">
-          <Avatar className="h-24 w-24">
-            <AvatarImage src={imagePreview ?? user?.profile_picture ?? undefined} />
+          <Avatar className="h-24 w-24 cursor-pointer" onClick={() => setShowImageModal(true)}>
+            <AvatarImage
+              src={getProfilePictureUrl({ imagePreview, profile_picture: user?.profile_picture })}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = "/user/avatar-sf.png";
+              }}
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
+            />
             <AvatarFallback>{user?.first_name?.charAt(0) + '' + user?.last_name?.charAt(0) || "U"}</AvatarFallback>
           </Avatar>
           <div>
@@ -201,98 +261,108 @@ const ProfileUpdateForm = () => {
         onSubmit={handleSubmit}
         enableReinitialize
       >
-        {({ errors, touched }) => (
-          <Form className="space-y-6">
-            <div className="grid w-full items-center gap-2">
-              <Label htmlFor="first_name">First Name</Label>
-              <Field
-                as={Input}
-                id="first_name"
-                name="first_name"
-                placeholder="Your first name"
-                className={`py-6 ${
-                  errors.first_name && touched.first_name ? "border-red-500" : ""
-                }`}
-              />
-              <ErrorMessage
-                name="first_name"
-                component="div"
-                className="text-red-500 text-sm"
-              />
-            </div>
+        {({ errors, touched, values }: { errors: Record<string, any>; touched: Record<string, any>; values: { first_name: string; last_name: string; email: string; phone: string } }) => (
+          <>
+            <Form className="space-y-6">
+              <div className="grid w-full items-center gap-2">
+                <Label htmlFor="first_name">First Name</Label>
+                <Field
+                  as={Input}
+                  id="first_name"
+                  name="first_name"
+                  placeholder="Your first name"
+                  className={`py-6 ${
+                    errors.first_name && touched.first_name ? "border-red-500" : ""
+                  }`}
+                />
+                <ErrorMessage
+                  name="first_name"
+                  component="div"
+                  className="text-red-500 text-sm"
+                />
+              </div>
 
-            <div className="grid w-full items-center gap-2">
-              <Label htmlFor="last_name">Last Name</Label>
-              <Field
-                as={Input}
-                id="last_name"
-                name="last_name"
-                placeholder="Your last name"
-                className={`py-6 ${
-                  errors.last_name && touched.last_name ? "border-red-500" : ""
-                }`}
-              />
-              <ErrorMessage
-                name="last_name"
-                component="div"
-                className="text-red-500 text-sm"
-              />
-            </div>
+              <div className="grid w-full items-center gap-2">
+                <Label htmlFor="last_name">Last Name</Label>
+                <Field
+                  as={Input}
+                  id="last_name"
+                  name="last_name"
+                  placeholder="Your last name"
+                  className={`py-6 ${
+                    errors.last_name && touched.last_name ? "border-red-500" : ""
+                  }`}
+                />
+                <ErrorMessage
+                  name="last_name"
+                  component="div"
+                  className="text-red-500 text-sm"
+                />
+              </div>
 
-            <div className="grid w-full items-center gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Field
-                as={Input}
-                id="email"
-                name="email"
-                type="email"
-                placeholder="your.email@example.com"
-                className={`py-6 ${
-                  errors.email && touched.email ? "border-red-500" : ""
-                }`}
-              />
-              <ErrorMessage
-                name="email"
-                component="div"
-                className="text-red-500 text-sm"
-              />
-            </div>
+              <div className="grid w-full items-center gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Field
+                  as={Input}
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="your.email@example.com"
+                  className={`py-6 ${
+                    errors.email && touched.email ? "border-red-500" : ""
+                  }`}
+                />
+                <ErrorMessage
+                  name="email"
+                  component="div"
+                  className="text-red-500 text-sm"
+                />
+              </div>
 
-            <div className="grid w-full items-center gap-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Field
-                as={Input}
-                id="phone"
-                name="phone"
-                type="phone"
-                placeholder="your.phone@example.com"
-                className={`py-6 ${
-                  errors.phone && touched.phone ? "border-red-500" : ""
-                }`}
-              />
-              <ErrorMessage
-                name="phone"
-                component="div"
-                className="text-red-500 text-sm"
-              />
-            </div>
+              <div className="grid w-full items-center gap-2">
+                <Label htmlFor="phone">Phone</Label>
+                <Field
+                  as={Input}
+                  id="phone"
+                  name="phone"
+                  type="phone"
+                  placeholder="your.phone@example.com"
+                  className={`py-6 ${
+                    errors.phone && touched.phone ? "border-red-500" : ""
+                  }`}
+                />
+                <ErrorMessage
+                  name="phone"
+                  component="div"
+                  className="text-red-500 text-sm"
+                />
+              </div>
 
-            <Button 
-              type="submit" 
-              className="bg-sf-gray-600 py-6" 
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" /> Save Changes
-                </>
-              )}
-            </Button>
-          </Form>
+              <Button 
+                type="submit" 
+                className="bg-sf-gray-600 py-6" 
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" /> Save Changes
+                  </>
+                )}
+              </Button>
+            </Form>
+            <ImagePreviewModal
+              open={showImageModal}
+              onOpenChange={setShowImageModal}
+              imagePreview={imagePreview}
+              profile_picture={user?.profile_picture}
+              uploadingImage={uploadingImage}
+              onRemove={() => handleRemoveProfilePicture(values)}
+            />
+          </>
         )}
       </Formik>
     </div>

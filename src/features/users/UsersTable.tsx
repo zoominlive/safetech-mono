@@ -32,6 +32,10 @@ interface UsersTableProps {
   sortBy?: string;
 }
 
+const BACKEND_URL = window.location.hostname === 'localhost' ? 
+  'http://localhost:8000/api/v1' : 
+  'http://15.156.127.37/api/v1';
+
 function UsersTable({ searchQuery, sortBy }: UsersTableProps) {
   const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
@@ -46,6 +50,15 @@ function UsersTable({ searchQuery, sortBy }: UsersTableProps) {
   const [pageSize, setPageSize] = useState<number>(10);
   const [totalCount, setTotalCount] = useState<number>(0);
 
+  
+  const getProfilePictureUrl = (user: any) => {
+    if (!user?.profile_picture) return "/user/avatar-sf.png";
+    if (user.profile_picture.startsWith('http')) return user.profile_picture;
+    console.log(`${BACKEND_URL}${user.profile_picture}`);
+    
+    return `${BACKEND_URL}${user.profile_picture}`;
+  };
+  
   const columns: Column<User>[] = [
     {
       header: "User",
@@ -53,7 +66,15 @@ function UsersTable({ searchQuery, sortBy }: UsersTableProps) {
       cell: (user) => (
         <div className="flex items-center space-x-3">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={user.profile_picture} />
+            <AvatarImage 
+              src={getProfilePictureUrl(user)} 
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = "/user/avatar-sf.png";
+              }}
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous" 
+            />
             <AvatarFallback>{user.first_name?.charAt(0) + '' + user.last_name?.charAt(0) || "U"}</AvatarFallback>
           </Avatar>
           <span>{user.first_name + ' ' + user.last_name}</span>

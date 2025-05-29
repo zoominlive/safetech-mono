@@ -111,7 +111,7 @@ function Table<T>({
                 </TableHead>
               ))}
               {hasActions && (
-                <TableHead className="font-bold text-lg">Actions</TableHead>
+                <TableHead className="font-bold text-lg text-center">Actions</TableHead>
               )}
             </TableRow>
           </TableHeader>
@@ -127,8 +127,8 @@ function Table<T>({
                     </TableCell>
                   ))}
                   {hasActions && (
-                    <TableCell>
-                      <div className="flex space-x-2">
+                    <TableCell className="text-center">
+                      <div className="flex justify-center space-x-2">
                         {onDetails && (
                           <Button 
                             variant="outline" 

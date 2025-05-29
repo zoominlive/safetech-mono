@@ -30,7 +30,7 @@ export function DatePicker({ date, setDate, className }: DatePickerProps) {
         wrapperClassName="w-full"
         onKeyDown={handleKeyDown}
         customInput={
-          <div className="w-full flex items-center justify-between border border-input rounded-md px-3 py-2 bg-background cursor-pointer">
+          <div className="w-full flex items-center justify-between border border-input rounded-md px-3 py-5 bg-background cursor-pointer">
             <span>{date ? format(date, "PPP") : <span>Pick a date</span>}</span>
             <Calendar className="ml-auto h-4 w-4 opacity-50" />
           </div>

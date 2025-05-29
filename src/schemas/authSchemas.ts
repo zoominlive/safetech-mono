@@ -30,8 +30,10 @@ export const changePasswordSchema = Yup.object({
 });
 
 export const profileUpdateSchema = Yup.object({
-  name: Yup.string()
-    .required('Name is required'),
+  first_name: Yup.string()
+    .required('First Name is required'),
+  last_name: Yup.string()
+    .required('Last Name is required'),
   email: Yup.string()
     .email('Please enter a valid email address')
     .required('Email is required'),
