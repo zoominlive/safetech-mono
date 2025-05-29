@@ -15,6 +15,7 @@ const {
 const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
 const { sequelize, Project, User, Customer, Location, Report, ReportTemplate } = require("../models");
+const { Op } = require("sequelize");
 
 exports.createProject = async (req, res, next) => {
   const transaction = await sequelize.transaction();
@@ -87,8 +88,23 @@ exports.getAllProjects = async (req, res, next) => {
       ...filters.filter,
       ...filters.search,
     };
+    // Filter by status
     if (req.query.statusFilter !== "all" && req.query.statusFilter !== undefined) {
       whereCondition.status = req.query.statusFilter;
+    }
+    // Filter by start_date (exact match or range)
+    if (req.query.start_date) {
+      whereCondition.start_date = req.query.start_date;
+    }
+    // Optionally, support start_date range filtering
+    if (req.query.start_date_from || req.query.start_date_to) {
+      whereCondition.start_date = {};
+      if (req.query.start_date_from) {
+        whereCondition.start_date[Op.gte] = req.query.start_date_from;
+      }
+      if (req.query.start_date_to) {
+        whereCondition.start_date[Op.lte] = req.query.start_date_to;
+      }
     }
     const options = {
       where: whereCondition,
