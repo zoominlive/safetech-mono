@@ -63,5 +63,10 @@ export const locationService = {
     console.log('response', response);
     
     return response.data;
+  },
+
+  getLocationsByCustomerId: async (customerId: string): Promise<LocationsResponse> => {
+    const response: AxiosResponse<LocationsResponse> = await BaseClient.get(`/locations/${customerId}`);
+    return response.data;
   }
 };

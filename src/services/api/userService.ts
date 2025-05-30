@@ -66,13 +66,14 @@ interface UpdateProfileResponse {
 }
 
 export const userService = {
-  getAllUsers: async (searchQuery?: string, sortBy?: string, filter?: string, limit?: number, page?: number): Promise<UsersResponse> => {
+  getAllUsers: async (searchQuery?: string, sortBy?: string, filter?: string, limit?: number, page?: number, role?: string): Promise<UsersResponse> => {
       const params = new URLSearchParams();
       if (searchQuery) params.append('search', searchQuery);
       if (sortBy) params.append('sort', sortBy);
       if (filter) params.append('filter', filter);
       if (limit) params.append('limit', limit.toString()); // Convert number to string
       if (page) params.append('page', page.toString());    // Convert number to string
+      if (role) params.append('role', role);
       
       const response: AxiosResponse<UsersResponse> = await BaseClient.get(
         `/users/all?${params.toString()}`

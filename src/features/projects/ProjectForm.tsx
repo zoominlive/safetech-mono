@@ -140,7 +140,7 @@ const ProjectForm: React.FC = () => {
     return [];
   };
   const fetchTechnicians = async (query: string, selectedId?: string) => {
-    const res = await userService.getAllUsers(query, undefined, undefined, 10, 1);    
+    const res = await userService.getAllUsers(query, undefined, undefined, 10, 1, "technician");    
     let options: SelectOption[] = [];
     if (res.success) {
       options = res.data.rows.map((u: any) => ({ value: u.id, label: u.first_name + " " + u.last_name }));
@@ -158,6 +158,32 @@ const ProjectForm: React.FC = () => {
       }
     }
     return options;
+  };
+
+  // Fetch locations by customer id
+  const fetchLocationsByCustomer = async (custId: string) => {
+    if (!custId) {
+      setLocations([]);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const res = await locationService.getLocationsByCustomerId(custId);
+      console.log("Locations Response::", res);
+      
+      if (res.success) {
+        setLocations(res.data.map((location: any) => ({
+          id: location.id,
+          name: location.name
+        })));
+      } else {
+        setLocations([]);
+      }
+    } catch (e) {
+      setLocations([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -194,12 +220,16 @@ const ProjectForm: React.FC = () => {
         }
 
         // Fetch locations
-        const locationsResponse = await locationService.getAllLocations();
-        if (locationsResponse.success) {
-          setLocations(locationsResponse.data.map(location => ({
-            id: location.id,
-            name: location.name
-          })));
+        if (id && initialValues.customer_id) {
+          await fetchLocationsByCustomer(initialValues.customer_id);
+        } else {
+          const locationsResponse = await locationService.getAllLocations();
+          if (locationsResponse.success) {
+            setLocations(locationsResponse.data.map(location => ({
+              id: location.id,
+              name: location.name
+            })));
+          }
         }
 
         // If editing, fetch project data
@@ -263,7 +293,7 @@ const ProjectForm: React.FC = () => {
     };
 
     fetchData();
-  }, [id]);
+  }, [id, initialValues.customer_id]);
 
   const handleSubmit = async (values: ProjectData, { setSubmitting }: FormikHelpers<ProjectData>) => {
     try {
@@ -339,9 +369,12 @@ const ProjectForm: React.FC = () => {
                   <Label htmlFor="customer_id">Customer *</Label>
                   <Combobox
                     value={values.customer_id}
-                    onChange={(val, option) => {
+                    onChange={async (val, option) => {
                       setFieldValue("customer_id", val);
                       if (option) setFieldValue("company", { id: option.value, name: option.label });
+                      await fetchLocationsByCustomer(val ? String(val) : "");
+                      setFieldValue("location_id", "");
+                      setFieldValue("location", { id: "", name: "" });
                     }}
                     fetchOptions={(q) => fetchCustomers(q, values.customer_id)}
                     placeholder="Select customer"
@@ -391,11 +424,20 @@ const ProjectForm: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        {locations.map((location) => (
-                          <SelectItem key={location.id} value={location.id.toString()}>
-                            {location.name}
-                          </SelectItem>
-                        ))}
+                        {locations.length === 0 && values.customer_id ? (
+                          <div className="text-center text-gray-500 py-2">
+                            {(() => {
+                              const selectedCustomer = _customers.find(c => c.id === values.customer_id);
+                              return `No Data Found for ${selectedCustomer ? selectedCustomer.first_name + ' ' + selectedCustomer.last_name : 'this customer'}`;
+                            })()}
+                          </div>
+                        ) : (
+                          locations.map((location) => (
+                            <SelectItem key={location.id} value={location.id.toString()}>
+                              {location.name}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
@@ -516,7 +558,7 @@ const ProjectForm: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid w-full items-center gap-3">
+                {/* <div className="grid w-full items-center gap-3">
                   <Label htmlFor="status">Status</Label>
                   <Select 
                     value={values.status.toLowerCase()} 
@@ -536,7 +578,7 @@ const ProjectForm: React.FC = () => {
                   </Select>
                   <div className="min-h-[20px] relative">
                   </div>
-                </div>
+                </div> */}
               </CardContent>
               <CardFooter className="flex justify-end space-x-6 pb-6">
                 <Button 

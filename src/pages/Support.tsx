@@ -11,7 +11,7 @@ const Support: React.FC = () => {
       <div className="bg-white rounded-lg shadow p-6 min-h-[200px] flex flex-col items-center justify-center">
         <p className="text-gray-500 mb-4">No support tickets yet.</p>
         <Button className="bg-sf-secondary-300 text-black w-[180px] h-[44px]">
-          <a href="mailto:support@safetech.com?subject=Support%20Request">
+          <a href="mailto:support@dastech.ca?subject=Support%20Request">
             Create New Ticket
           </a>
         </Button>
