@@ -102,6 +102,7 @@ exports.createUser = async (req, res, next) => {
         first_name: first_name,
         last_name: last_name,
         profile_picture: profile_picture,
+        created_by: user.id,
       },
       { transaction }
     );
