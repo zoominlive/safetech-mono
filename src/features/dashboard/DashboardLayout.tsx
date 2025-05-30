@@ -19,6 +19,7 @@ interface DashboardResponse {
       projectsOlderThan48Hrs: number;
     };
     inProgress: InProgressProject[];
+    newProjects: InProgressProject[];
     awaitingReview: AwaitingReviewProject[];
   };
 }
@@ -47,6 +48,7 @@ function DashboardLayout() {
     projectsOlderThan48Hrs: 0,
   });
   const [inProgressProjects, setInProgressProjects] = useState<InProgressProject[]>([]);
+  const [newProjects, setNewProjects] = useState<InProgressProject[]>([]);
   const [awaitingReviewProjects, setAwaitingReviewProjects] = useState<AwaitingReviewProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,6 +65,7 @@ function DashboardLayout() {
         if (dashboardData.success) {
           setOverview(dashboardData.data.overview);
           setInProgressProjects(dashboardData.data.inProgress || []);
+          setNewProjects(dashboardData.data.newProjects || []);
           setAwaitingReviewProjects(dashboardData.data.awaitingReview || []);
           setError(null);
         } else {
@@ -137,6 +140,9 @@ function DashboardLayout() {
       ) : (
         <>
           <Stats overview={overview} />
+          <div className="overflow-x-auto">
+            <Table columns={inProgressColumns} data={newProjects} title="New" />
+          </div>
           <div className="overflow-x-auto">
             <Table columns={inProgressColumns} data={inProgressProjects} title="In Progress" />
           </div>
