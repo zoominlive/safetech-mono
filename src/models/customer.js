@@ -22,6 +22,30 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true
     },
+    location_name: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    address_line_1: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    address_line_2: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    city: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    province: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    postal_code: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     status: {
       type: DataTypes.BOOLEAN,
       allowNull: true

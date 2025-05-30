@@ -28,7 +28,11 @@ module.exports = (sequelize, DataTypes) => {
     },
     status: {
       allowNull: true,
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
+      validate: {
+        isIn: [["New", "In Progress", "PM Review", "Complete"]],
+      },
+      // Only these values are allowed
     },
     report_template_id: {
       type: DataTypes.UUID,

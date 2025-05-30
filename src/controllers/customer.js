@@ -20,16 +20,28 @@ exports.createCustomer = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
     const { user } = req;
-    const { first_name, last_name, email, phone, status, locations } = req.body;
+    const { first_name, last_name, email, phone, status, location_name, address_line_1, address_line_2, city, province, postal_code, locations } = req.body;
     if (user.role == USER_ROLE.TECHNICIAN) {
       const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
       return ErrorHandler(ApiError, req, res, next);
     }
-    const customer = await Customer.create({ first_name, last_name, email, phone, status }, { transaction });
-    // Handle locations if provided
+    // Save head office address fields to Customer
+    const customer = await Customer.create({ first_name, last_name, email, phone, status, location_name, address_line_1, address_line_2, city, province, postal_code }, { transaction });
+    // Handle locations if provided (do not duplicate head office)
     let createdLocations = [];
     if (Array.isArray(locations)) {
       for (const loc of locations) {
+        // Optionally skip if location matches head office
+        if (
+          loc.name === location_name &&
+          loc.address_line_1 === address_line_1 &&
+          loc.address_line_2 === address_line_2 &&
+          loc.city === city &&
+          loc.province === province &&
+          loc.postal_code === postal_code
+        ) {
+          continue;
+        }
         const location = await Location.create({
           name: loc.name,
           address_line_1: loc.address_line_1,
@@ -130,20 +142,20 @@ exports.updateCustomer = async (req, res, next) => {
   try {
     const { user } = req;
     const { id } = req.params;
-    const { first_name, last_name, email, phone, status, locations } = req.body;
+    const { first_name, last_name, email, phone, status, location_name, address_line_1, address_line_2, city, province, postal_code, locations } = req.body;
     if (user.role == USER_ROLE.TECHNICIAN) {
       const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
       return ErrorHandler(ApiError, req, res, next);
     }
     const updated = await Customer.update(
-      { first_name, last_name, email, phone, status },
+      { first_name, last_name, email, phone, status, location_name, address_line_1, address_line_2, city, province, postal_code },
       { where: { id }, returning: true, transaction }
     );
     if (!updated) {
       await transaction.rollback();
       return res.status(NOT_FOUND).json({ code: NOT_FOUND, message: NO_RECORD_FOUND, success: false });
     }
-    // Handle locations update
+    // Handle locations update (skip head office address)
     if (Array.isArray(locations)) {
       // Remove locations not present in the update
       const existingLocations = await Location.findAll({ where: { customer_id: id }, transaction });
@@ -155,6 +167,17 @@ exports.updateCustomer = async (req, res, next) => {
       }
       // Upsert locations
       for (const loc of locations) {
+        // Optionally skip if location matches head office
+        if (
+          loc.name === location_name &&
+          loc.address_line_1 === address_line_1 &&
+          loc.address_line_2 === address_line_2 &&
+          loc.city === city &&
+          loc.province === province &&
+          loc.postal_code === postal_code
+        ) {
+          continue;
+        }
         if (loc.id) {
           // Update existing
           await Location.update({

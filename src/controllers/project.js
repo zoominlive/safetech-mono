@@ -30,7 +30,6 @@ exports.createProject = async (req, res, next) => {
       site_contact_title,
       report_template_id,
       site_email,
-      status,
       location_id,
       report_id,
       pm_id,
@@ -51,7 +50,7 @@ exports.createProject = async (req, res, next) => {
         site_contact_name,
         site_contact_title,
         report_template_id,
-        status: status ?? "new", // Default status if not provided
+        status: "New", // Always set to 'New' on creation
         site_email: site_email,
         location_id: location_id,
         report_id: report_id,
@@ -163,13 +162,12 @@ exports.updateProject = async (req, res, next) => {
   try {
     const { user } = req;
     const { id } = req.params;
-    const {       
+    const {
       name,
       site_name,
       site_contact_name,
       site_contact_title,
       report_template_id,
-      status,
       site_email,
       location_id,
       report_id,
@@ -194,6 +192,7 @@ exports.updateProject = async (req, res, next) => {
         success: false,
       });
     } else {
+      // Only allow status change through controlled flows (not direct update)
       const updated = await Project.update(
         {
           name: name,
@@ -201,7 +200,7 @@ exports.updateProject = async (req, res, next) => {
           site_contact_name,
           site_contact_title,
           report_template_id,
-          status: status,
+          // status: status, // Do not allow direct status update
           site_email: site_email,
           location_id: location_id,
           report_id: report_id,
@@ -261,3 +260,28 @@ exports.deleteProject = async (req, res, next) => {
     next(err);
   }
 }
+
+// Controlled status update functions (examples):
+exports.setProjectStatusInProgress = async (projectId) => {
+  // Called when technician starts the report
+  return Project.update(
+    { status: "In Progress" },
+    { where: { id: projectId } }
+  );
+};
+
+exports.setProjectStatusPMReview = async (projectId) => {
+  // Called when technician submits to PM
+  return Project.update(
+    { status: "PM Review" },
+    { where: { id: projectId } }
+  );
+};
+
+exports.setProjectStatusComplete = async (projectId) => {
+  // Called when PM sends to customer
+  return Project.update(
+    { status: "Complete" },
+    { where: { id: projectId } }
+  );
+};
