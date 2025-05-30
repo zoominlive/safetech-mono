@@ -22,11 +22,18 @@ interface CustomersResponse {
 } 
 
 export interface CustomerData {
+  location_name: string;
   first_name: string;
   last_name: string;
   email: string;
   phone: string;
   status: boolean;
+  address_line_1?: string;
+  address_line_2?: string;
+  city?: string;
+  province?: string;
+  postal_code?: string;
+  locations?: import("@/types/customer").LocationData[];
 }
 
 export interface CustomerResponse {
@@ -34,6 +41,12 @@ export interface CustomerResponse {
   message: string;
   success: boolean;
   data: {
+    location_name: string;
+    address_line_1: string;
+    address_line_2: string;
+    city: string;
+    province: string;
+    postal_code: string;
     id: string,
     first_name: string,
     last_name: string,

@@ -6,6 +6,12 @@ type CustomerDetailsProps = {
   status: string;
   email: string;
   phoneNumber: string;
+  location_name: string;
+  address_line_1: string;
+  address_line_2?: string;
+  city: string;
+  province: string;
+  postal_code: string;
 };
 
 const CustomerDetails: React.FC<CustomerDetailsProps> = ({
@@ -13,6 +19,12 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
   status,
   email,
   phoneNumber,
+  location_name,
+  address_line_1,
+  address_line_2,
+  city,
+  province,
+  postal_code,
 }: CustomerDetailsProps) => {
   return (
     <Card>
@@ -34,6 +46,36 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
         <div className="grid w-full  items-center gap-3">
           <Label htmlFor="phoneNumber">Phone Number</Label>
           <p className="text-sf-gray-500 font-normal">{phoneNumber}</p>
+        </div>
+        {/* Head Office Address Section */}
+        <div className="col-span-2 mt-6">
+          <Label className="font-semibold text-lg mb-2 block">
+            Head Office Address
+          </Label>
+          <div className="text-sf-gray-500 font-normal">
+            <div>
+              <span className="font-medium">Location Name:</span> {location_name}
+            </div>
+            <div>
+              <span className="font-medium">Address Line 1:</span>{" "}
+              {address_line_1}
+            </div>
+            {address_line_2 && (
+              <div>
+                <span className="font-medium">Address Line 2:</span>{" "}
+                {address_line_2}
+              </div>
+            )}
+            <div>
+              <span className="font-medium">City:</span> {city}
+            </div>
+            <div>
+              <span className="font-medium">Province:</span> {province}
+            </div>
+            <div>
+              <span className="font-medium">Postal Code:</span> {postal_code}
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

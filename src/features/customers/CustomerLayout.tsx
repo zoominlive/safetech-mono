@@ -57,6 +57,12 @@ function CustomerLayout() {
     status: "",
     email: "",
     phoneNumber: "",
+    location_name: "",
+    address_line_1: "",
+    address_line_2: "",
+    city: "",
+    province: "",
+    postal_code: "",
     projects: [] as (Project & { companyName: string })[],
   });
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -93,7 +99,13 @@ function CustomerLayout() {
           status: response.data.status ? "active" : "inactive",
           email: response.data.email,
           phoneNumber: response.data.phone,
-          projects: projectsWithCompany,
+          location_name: response.data.location_name || "",
+          address_line_1: response.data.address_line_1 || "",
+          address_line_2: response.data.address_line_2 || "",
+          city: response.data.city || "",
+          province: response.data.province || "",
+          postal_code: response.data.postal_code || "",
+          projects: projectsWithCompany,  
         });
       } else {
         toast({
@@ -211,6 +223,12 @@ function CustomerLayout() {
             status={customerData.status}
             email={customerData.email}
             phoneNumber={customerData.phoneNumber}
+            location_name={customerData.location_name}
+            address_line_1={customerData.address_line_1}
+            address_line_2={customerData.address_line_2}
+            city={customerData.city}
+            province={customerData.province}
+            postal_code={customerData.postal_code}
           />
         ) : (
           <CreateCustomerForm />

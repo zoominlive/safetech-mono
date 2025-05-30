@@ -36,6 +36,12 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
     email: "",
     phone: "",
     status: true,
+    location_name: "",
+    address_line_1: "",
+    address_line_2: "",
+    city: "",
+    province: "",
+    postal_code: "",
   });
   const [locations, setLocations] = useState<LocationData[]>([]);
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -48,6 +54,10 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
     last_name: Yup.string().required("Last name is required"),
     email: Yup.string().email("Invalid email format").required("Email is required"),
     phone: Yup.string(),
+    address_line_1: Yup.string().required("Address Line 1 is required"),
+    city: Yup.string().required("City is required"),
+    province: Yup.string().required("Province is required"),
+    postal_code: Yup.string().required("Postal Code is required"),
   });
 
   useEffect(() => {
@@ -65,6 +75,12 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
               email: response.data.email,
               phone: response.data.phone,
               status: response.data.status,
+              location_name: response.data.location_name || "",
+              address_line_1: response.data.address_line_1 || "",
+              address_line_2: response.data.address_line_2 || "",
+              city: response.data.city || "",
+              province: response.data.province || "",
+              postal_code: response.data.postal_code || "",
             });
             setLocations(response.data.locations || []);
           } else {
@@ -248,6 +264,119 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
                   {errors.phone && touched.phone && (
                     <div className="text-red-500 text-sm absolute left-0 top-0">{errors.phone}</div>
                   )}
+                </div>
+              </div>
+              <div className="col-span-2 border-b pb-4 mb-4">
+                <h3 className="font-semibold text-lg mb-2">Head Office Address</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                  <div className="grid w-full items-center gap-3">
+                    <Label htmlFor="location_name">Location name</Label>
+                    <Input
+                      type="text"
+                      id="location_name"
+                      name="location_name"
+                      placeholder="Location Name"
+                      className="py-7.5"
+                      value={values.location_name}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                    />
+                    <div className="min-h-[20px] relative">
+                      {errors.location_name && touched.location_name && (
+                        <div className="text-red-500 text-sm absolute left-0 top-0">{errors.address_line_1}</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid w-full items-center gap-3">
+                    <Label htmlFor="address_line_1">Address Line 1</Label>
+                    <Input
+                      type="text"
+                      id="address_line_1"
+                      name="address_line_1"
+                      placeholder="Address Line 1"
+                      className="py-7.5"
+                      value={values.address_line_1}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                    />
+                    <div className="min-h-[20px] relative">
+                      {errors.address_line_1 && touched.address_line_1 && (
+                        <div className="text-red-500 text-sm absolute left-0 top-0">{errors.address_line_1}</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid w-full items-center gap-3">
+                    <Label htmlFor="address_line_2">Address Line 2</Label>
+                    <Input
+                      type="text"
+                      id="address_line_2"
+                      name="address_line_2"
+                      placeholder="Address Line 2"
+                      className="py-7.5"
+                      value={values.address_line_2}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                    />
+                    <div className="min-h-[20px] relative">
+                      {errors.address_line_1 && touched.address_line_1 && (
+                        <div className="text-red-500 text-sm absolute left-0 top-0">{errors.address_line_1}</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid w-full items-center gap-3">
+                    <Label htmlFor="city">City</Label>
+                    <Input
+                      type="text"
+                      id="city"
+                      name="city"
+                      placeholder="City"
+                      className="py-7.5"
+                      value={values.city}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                    />
+                    <div className="min-h-[20px] relative">
+                      {errors.city && touched.city && (
+                        <div className="text-red-500 text-sm absolute left-0 top-0">{errors.city}</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid w-full items-center gap-3">
+                    <Label htmlFor="province">Province</Label>
+                    <Input
+                      type="text"
+                      id="province"
+                      name="province"
+                      placeholder="Province"
+                      className="py-7.5"
+                      value={values.province}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                    />
+                    <div className="min-h-[20px] relative">
+                      {errors.province && touched.province && (
+                        <div className="text-red-500 text-sm absolute left-0 top-0">{errors.province}</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid w-full items-center gap-3">
+                    <Label htmlFor="postal_code">Postal Code</Label>
+                    <Input
+                      type="text"
+                      id="postal_code"
+                      name="postal_code"
+                      placeholder="Postal Code"
+                      className="py-7.5"
+                      value={values.postal_code}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                    />
+                    <div className="min-h-[20px] relative">
+                      {errors.postal_code && touched.postal_code && (
+                        <div className="text-red-500 text-sm absolute left-0 top-0">{errors.postal_code}</div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>
