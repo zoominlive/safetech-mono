@@ -9,22 +9,22 @@ exports.getDashboardSummary = async (req, res, next) => {
     const thirtyDaysAgo = new Date(now);
     thirtyDaysAgo.setDate(now.getDate() - 30);
 
-    // Total Open Projects
+    // Total Open Projects (not Complete)
     const totalOpenProjects = await Project.count({
-      where: { status: { [Op.ne]: 'Completed' } }
+      where: { status: { [Op.ne]: 'Complete' } }
     });
 
-    // Projects completed in last 30 days
+    // Projects completed in last 30 days (status Complete)
     const projectsCompletedLast30 = await Project.count({
       where: {
-        status: 'Completed',
+        status: 'Complete',
         updated_at: { [Op.gte]: thirtyDaysAgo }
       }
     });
 
-    // Average time to complete
+    // Average time to complete (status Complete)
     const completedProjects = await Project.findAll({
-      where: { status: 'Completed' },
+      where: { status: 'Complete' },
       attributes: ['start_date', 'updated_at']
     });
 
@@ -38,15 +38,15 @@ exports.getDashboardSummary = async (req, res, next) => {
       ? msToTime(totalDuration / completedProjects.length)
       : '0D 0H';
 
-    // Projects older than 48 hours
+    // Projects older than 48 hours (not Complete)
     const projectsOlderThan48Hrs = await Project.count({
       where: {
         start_date: { [Op.lte]: new Date(Date.now() - 48 * 60 * 60 * 1000) },
-        status: { [Op.ne]: 'Completed' }
+        status: { [Op.ne]: 'Complete' }
       }
     });
 
-    // In Progress Projects
+    // In Progress Projects (New or In Progress)
     const inProgress = await Project.findAll({
       where: {
         status: { [Op.in]: ['New', 'In Progress'] }
@@ -58,10 +58,10 @@ exports.getDashboardSummary = async (req, res, next) => {
       order: [['start_date', 'DESC']]
     });
 
+    // Awaiting Review (PM Review)
     const awaitingReview = await Project.findAll({
       where: {
-        status: 'Completed',
-        pm_id: { [Op.ne]: null }
+        status: 'PM Review'
       },
       include: [
         { model: Customer, as: 'company', attributes: ['first_name', 'last_name'] },
