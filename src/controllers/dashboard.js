@@ -46,10 +46,22 @@ exports.getDashboardSummary = async (req, res, next) => {
       }
     });
 
+    // New Projects (New)
+    const newProjects = await Project.findAll({
+      where: {
+        status: { [Op.in]: ['New'] }
+      },
+      include: [
+        { model: Customer, as: 'company', attributes: ['first_name', 'last_name'] },
+        { model: User, as: 'technician', attributes: ['first_name', 'last_name'] }
+      ],
+      order: [['start_date', 'DESC']]
+    });
+    
     // In Progress Projects (New or In Progress)
     const inProgress = await Project.findAll({
       where: {
-        status: { [Op.in]: ['New', 'In Progress'] }
+        status: { [Op.in]: ['In Progress'] }
       },
       include: [
         { model: Customer, as: 'company', attributes: ['first_name', 'last_name'] },
@@ -82,6 +94,13 @@ exports.getDashboardSummary = async (req, res, next) => {
           projectsOlderThan48Hrs
         },
         inProgress: inProgress.map(p => ({
+          projectName: p.name,
+          company: p.company.first_name + ' ' + p.company.last_name,
+          startDate: p.start_date,
+          technician: `${p.technician?.first_name}`,
+          status: p.status
+        })),
+        newProjects: newProjects.map(p => ({
           projectName: p.name,
           company: p.company.first_name + ' ' + p.company.last_name,
           startDate: p.start_date,
