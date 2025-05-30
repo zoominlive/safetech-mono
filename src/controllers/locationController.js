@@ -48,6 +48,29 @@ exports.getAllLocations = async (req, res) => {
   }
 };
 
+// Get all locations by customer ID
+exports.getAllLocationsByCustomer = async (req, res) => {
+  try {
+    const locations = await Location.findAll({
+      where: {
+        customer_id: req.params.custId, 
+        active: true 
+      }
+    });
+    return res.status(200).json({
+      success: true,
+      count: locations.length,
+      data: locations
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve locations',
+      error: error.message
+    });
+  }
+};
+
 // Get location by ID
 exports.getLocationById = async (req, res) => {
   try {

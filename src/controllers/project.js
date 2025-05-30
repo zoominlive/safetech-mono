@@ -51,7 +51,7 @@ exports.createProject = async (req, res, next) => {
         site_contact_name,
         site_contact_title,
         report_template_id,
-        status: status,
+        status: status ?? "new", // Default status if not provided
         site_email: site_email,
         location_id: location_id,
         report_id: report_id,

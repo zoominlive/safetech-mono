@@ -8,6 +8,8 @@ router.post('/add', locationController.createLocation);
 // Get all locations
 router.get('/', locationController.getAllLocations);
 
+router.get('/:custId', locationController.getAllLocationsByCustomer);
+
 // Get location by ID
 router.get('/:id', locationController.getLocationById);
 
