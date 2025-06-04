@@ -6,7 +6,6 @@ type CustomerDetailsProps = {
   status: string;
   email: string;
   phoneNumber: string;
-  location_name: string;
   address_line_1: string;
   address_line_2?: string;
   city: string;
@@ -19,7 +18,6 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
   status,
   email,
   phoneNumber,
-  location_name,
   address_line_1,
   address_line_2,
   city,
@@ -53,9 +51,6 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
             Head Office Address
           </Label>
           <div className="text-sf-gray-500 font-normal">
-            <div>
-              <span className="font-medium">Location Name:</span> {location_name}
-            </div>
             <div>
               <span className="font-medium">Address Line 1:</span>{" "}
               {address_line_1}

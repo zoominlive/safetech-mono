@@ -17,6 +17,12 @@ interface DashboardResponse {
       projectsCompletedLast30Days: number;
       avgTimeToComplete: number;
       projectsOlderThan48Hrs: number;
+      mtd: {
+      totalOpenProjectsChange: any,
+      projectsCompletedChange: any,
+      avgTimeChange: any,
+      projectsOlderThan48HrsChange: any
+    }
     };
     inProgress: InProgressProject[];
     newProjects: InProgressProject[];
@@ -46,6 +52,12 @@ function DashboardLayout() {
     projectsCompletedLast30Days: 0,
     avgTimeToComplete: 0,
     projectsOlderThan48Hrs: 0,
+    mtd: {
+      totalOpenProjectsChange: 0,
+      projectsCompletedChange: 0,
+      avgTimeChange: 0,
+      projectsOlderThan48HrsChange: 0
+    }
   });
   const [inProgressProjects, setInProgressProjects] = useState<InProgressProject[]>([]);
   const [newProjects, setNewProjects] = useState<InProgressProject[]>([]);
@@ -106,6 +118,7 @@ function DashboardLayout() {
       header: "Status",
       accessorKey: "status",
       cell: (project) => <StatusBadge status={project.status} />,
+      className: "text-right", // right justify the column
     },
   ];
 

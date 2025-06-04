@@ -33,10 +33,10 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
   const [initialValues, setInitialValues] = useState<CustomerData>({
     first_name: "",
     last_name: "",
+    company_name: "",
     email: "",
     phone: "",
     status: true,
-    location_name: "",
     address_line_1: "",
     address_line_2: "",
     city: "",
@@ -72,10 +72,10 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
             setInitialValues({
               first_name: response.data.first_name || "",
               last_name: response.data.last_name || "",
+              company_name: response.data.company_name || "",
               email: response.data.email,
               phone: response.data.phone,
               status: response.data.status,
-              location_name: response.data.location_name || "",
               address_line_1: response.data.address_line_1 || "",
               address_line_2: response.data.address_line_2 || "",
               city: response.data.city || "",
@@ -211,6 +211,24 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
                 </div>
               </div>
               <div className="grid w-full items-center gap-3">
+                <Label htmlFor="company_name">Company Name</Label>
+                <Input
+                  type="text"
+                  id="company_name"
+                  name="company_name"
+                  placeholder="Company name"
+                  className="py-7.5"
+                  value={values.company_name}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+                <div className="min-h-[20px] relative">
+                  {errors.company_name && touched.company_name && (
+                    <div className="text-red-500 text-sm absolute left-0 top-0">{errors.company_name}</div>
+                  )}
+                </div>
+              </div>
+              <div className="grid w-full items-center gap-3">
                 <Label htmlFor="status">Status</Label>
                 <Select 
                   value={values.status ? "active" : "inactive"}
@@ -269,24 +287,6 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
               <div className="col-span-2 border-b pb-4 mb-4">
                 <h3 className="font-semibold text-lg mb-2">Head Office Address</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                  <div className="grid w-full items-center gap-3">
-                    <Label htmlFor="location_name">Location name</Label>
-                    <Input
-                      type="text"
-                      id="location_name"
-                      name="location_name"
-                      placeholder="Location Name"
-                      className="py-7.5"
-                      value={values.location_name}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                    />
-                    <div className="min-h-[20px] relative">
-                      {errors.location_name && touched.location_name && (
-                        <div className="text-red-500 text-sm absolute left-0 top-0">{errors.address_line_1}</div>
-                      )}
-                    </div>
-                  </div>
                   <div className="grid w-full items-center gap-3">
                     <Label htmlFor="address_line_1">Address Line 1</Label>
                     <Input

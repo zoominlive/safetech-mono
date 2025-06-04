@@ -12,6 +12,7 @@ export interface LocationData {
 export interface CustomerData {
   first_name: string;
   last_name: string;
+  company_name: string;
   email: string;
   phone: string;
   status: boolean;

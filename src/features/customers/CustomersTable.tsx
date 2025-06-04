@@ -15,12 +15,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { formatDate } from "@/lib/utils";
 
 interface Customer {
   id: string;
   companyName: string;
-  email: string;
   phoneNumber: string;
+  lastProject: string;
+  totalProjects: string;
   status: string;
 }
 
@@ -35,12 +37,16 @@ const columns: Column<Customer>[] = [
     accessorKey: "companyName",
   },
   {
-    header: "Email",
-    accessorKey: "email",
-  },
-  {
     header: "Phone Number",
     accessorKey: "phoneNumber",
+  },
+  {
+    header: "Last Project",
+    accessorKey: "lastProject",
+  },
+  {
+    header: "Total number of Projects",
+    accessorKey: "totalProjects",
   },
   {
     header: "Status",
@@ -74,14 +80,26 @@ export function CustomersTable({ searchQuery, sortBy }: CustomersTableProps) {
       
       if (response.success) {
         // Map API response to our Customer interface
-        const mappedCustomers = response.data.rows.map(customer => ({
-          id: customer.id.toString(),
-          companyName: customer.first_name + " " + customer.last_name,
-          email: customer.email,
-          phoneNumber: customer.phone,
-          status: customer.status === true ? 'active' : 'inactive',
-        }));
-        
+        const mappedCustomers = response.data.rows.map((customer: any) => {
+          let lastProject = "No Projects Yet";
+          let totalProjects = "No Projects Yet";
+          if (Array.isArray(customer.projects) && customer.projects.length > 0) {
+            // Find the latest project by start_date
+            const latestProject = customer.projects.reduce((latest: any, project: any) => {
+              return new Date(project.start_date) > new Date(latest.start_date) ? project : latest;
+            }, customer.projects[0]);
+            lastProject = latestProject.start_date ? formatDate(new Date(latestProject.start_date).toLocaleDateString()) : "No Projects Yet";
+            totalProjects = customer.projects.length.toString();
+          }
+          return {
+            id: customer.id.toString(),
+            companyName: customer.company_name,
+            phoneNumber: customer.phone,
+            lastProject,
+            totalProjects,
+            status: customer.status === true ? 'active' : 'inactive',
+          };
+        });
         setCustomers(mappedCustomers);
         setTotalCount(response.data.count);
         setError(null);

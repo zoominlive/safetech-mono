@@ -10,6 +10,12 @@ interface StatsProps {
     projectsCompletedLast30Days: number;
     avgTimeToComplete: number;
     projectsOlderThan48Hrs: number;
+    mtd: {
+      totalOpenProjectsChange: any,
+      projectsCompletedChange: any,
+      avgTimeChange: any,
+      projectsOlderThan48HrsChange: any
+    }
   };
 }
 
@@ -22,17 +28,17 @@ function Stats({ overview }: StatsProps) {
         <Stat
           title="Total Open Projects"
           value={overview.totalOpenProjects.toString()}
-          percentage="8.5%"
-          subtitle="Up from last month"
+          percentage={overview.mtd.totalOpenProjectsChange || '-'}
+          subtitle="Up from month to date"
           icon={<User />}
           iconBg="bg-[rgba(130,128,255,0.2)]"
           trend="up"
         />
         <Stat
-          title="Projects Completed Last 30"
+          title="Projects Completed"
           value={overview.projectsCompletedLast30Days.toString()}
-          percentage="1.3%"
-          subtitle="Up from last month"
+          percentage={overview.mtd.projectsCompletedChange || '-'}
+          subtitle="Up from month to date"
           icon={<Box />}
           iconBg="bg-[rgba(254,197,61,0.2)]"
           trend="up"
@@ -40,8 +46,8 @@ function Stats({ overview }: StatsProps) {
         <Stat
           title="Avg. Time To Complete"
           value={overview.avgTimeToComplete.toString()}
-          percentage="4.3%"
-          subtitle="Down from last month"
+          percentage={overview.mtd.avgTimeChange || '-'}
+          subtitle="Down from month to date"
           icon={<Chart />}
           iconBg="bg-[rgba(74,217,145,0.2)]"
           trend="down"
@@ -49,8 +55,8 @@ function Stats({ overview }: StatsProps) {
         <Stat
           title="Projects Older Than 48hrs"
           value={overview.projectsOlderThan48Hrs.toString()}
-          percentage="1.8%"
-          subtitle="Up from last week"
+          percentage={overview.mtd.projectsOlderThan48HrsChange || '-'}
+          subtitle="Up from month to date"
           icon={<Timer />}
           iconBg="bg-[rgba(255,144,102,0.2)]"
           trend="up"

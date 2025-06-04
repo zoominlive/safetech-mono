@@ -15,12 +15,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { formatDate } from "@/lib/utils";
 
 interface Project {
   id: string;
   projectName: string;
   company: string;
   startDate: string;
+  pm: string;
   technician: string;
   status: string;
 }
@@ -29,6 +31,8 @@ interface ProjectTableProps {
   searchQuery?: string;
   sortBy?: string;
   statusFilter?: string;
+  pm_ids?: string;
+  technician_ids?: string;
   startDateFrom?: string;
   startDateTo?: string;
 }
@@ -47,6 +51,10 @@ const columns: Column<Project>[] = [
     accessorKey: "startDate",
   },
   {
+    header: "Project Manager",
+    accessorKey: "pm",
+  },
+  {
     header: "Technician",
     accessorKey: "technician",
   },
@@ -57,7 +65,7 @@ const columns: Column<Project>[] = [
   },
 ];
 
-function ProjectTable({ searchQuery, sortBy, statusFilter, startDateFrom, startDateTo }: ProjectTableProps) {
+function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_ids, startDateFrom, startDateTo }: ProjectTableProps) {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -74,7 +82,7 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, startDateFrom, startD
   useEffect(() => {
     fetchProjects();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, searchQuery, sortBy, statusFilter, startDateFrom, startDateTo, currentPage, pageSize]);
+  }, [token, searchQuery, sortBy, statusFilter, pm_ids, technician_ids, startDateFrom, startDateTo, currentPage, pageSize]);
 
   const fetchProjects = async () => {
     try {
@@ -83,6 +91,8 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, startDateFrom, startD
         searchQuery,
         sortBy,
         statusFilter,
+        pm_ids, 
+        technician_ids,
         pageSize,
         currentPage,
         startDateFrom,
@@ -94,7 +104,8 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, startDateFrom, startD
           id: project.id,
           projectName: project.name,
           company: project.company?.first_name + ' ' +  project.company?.last_name || '-',
-          startDate: project.start_date,
+          startDate: formatDate(project.start_date),
+          pm: project.pm?.first_name + ' ' + project.pm?.last_name || '-',
           technician: project.technician?.first_name + ' ' + project.technician?.last_name || '-',
           status: project.status || 'new',
         }));

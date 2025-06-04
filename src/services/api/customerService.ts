@@ -11,6 +11,7 @@ interface CustomersResponse {
       id: string,
       first_name: string,
       last_name: string,
+      company_name: string,
       email: string,
       phone: string,
       status: boolean,
@@ -22,9 +23,9 @@ interface CustomersResponse {
 } 
 
 export interface CustomerData {
-  location_name: string;
   first_name: string;
   last_name: string;
+  company_name: string,
   email: string;
   phone: string;
   status: boolean;
@@ -41,7 +42,6 @@ export interface CustomerResponse {
   message: string;
   success: boolean;
   data: {
-    location_name: string;
     address_line_1: string;
     address_line_2: string;
     city: string;
@@ -50,6 +50,7 @@ export interface CustomerResponse {
     id: string,
     first_name: string,
     last_name: string,
+    company_name: string,
     email: string,
     phone: string,
     projects: Array<{

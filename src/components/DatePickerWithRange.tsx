@@ -122,7 +122,7 @@ export function DatePickerWithRange({
   const today = startOfToday();
 
   // For showing selection
-  let selectionLabel = "Pick a date";
+  let selectionLabel = "Start Date ~ End Date";
   if (date?.from && date?.to) {
     selectionLabel = `${format(date.from, "LLL dd, y")} ~ ${format(date.to, "LLL dd, y")}`;
   } else if (date?.from) {

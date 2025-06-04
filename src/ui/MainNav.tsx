@@ -1,8 +1,6 @@
 import { cn } from "@/lib/utils";
-import { useAuthStore } from "@/store";
 import {
   ChartNoAxesCombined,
-  CircleArrowOutUpLeft,
   FileChartLine,
   FileCog,
   HandHeart,
@@ -10,7 +8,7 @@ import {
   UserRoundPlus,
   Users,
 } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link, useLocation } from "react-router";
 
 type SidebarItemProps = {
   icon: React.ElementType;
@@ -55,18 +53,7 @@ interface MainNavProps {
 
 function MainNav({ onItemClick, expanded }: MainNavProps) {
   const location = useLocation();
-  const navigate = useNavigate();
   const currentPath = "/" + location.pathname.slice(1).split("/").at(0);
-
-  const handleSignOut = async () => {
-    try {
-      console.log("token", useAuthStore.getState().token);
-      useAuthStore.getState().logout();
-      navigate("/login");
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
 
   const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -75,7 +62,6 @@ function MainNav({ onItemClick, expanded }: MainNavProps) {
     { icon: FileChartLine, label: "Reports", path: "/reports" },
     { icon: Users, label: "Staff", path: "/staff" },
     { icon: ChartNoAxesCombined, label: "Analytics", path: "/analytics" },
-    { icon: HandHeart, label: "Support", path: "/support" },
   ];
 
   return (
@@ -113,13 +99,29 @@ function MainNav({ onItemClick, expanded }: MainNavProps) {
         })}
       </div>
       <div className="mt-auto px-2">
-        <SidebarItem
-          path=""
-          showLabel={expanded}
-          icon={CircleArrowOutUpLeft}
-          label="Sign Out"
-          onClick={handleSignOut}
-        />
+        {expanded ? (
+          <a
+            href="mailto:support@dastech.ca?subject=Support%20Request"
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors text-gray-500 hover:text-gray-900 hover:bg-gray-100",
+              expanded ? "" : "justify-center"
+            )}
+            style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
+          >
+            <HandHeart className="w-5 h-5" />
+            <span style={{ marginLeft: 8 }}>Support</span>
+          </a>
+        ) : (
+          <a
+            href="mailto:support@dastech.ca?subject=Support%20Request"
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors text-gray-500 hover:text-gray-900 hover:bg-gray-100 justify-center"
+            )}
+            style={{ textDecoration: 'none' }}
+          >
+            <HandHeart className="w-5 h-5" />
+          </a>
+        )}
       </div>
     </nav>
   );

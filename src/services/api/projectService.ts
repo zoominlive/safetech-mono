@@ -137,11 +137,13 @@ export interface ProjectResponse {
 }
 
 export const projectService = {
-  getAllProjects: async (searchQuery?: string, sortBy?: string, statusFilter?: string, limit?: number, page?: number, startDateFrom?: string, startDateTo?: string): Promise<ProjectsResponse> => {
+  getAllProjects: async (searchQuery?: string, sortBy?: string, statusFilter?: string, pm_ids?: string, technician_ids?: string, limit?: number, page?: number, startDateFrom?: string, startDateTo?: string): Promise<ProjectsResponse> => {
     const params = new URLSearchParams();
     if (searchQuery) params.append('search', searchQuery);
     if (sortBy) params.append('sortBy', sortBy);
     if (statusFilter) params.append('statusFilter', statusFilter);
+    if (pm_ids) params.append('pm_ids', pm_ids);
+    if (technician_ids) params.append('technician_ids', technician_ids);
     if (limit) params.append('limit', limit.toString()); // Convert number to string
     if (page) params.append('page', page.toString());    // Convert number to string
     if (startDateFrom) params.append('start_date_from', startDateFrom);

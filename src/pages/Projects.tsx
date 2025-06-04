@@ -38,6 +38,8 @@ export const columns: ColumnDef<Project>[] = [
 function Projects() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
+  const [pm_ids, setProjectManagers] = useState<string>("");
+  const [technician_ids, setTechnicians] = useState<string>("");
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined,
@@ -52,11 +54,15 @@ function Projects() {
       <ProjectTableOperations 
         onSearch={setSearchQuery} 
         onFilterStatus={setStatusFilter}
+        onFilterPMs={setProjectManagers}
+        onFilterTechnicians={setTechnicians}
         onDateRangeChange={setDateRange}
       />
       <ProjectTable 
         searchQuery={searchQuery} 
         statusFilter={statusFilter} 
+        pm_ids={pm_ids}
+        technician_ids={technician_ids}
         startDateFrom={startDateFrom}
         startDateTo={startDateTo}
       />

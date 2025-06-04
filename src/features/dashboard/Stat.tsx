@@ -8,7 +8,7 @@ type StatProps = {
   value: number | string;
   icon: ReactNode;
   iconBg: string;
-  percentage: string;
+  percentage: string | null;
   subtitle: string;
   trend?: "up" | "down";
 };

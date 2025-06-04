@@ -424,7 +424,11 @@ const ProjectForm: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        {locations.length === 0 && values.customer_id ? (
+                        {!values.customer_id ? (
+                          <div className="text-center text-gray-500 py-2">
+                            Please select a customer first
+                          </div>
+                        ) : locations.length === 0 ? (
                           <div className="text-center text-gray-500 py-2">
                             {(() => {
                               const selectedCustomer = _customers.find(c => c.id === values.customer_id);
@@ -460,23 +464,9 @@ const ProjectForm: React.FC = () => {
                     )}
                   </div>
                 </div>
-
+                
                 <div className="grid w-full items-center gap-3 relative">
-                  <Label htmlFor="site_email">Site Email</Label>
-                  <Input
-                    type="email"
-                    id="site_email"
-                    name="site_email"
-                    placeholder="Enter site email"
-                    className="py-7.5"
-                    value={values.site_email}
-                    onChange={handleChange}
-                  />
-                  <div className="min-h-[20px] relative">
-                    {errors.site_email && touched.site_email && (
-                      <div className="text-red-500 text-sm absolute left-0 top-0">{errors.site_email}</div>
-                    )}
-                  </div>
+                  
                 </div>
 
                 <div className="grid w-full items-center gap-3 relative">
@@ -515,6 +505,24 @@ const ProjectForm: React.FC = () => {
                   </div>
                 </div>
 
+                <div className="grid w-full items-center gap-3 relative">
+                  <Label htmlFor="site_email">Contact Email</Label>
+                  <Input
+                    type="email"
+                    id="site_email"
+                    name="site_email"
+                    placeholder="Enter contact email"
+                    className="py-7.5"
+                    value={values.site_email}
+                    onChange={handleChange}
+                  />
+                  <div className="min-h-[20px] relative">
+                    {errors.site_email && touched.site_email && (
+                      <div className="text-red-500 text-sm absolute left-0 top-0">{errors.site_email}</div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="grid w-full items-center gap-3">
                   <Label htmlFor="report_template_id">Report Type</Label>
                   <Combobox
@@ -526,10 +534,15 @@ const ProjectForm: React.FC = () => {
                     fetchOptions={fetchReports}
                     placeholder="Select report type"
                   />
+                  <div className="min-h-[20px] relative">
+                    {errors.report_template_id && touched.report_template_id && (
+                      <div className="text-red-500 text-sm absolute left-0 top-0">{errors.report_template_id}</div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid w-full items-center gap-3">
-                  <Label htmlFor="start_date">Start Date</Label>
+                  <Label htmlFor="start_date">Scheduled Start Date</Label>
                   <DatePicker 
                     date={values.start_date ? new Date(values.start_date) : undefined} 
                     setDate={(date) => {
@@ -538,6 +551,11 @@ const ProjectForm: React.FC = () => {
                       }
                     }}
                   />
+                  <div className="min-h-[20px] relative">
+                    {errors.start_date && touched.start_date && (
+                      <div className="text-red-500 text-sm absolute left-0 top-0">{errors.start_date}</div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid w-full items-center gap-3 relative">

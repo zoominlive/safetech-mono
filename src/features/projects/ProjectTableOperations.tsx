@@ -1,60 +1,116 @@
 import { DatePickerWithRange } from "@/components/DatePickerWithRange";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useAuthStore } from "@/store";
 import { CirclePlus } from "lucide-react";
 import { Link } from "react-router";
+import { useState, useEffect } from "react";
+import { MultiSelect } from "@/components/MultiSelect";
+import { userService } from "@/services/api/userService";
 
 interface ProjectTableOperationsProps {
   onSearch?: (query: string) => void;
   onFilterStatus?: (status: string) => void;
   onDateRangeChange?: (dateRange: { from: Date | undefined; to: Date | undefined }) => void;
+  onFilterPMs?: (pms: string) => void;
+  onFilterTechnicians?: (techs: string) => void;
 }
 
 function ProjectTableOperations({
   onSearch,
   onFilterStatus,
-  onDateRangeChange
+  onDateRangeChange,
+  onFilterPMs,
+  onFilterTechnicians
 }: ProjectTableOperationsProps) {
-  
   const { user } = useAuthStore();
-  
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["all"]);
+  const [pmOptions, setPmOptions] = useState<{ value: string; label: string }[]>([]);
+  const [technicianOptions, setTechnicianOptions] = useState<{ value: string; label: string }[]>([]);
+  const [selectedPMs, setSelectedPMs] = useState<string[]>([]);
+  const [selectedTechnicians, setSelectedTechnicians] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Fetch Project Managers
+    userService.getAllUsers(undefined, undefined, undefined, 100, 1, "project manager").then((res) => {
+      if (res.success) {
+        setPmOptions(res.data.rows.map((u: any) => ({ value: u.id, label: u.first_name + " " + u.last_name })));
+      }
+    });
+    // Fetch Technicians
+    userService.getAllUsers(undefined, undefined, undefined, 100, 1, "technician").then((res) => {
+      if (res.success) {
+        setTechnicianOptions(res.data.rows.map((u: any) => ({ value: u.id, label: u.first_name + " " + u.last_name })));
+      }
+    });
+  }, []);
+
+  const statusOptions = [
+    { value: "all", label: "All" },
+    { value: "new", label: "New" },
+    { value: "in progress", label: "In Progress" },
+    { value: "completed", label: "Completed" },
+    { value: "on hold", label: "On Hold" },
+  ];
+
+  const handleStatusChange = (selected: { value: string; label: string }[]) => {
+    const values = selected.length ? selected.map((s) => s.value) : ["all"];
+    setSelectedStatuses(values);
+    if (onFilterStatus) onFilterStatus(values.length ? values.join(",") : "all");
+  };
+  const handlePMChange = (selected: { value: string; label: string }[]) => {
+    const values = selected.map((s) => s.value);
+    setSelectedPMs(values);
+    if (onFilterPMs) onFilterPMs(values.join(","));
+  };
+  const handleTechnicianChange = (selected: { value: string; label: string }[]) => {
+    const values = selected.map((s) => s.value);
+    setSelectedTechnicians(values);
+    if (onFilterTechnicians) onFilterTechnicians(values.join(","));
+  };
+
   return (
     <>
       <div className="flex flex-col lg:flex-row items-start lg:items-center w-full gap-4 lg:gap-6 mb-4">
-        <div className="w-full lg:w-auto">
-          <DatePickerWithRange onDateChange={onDateRangeChange} />
-        </div>
         <div className="w-full lg:w-auto">
           <SearchInput 
             placeholder="Type customer name..." 
             onSearch={(value: string) => onSearch && onSearch(value)}
           />
         </div>
-        <Select onValueChange={(value) => onFilterStatus && onFilterStatus(value)}>
-          <SelectTrigger className="w-full md:w-[332px] py-7.5 bg-safetech-gray">
-            <SelectValue placeholder="Select project status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectLabel>Status</SelectLabel>
-              <SelectItem value="new">New</SelectItem>
-              <SelectItem value="in progress">In Progress</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="on hold">On Hold</SelectItem>
-              <SelectItem value="all">All Statuses</SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <div className="w-full lg:w-auto">
+          <DatePickerWithRange onDateChange={onDateRangeChange} />
+        </div>
+        <div className="w-full">
+          <div className="flex flex-col w-full">
+            <MultiSelect
+              options={statusOptions}
+              selected={statusOptions.filter(opt => selectedStatuses.includes(opt.value))}
+              placeholder="Select project status"
+              onChange={handleStatusChange}
+            />
+          </div>
+        </div>
+        <div className="w-full">
+          <div className="flex flex-col w-full">
+            <MultiSelect
+              options={pmOptions}
+              selected={pmOptions.filter(opt => selectedPMs.includes(opt.value))}
+              placeholder="Select project managers"
+              onChange={handlePMChange}
+            />
+          </div>
+        </div>
+        <div className="w-full">
+          <div className="flex flex-col w-full">
+            <MultiSelect
+              options={technicianOptions}
+              selected={technicianOptions.filter(opt => selectedTechnicians.includes(opt.value))}
+              placeholder="Select technicians"
+              onChange={handleTechnicianChange}
+            />
+          </div>
+        </div>
         {user?.role !== "Technician" && 
         <Button
           className="lg:ml-auto h-[60px] w-[200px] bg-sf-gray-600 hover:bg-sf-gray-600"
