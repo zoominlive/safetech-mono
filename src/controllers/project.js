@@ -87,9 +87,28 @@ exports.getAllProjects = async (req, res, next) => {
       ...filters.filter,
       ...filters.search,
     };
-    // Filter by status
-    if (req.query.statusFilter !== "all" && req.query.statusFilter !== undefined) {
-      whereCondition.status = req.query.statusFilter;
+    // Filter by status (now supports multiple statuses)
+    if (req.query.statusFilter && req.query.statusFilter !== "all") {
+      let statusArray = req.query.statusFilter;
+      if (!Array.isArray(statusArray)) {
+        // Support comma-separated string or single value
+        statusArray = statusArray.split(',').map(s => s.trim());
+      }
+      whereCondition.status = { [Op.in]: statusArray };
+    }
+    // Filter by Project Managers (pm_ids as array)
+    if (req.query.pm_ids && Array.isArray(req.query.pm_ids)) {
+      whereCondition.pm_id = { [Op.in]: req.query.pm_ids };
+    } else if (req.query.pm_ids && typeof req.query.pm_ids === 'string') {
+      // Support comma-separated string
+      whereCondition.pm_id = { [Op.in]: req.query.pm_ids.split(',').map(s => s.trim()) };
+    }
+    // Filter by Technicians (technician_ids as array)
+    if (req.query.technician_ids && Array.isArray(req.query.technician_ids)) {
+      whereCondition.technician_id = { [Op.in]: req.query.technician_ids };
+    } else if (req.query.technician_ids && typeof req.query.technician_ids === 'string') {
+      // Support comma-separated string
+      whereCondition.technician_id = { [Op.in]: req.query.technician_ids.split(',').map(s => s.trim()) };
     }
     // Filter by start_date (exact match or range)
     if (req.query.start_date) {

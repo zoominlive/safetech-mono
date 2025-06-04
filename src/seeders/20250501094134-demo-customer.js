@@ -54,17 +54,11 @@ module.exports = {
       const name = generateRandomName();
       const [firstName, lastName] = name.split(' ');
       const addr = generateRandomAddress();
-      // Add a random location_name for demo purposes
-      const locationNames = [
-        'Head Office', 'Branch A', 'Branch B', 'Warehouse', 'Regional Office',
-        'Downtown', 'Uptown', 'Eastside', 'Westside', 'Northside', 'Southside',
-        'Annex', 'Satellite', 'Distribution Center', 'Main Campus', 'Remote Site'
-      ];
-      const location_name = locationNames[Math.floor(Math.random() * locationNames.length)];
       return {
         id: uuidv4(),
         first_name: firstName,
         last_name: lastName,
+        company_name: `${lastName} ${['Inc', 'LLC', 'Corp', 'Ltd', 'Group'][Math.floor(Math.random() * 5)]}`,
         email: generateRandomEmail(name),
         phone: generateRandomPhone(),
         address_line_1: addr.addressLine1,
@@ -72,7 +66,6 @@ module.exports = {
         city: addr.city,
         province: addr.province,
         postal_code: addr.postalCode,
-        location_name, // new field for demo data
         status: Math.random() > 0.2, // 80% chance of being true
         created_at: new Date(),
         updated_at: new Date(),

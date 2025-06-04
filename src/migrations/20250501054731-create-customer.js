@@ -27,10 +27,10 @@ module.exports = {
         allowNull: true
       },
       // Head office address fields
-      location_name: {
-        type: Sequelize.STRING,
-        allowNull: true
-      },
+      // location_name: {
+      //   type: Sequelize.STRING,
+      //   allowNull: true
+      // },
       address_line_1: {
         type: Sequelize.STRING,
         allowNull: true

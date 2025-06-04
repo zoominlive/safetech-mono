@@ -82,6 +82,92 @@ exports.getDashboardSummary = async (req, res, next) => {
       order: [['updated_at', 'DESC']]
     });
 
+    // --- Month-to-date (MTD) calculations ---
+    // Current MTD: from 1st of this month to today
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    // Previous MTD: from 1st of last month to same day as today (e.g. May 1-4 if today is June 4)
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonthMTD = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+
+    // 1. Total Open Projects (not Complete)
+    const totalOpenProjectsMTD = await Project.count({
+      where: {
+        status: { [Op.ne]: 'Complete' },
+        created_at: { [Op.between]: [startOfThisMonth, now] }
+      }
+    });
+    const totalOpenProjectsPrevMTD = await Project.count({
+      where: {
+        status: { [Op.ne]: 'Complete' },
+        created_at: { [Op.between]: [startOfLastMonth, endOfLastMonthMTD] }
+      }
+    });
+    const totalOpenProjectsChange = totalOpenProjectsPrevMTD === 0 ? null : ((totalOpenProjectsMTD - totalOpenProjectsPrevMTD) / totalOpenProjectsPrevMTD * 100).toFixed(1);
+
+    // 2. Projects Completed (status Complete)
+    const projectsCompletedMTD = await Project.count({
+      where: {
+        status: 'Complete',
+        updated_at: { [Op.between]: [startOfThisMonth, now] }
+      }
+    });
+    const projectsCompletedPrevMTD = await Project.count({
+      where: {
+        status: 'Complete',
+        updated_at: { [Op.between]: [startOfLastMonth, endOfLastMonthMTD] }
+      }
+    });
+    const projectsCompletedChange = projectsCompletedPrevMTD === 0 ? null : ((projectsCompletedMTD - projectsCompletedPrevMTD) / projectsCompletedPrevMTD * 100).toFixed(1);
+
+    // 3. Avg. Time To Complete (status Complete)
+    const completedProjectsMTD = await Project.findAll({
+      where: {
+        status: 'Complete',
+        updated_at: { [Op.between]: [startOfThisMonth, now] }
+      },
+      attributes: ['start_date', 'updated_at']
+    });
+    let totalDurationMTD = 0;
+    completedProjectsMTD.forEach(p => {
+      if (p.start_date && p.updated_at) {
+        totalDurationMTD += new Date(p.updated_at) - new Date(p.start_date);
+      }
+    });
+    const avgTimeMTD = completedProjectsMTD.length ? (totalDurationMTD / completedProjectsMTD.length) : 0;
+
+    const completedProjectsPrevMTD = await Project.findAll({
+      where: {
+        status: 'Complete',
+        updated_at: { [Op.between]: [startOfLastMonth, endOfLastMonthMTD] }
+      },
+      attributes: ['start_date', 'updated_at']
+    });
+    let totalDurationPrevMTD = 0;
+    completedProjectsPrevMTD.forEach(p => {
+      if (p.start_date && p.updated_at) {
+        totalDurationPrevMTD += new Date(p.updated_at) - new Date(p.start_date);
+      }
+    });
+    const avgTimePrevMTD = completedProjectsPrevMTD.length ? (totalDurationPrevMTD / completedProjectsPrevMTD.length) : 0;
+    const avgTimeChange = avgTimePrevMTD === 0 ? null : (((avgTimeMTD - avgTimePrevMTD) / avgTimePrevMTD) * 100).toFixed(1);
+
+    // 4. Projects Older Than 48hrs (not Complete)
+    const projectsOlderThan48HrsMTD = await Project.count({
+      where: {
+        start_date: { [Op.lte]: new Date(Date.now() - 48 * 60 * 60 * 1000) },
+        status: { [Op.ne]: 'Complete' },
+        created_at: { [Op.between]: [startOfThisMonth, now] }
+      }
+    });
+    const projectsOlderThan48HrsPrevMTD = await Project.count({
+      where: {
+        start_date: { [Op.lte]: new Date(endOfLastMonthMTD.getTime() - 48 * 60 * 60 * 1000) },
+        status: { [Op.ne]: 'Complete' },
+        created_at: { [Op.between]: [startOfLastMonth, endOfLastMonthMTD] }
+      }
+    });
+    const projectsOlderThan48HrsChange = projectsOlderThan48HrsPrevMTD === 0 ? null : ((projectsOlderThan48HrsMTD - projectsOlderThan48HrsPrevMTD) / projectsOlderThan48HrsPrevMTD * 100).toFixed(1);
+
     return res.status(OK).json({
       code: OK,
       message: 'Dashboard summary fetched successfully',
@@ -91,7 +177,13 @@ exports.getDashboardSummary = async (req, res, next) => {
           totalOpenProjects,
           projectsCompletedLast30Days: projectsCompletedLast30,
           avgTimeToComplete: avgTime,
-          projectsOlderThan48Hrs
+          projectsOlderThan48Hrs,
+          mtd: {
+            totalOpenProjectsChange,
+            projectsCompletedChange,
+            avgTimeChange,
+            projectsOlderThan48HrsChange
+          }
         },
         inProgress: inProgress.map(p => ({
           projectName: p.name,

@@ -4,7 +4,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       primaryKey: true,
       type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      defaultValue: DataTypes.UUIDV4
+    },
+    company_name: {
+      type: DataTypes.STRING,
+      allowNull: true
     },
     first_name: {
       type: DataTypes.STRING,
@@ -19,10 +23,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     phone: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    location_name: {
       type: DataTypes.STRING,
       allowNull: true
     },

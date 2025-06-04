@@ -20,13 +20,13 @@ exports.createCustomer = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
     const { user } = req;
-    const { first_name, last_name, email, phone, status, location_name, address_line_1, address_line_2, city, province, postal_code, locations } = req.body;
+    const { first_name, last_name, company_name, email, phone, status, location_name, address_line_1, address_line_2, city, province, postal_code, locations } = req.body;
     if (user.role == USER_ROLE.TECHNICIAN) {
       const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
       return ErrorHandler(ApiError, req, res, next);
     }
     // Save head office address fields to Customer
-    const customer = await Customer.create({ first_name, last_name, email, phone, status, location_name, address_line_1, address_line_2, city, province, postal_code }, { transaction });
+    const customer = await Customer.create({ first_name, last_name, company_name, email, phone, status, address_line_1, address_line_2, city, province, postal_code }, { transaction });
     // Handle locations if provided (do not duplicate head office)
     let createdLocations = [];
     if (Array.isArray(locations)) {
@@ -101,6 +101,10 @@ exports.getAllCustomers = async (req, res, next) => {
     
     const options = {
       where: whereCondition,
+      include: [
+        { model: Project, as: "projects", attributes: ["id", "name", "status", "start_date"] },
+        { model: Location, as: "locations" }
+      ],
       order: orderClause,
       limit: filters.limit,
       offset: filters.page ? (filters.page - 1) * filters.limit : undefined,
@@ -142,13 +146,13 @@ exports.updateCustomer = async (req, res, next) => {
   try {
     const { user } = req;
     const { id } = req.params;
-    const { first_name, last_name, email, phone, status, location_name, address_line_1, address_line_2, city, province, postal_code, locations } = req.body;
+    const { first_name, last_name, company_name, email, phone, status, location_name, address_line_1, address_line_2, city, province, postal_code, locations } = req.body;
     if (user.role == USER_ROLE.TECHNICIAN) {
       const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
       return ErrorHandler(ApiError, req, res, next);
     }
     const updated = await Customer.update(
-      { first_name, last_name, email, phone, status, location_name, address_line_1, address_line_2, city, province, postal_code },
+      { first_name, last_name, company_name, email, phone, status, address_line_1, address_line_2, city, province, postal_code },
       { where: { id }, returning: true, transaction }
     );
     if (!updated) {
