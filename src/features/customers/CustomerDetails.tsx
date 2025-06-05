@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
 type CustomerDetailsProps = {
+  companyName: string;
   customerName: string;
   status: string;
   email: string;
@@ -14,6 +15,7 @@ type CustomerDetailsProps = {
 };
 
 const CustomerDetails: React.FC<CustomerDetailsProps> = ({
+  companyName,
   customerName,
   status,
   email,
@@ -27,6 +29,12 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
   return (
     <Card>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-14">
+        <div className="grid w-full items-center gap-3">
+          <Label htmlFor="companyName">Company Name</Label>
+          <strong className="text-sf-gray-500 font-medium">
+            {companyName}
+          </strong>
+        </div>
         <div className="grid w-full items-center gap-3">
           <Label htmlFor="customerName">Customer Name</Label>
           <strong className="text-sf-gray-500 font-medium">
@@ -46,7 +54,7 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
           <p className="text-sf-gray-500 font-normal">{phoneNumber}</p>
         </div>
         {/* Head Office Address Section */}
-        <div className="col-span-2 mt-6">
+        <div className="col-span-2">
           <Label className="font-semibold text-lg mb-2 block">
             Head Office Address
           </Label>

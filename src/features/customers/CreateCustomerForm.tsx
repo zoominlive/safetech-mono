@@ -4,15 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Bookmark, CircleX } from "lucide-react";
 import { CardSkeleton } from "@/components/ui/skeletons/CardSkeleton";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { CustomerData, customerService } from "@/services/api/customerService";
@@ -25,24 +16,42 @@ import { LocationData } from "@/types/customer";
 interface CreateCustomerFormProps {
   customerId?: string;
   onCancel?: () => void;
+  status: boolean;
+  onStatusChange: (status: boolean) => void;
 }
 
-function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
+function CreateCustomerForm({ customerId, onCancel, status, onStatusChange }: CreateCustomerFormProps) {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  // Update initialValues state to properly use status prop
   const [initialValues, setInitialValues] = useState<CustomerData>({
     first_name: "",
     last_name: "",
     company_name: "",
     email: "",
     phone: "",
-    status: true,
+    status: status, // use prop
     address_line_1: "",
     address_line_2: "",
     city: "",
     province: "",
     postal_code: "",
   });
+  
+  // Update form values when status prop changes from the dropdown
+  useEffect(() => {
+    if (customerId) {
+      // In edit mode, let the API response set the initial values
+      return;
+    }
+    
+    // In add mode, only update the status field without resetting the form
+    setInitialValues(prev => ({ 
+      ...prev, 
+      status: status 
+    }));
+  }, [status, customerId]);
+
   const [locations, setLocations] = useState<LocationData[]>([]);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [editLocation, setEditLocation] = useState<LocationData | undefined>(undefined);
@@ -83,6 +92,7 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
               postal_code: response.data.postal_code || "",
             });
             setLocations(response.data.locations || []);
+            onStatusChange(response.data.status); // sync status
           } else {
             toast({
               title: "Error",
@@ -104,7 +114,7 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
       
       fetchCustomer();
     }
-  }, [customerId]);
+  }, [customerId, onStatusChange]);
 
   // Location handlers
   const handleAddLocation = (location: LocationData) => {
@@ -120,7 +130,12 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
   const handleSubmit = async (values: CustomerData, { setSubmitting }: FormikHelpers<CustomerData>) => {
     try {
       setIsLoading(true);
-      const payload = { ...values, locations };
+      // Create payload with form values and current status
+      const payload = { 
+        ...values,
+        status: status, // Always use the current status from props
+        locations 
+      };
       const response = customerId
         ? await customerService.updateCustomer(customerId, payload)
         : await customerService.createCustomer(payload);
@@ -168,48 +183,12 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={handleSubmit}
-      enableReinitialize
+      enableReinitialize={customerId ? true : false} // Only reinitialize in edit mode, not add mode
     >
-      {({ values, errors, touched, handleChange, handleBlur, setFieldValue, isSubmitting }) => (
+      {({ values, errors, touched, handleChange, handleBlur, isSubmitting }) => (
         <Form>
           <Card>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
-              <div className="grid w-full items-center gap-3">
-                <Label htmlFor="first_name">First Name</Label>
-                <Input
-                  type="text"
-                  id="first_name"
-                  name="first_name"
-                  placeholder="First name"
-                  className="py-7.5"
-                  value={values.first_name}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                />
-                <div className="min-h-[20px] relative">
-                  {errors.first_name && touched.first_name && (
-                    <div className="text-red-500 text-sm absolute left-0 top-0">{errors.first_name}</div>
-                  )}
-                </div>
-              </div>
-              <div className="grid w-full items-center gap-3">
-                <Label htmlFor="last_name">Last Name</Label>
-                <Input
-                  type="text"
-                  id="last_name"
-                  name="last_name"
-                  placeholder="Last name"
-                  className="py-7.5"
-                  value={values.last_name}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                />
-                <div className="min-h-[20px] relative">
-                  {errors.last_name && touched.last_name && (
-                    <div className="text-red-500 text-sm absolute left-0 top-0">{errors.last_name}</div>
-                  )}
-                </div>
-              </div>
               <div className="grid w-full items-center gap-3">
                 <Label htmlFor="company_name">Company Name</Label>
                 <Input
@@ -229,45 +208,43 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
                 </div>
               </div>
               <div className="grid w-full items-center gap-3">
-                <Label htmlFor="status">Status</Label>
-                <Select 
-                  value={values.status ? "active" : "inactive"}
-                  onValueChange={(value) => setFieldValue("status", value === "active")}
-                >
-                  <SelectTrigger className="w-full py-7.5">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Status</SelectLabel>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <div className="min-h-[20px] relative">
-                </div>
-              </div>
-              <div className="grid w-full items-center gap-3">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="first_name">Primary Contact First Name</Label>
                 <Input
-                  type="email"
-                  id="email"
-                  name="email"
-                  placeholder="company@example.com"
+                  type="text"
+                  id="first_name"
+                  name="first_name"
+                  placeholder="First name"
                   className="py-7.5"
-                  value={values.email}
+                  value={values.first_name}
                   onChange={handleChange}
                   onBlur={handleBlur}
                 />
                 <div className="min-h-[20px] relative">
-                  {errors.email && touched.email && (
-                    <div className="text-red-500 text-sm absolute left-0 top-0">{errors.email}</div>
+                  {errors.first_name && touched.first_name && (
+                    <div className="text-red-500 text-sm absolute left-0 top-0">{errors.first_name}</div>
                   )}
                 </div>
               </div>
               <div className="grid w-full items-center gap-3">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="last_name">Primary Contact Last Name</Label>
+                <Input
+                  type="text"
+                  id="last_name"
+                  name="last_name"
+                  placeholder="Last name"
+                  className="py-7.5"
+                  value={values.last_name}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+                <div className="min-h-[20px] relative">
+                  {errors.last_name && touched.last_name && (
+                    <div className="text-red-500 text-sm absolute left-0 top-0">{errors.last_name}</div>
+                  )}
+                </div>
+              </div>
+              <div className="grid w-full items-center gap-3">
+                <Label htmlFor="phone">Primary Contact Phone Number</Label>
                 <Input
                   type="tel"
                   id="phone"
@@ -281,6 +258,24 @@ function CreateCustomerForm({ customerId, onCancel }: CreateCustomerFormProps) {
                 <div className="min-h-[20px] relative">
                   {errors.phone && touched.phone && (
                     <div className="text-red-500 text-sm absolute left-0 top-0">{errors.phone}</div>
+                  )}
+                </div>
+              </div>
+              <div className="grid w-full items-center gap-3">
+                <Label htmlFor="email">Primary Contact Email</Label>
+                <Input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="company@example.com"
+                  className="py-7.5"
+                  value={values.email}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+                <div className="min-h-[20px] relative">
+                  {errors.email && touched.email && (
+                    <div className="text-red-500 text-sm absolute left-0 top-0">{errors.email}</div>
                   )}
                 </div>
               </div>

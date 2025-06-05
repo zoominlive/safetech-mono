@@ -23,6 +23,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import BackButton from "@/components/BackButton";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 const columns: Column<Project>[] = [
   {
@@ -67,12 +77,26 @@ function CustomerLayout() {
   });
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [status, setStatus] = useState<boolean>(id ? customerData.status === "active" : true);
 
+  // Fetch customer details when id changes
   useEffect(() => {
     if (id) {
       fetchCustomerDetails();
     }
-  }, [id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]); // Intentionally excluding fetchCustomerDetails to prevent dependency cycle
+
+  useEffect(() => {
+    if (id && customerData.status !== undefined && customerData.status !== null) {
+      // Accept both boolean and string for status
+      if (typeof customerData.status === "boolean") {
+        setStatus(customerData.status);
+      } else {
+        setStatus(customerData.status === "active");
+      }
+    }
+  }, [customerData.status, id]);
 
   const fetchCustomerDetails = async () => {
     if (!id) return;
@@ -200,18 +224,45 @@ function CustomerLayout() {
               {id ? "Customer Details" : "Add New Customer"}
             </h2>
           </div>
-          {id && !isEdit && (
-            <Button
-              className="bg-sf-secondary-300 text-black w-[150px] h-[48px]"
-              onClick={() => setIsEdit(true)}
-            >
-              Edit <SquarePen />
-            </Button>
-          )}
+          
+          <div className="flex items-center gap-4">
+            {/* Only show status dropdown in Add mode or Edit mode */}
+            {(!id || isEdit) && (
+              <div className="flex items-center gap-2">
+                <Label>Status</Label>
+                <Select
+                  value={status === true ? "active" : "inactive"}
+                  onValueChange={(value) => setStatus(value === "active")}
+                >
+                  <SelectTrigger className="w-[120px] bg-white">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Status</SelectLabel>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            
+            {id && !isEdit && (
+              <Button
+                className="bg-sf-secondary-300 text-black w-[150px] h-[48px]"
+                onClick={() => setIsEdit(true)}
+              >
+                Edit <SquarePen />
+              </Button>
+            )}
+          </div>
         </div>
         {isEdit && id ? (
           <CreateCustomerForm
             customerId={id}
+            status={status}
+            onStatusChange={setStatus}
             onCancel={() => {
               setIsEdit(false);
               fetchCustomerDetails();
@@ -219,6 +270,7 @@ function CustomerLayout() {
           />
         ) : id && !isEdit ? (
           <CustomerDetails
+            companyName={customerData.companyName}
             customerName={customerData.customerName}
             status={customerData.status}
             email={customerData.email}
@@ -230,7 +282,7 @@ function CustomerLayout() {
             postal_code={customerData.postal_code}
           />
         ) : (
-          <CreateCustomerForm />
+          <CreateCustomerForm status={status} onStatusChange={setStatus} />
         )}
       </div>
       {id && (
