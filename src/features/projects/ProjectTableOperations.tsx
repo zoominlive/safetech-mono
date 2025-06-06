@@ -7,6 +7,12 @@ import { Link } from "react-router";
 import { useState, useEffect } from "react";
 import { MultiSelect } from "@/components/MultiSelect";
 import { userService } from "@/services/api/userService";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface ProjectTableOperationsProps {
   onSearch?: (query: string) => void;
@@ -81,36 +87,6 @@ function ProjectTableOperations({
         <div className="w-full lg:w-auto">
           <DatePickerWithRange onDateChange={onDateRangeChange} />
         </div>
-        <div className="w-full">
-          <div className="flex flex-col w-full">
-            <MultiSelect
-              options={statusOptions}
-              selected={statusOptions.filter(opt => selectedStatuses.includes(opt.value))}
-              placeholder="Select project status"
-              onChange={handleStatusChange}
-            />
-          </div>
-        </div>
-        <div className="w-full">
-          <div className="flex flex-col w-full">
-            <MultiSelect
-              options={pmOptions}
-              selected={pmOptions.filter(opt => selectedPMs.includes(opt.value))}
-              placeholder="Select project managers"
-              onChange={handlePMChange}
-            />
-          </div>
-        </div>
-        <div className="w-full">
-          <div className="flex flex-col w-full">
-            <MultiSelect
-              options={technicianOptions}
-              selected={technicianOptions.filter(opt => selectedTechnicians.includes(opt.value))}
-              placeholder="Select technicians"
-              onChange={handleTechnicianChange}
-            />
-          </div>
-        </div>
         {user?.role !== "Technician" && 
         <Button
           className="lg:ml-auto h-[60px] w-[200px] bg-sf-gray-600 hover:bg-sf-gray-600"
@@ -121,6 +97,41 @@ function ProjectTableOperations({
           </Link>
         </Button>
         }
+      </div>
+      <div className="w-full mb-4">
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="filters">
+            <AccordionTrigger className="text-sm font-medium">Filters</AccordionTrigger>
+            <AccordionContent>
+              <div className="flex flex-col md:flex-row flex-wrap gap-4 w-full">
+                <div className="flex-1 min-w-[150px] md:min-w-[200px]">
+                  <MultiSelect
+                    options={statusOptions}
+                    selected={statusOptions.filter(opt => selectedStatuses.includes(opt.value))}
+                    placeholder="Select project status"
+                    onChange={handleStatusChange}
+                  />
+                </div>
+                <div className="flex-1 min-w-[150px] md:min-w-[200px]">
+                  <MultiSelect
+                    options={pmOptions}
+                    selected={pmOptions.filter(opt => selectedPMs.includes(opt.value))}
+                    placeholder="Select project managers"
+                    onChange={handlePMChange}
+                  />
+                </div>
+                <div className="flex-1 min-w-[150px] md:min-w-[200px]">
+                  <MultiSelect
+                    options={technicianOptions}
+                    selected={technicianOptions.filter(opt => selectedTechnicians.includes(opt.value))}
+                    placeholder="Select technicians"
+                    onChange={handleTechnicianChange}
+                  />
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
     </>
   );
