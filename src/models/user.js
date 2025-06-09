@@ -34,6 +34,19 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true
     },
+    status: {
+      type: DataTypes.ENUM('invited', 'activated'),
+      allowNull: false,
+      defaultValue: 'invited'
+    },
+    activation_token: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    activation_token_expires: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
     last_login: {
       type: DataTypes.DATE,
       allowNull: true,

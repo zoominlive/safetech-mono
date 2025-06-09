@@ -48,6 +48,13 @@ module.exports = {
   REQUIRED_FIELD: 'Need to provide at least one field',
   USER_ID_REQUIRED: 'User id is required!',
 
+  // Activation Email Messages
+  ACTIVATION_EMAIL_SENT: 'Activation email sent successfully!',
+  ACTIVATION_LINK_EXPIRED: 'Your activation link has expired. Please request a new one.',
+  ACTIVATION_LINK_INVALID: 'Invalid activation link',
+  ACCOUNT_ACTIVATED: 'Your account has been activated successfully!',
+  ACCOUNT_ALREADY_ACTIVATED: 'Your account is already activated',
+
   // User Roles
   USER_ROLE: {
     SUPER_ADMIN: 'Super Admin',

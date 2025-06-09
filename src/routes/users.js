@@ -9,4 +9,8 @@ app.route('/delete/:id').delete(authenticate, controller.deleteUser);
 app.route('/get-user-details/:id').get(authenticate, controller.getUserById);
 app.route('/all').get(authenticate, controller.getAllUsers);
 
+// Activation routes
+app.route('/activate/:token').post(controller.activateUser);
+app.route('/resend-activation').post(controller.resendActivationEmail);
+
 module.exports = app;

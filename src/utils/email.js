@@ -1,30 +1,26 @@
-const nodemailer = require('nodemailer');
+const AWS = require('aws-sdk');
 const fs = require('fs');
 const handlebars = require('handlebars');
 const path = require('path');
 
 const {
   EMAIL_FROM,
-  SMTP_HOST,
-  SMTP_PORT,
-  SMTP_USERNAME,
-  SMTP_PASSWORD,
+  AWS_ACCESS_KEY_ID,
+  AWS_SECRET_ACCESS_KEY,
+  AWS_REGION,
 } = require('../config/use_env_variable');
 const { thirdPartyErrorHandler } = require('../helpers/errorHandler');
 const logger = require('../config/logger');
 
-// Create mail transporter
-const mailTransporter = nodemailer.createTransport({
-  host: SMTP_HOST,
-  port: SMTP_PORT,
-  auth: {
-    user: SMTP_USERNAME,
-    pass: SMTP_PASSWORD,
-  },
+// Configure AWS SES
+const ses = new AWS.SES({
+  accessKeyId: AWS_ACCESS_KEY_ID,
+  secretAccessKey: AWS_SECRET_ACCESS_KEY,
+  region: AWS_REGION,
 });
 
 /**
- * Send email using nodemailer
+ * Send email using AWS SES
  * @param {Object} mailOptions
  * @param {string} mailOptions.to
  * @param {string} mailOptions.subject
@@ -33,15 +29,27 @@ const mailTransporter = nodemailer.createTransport({
  */
 const sendMail = async ({ to, subject, html, attachments = [] }) => {
   try {
-    const info = await mailTransporter.sendMail({
-      from: EMAIL_FROM,
-      to,
-      subject,
-      html,
-      attachments,
-    });
+    const params = {
+      Source: EMAIL_FROM,
+      Destination: {
+        ToAddresses: [to],
+      },
+      Message: {
+        Subject: {
+          Data: subject,
+          Charset: 'UTF-8',
+        },
+        Body: {
+          Html: {
+            Data: html,
+            Charset: 'UTF-8',
+          },
+        },
+      },
+    };
 
-    logger.info(`Email sent to ${to}: ${info.response}`);
+    const info = await ses.sendEmail(params).promise();
+    logger.info(`Email sent to ${to}: ${info.MessageId}`);
   } catch (error) {
     thirdPartyErrorHandler('sendMail', error?.stack);
     logger.error(`Failed to send email to ${to}: ${error.message}`);

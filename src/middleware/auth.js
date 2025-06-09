@@ -10,6 +10,7 @@ exports.authenticate = (req, res, next) => {
     const token =
       req.headers['x-access-token'] ||
       req.headers['authorization']?.split(' ')[1];
+    console.log("token=>", token);
     if (!token) {
       const ApiError = new APIError(UNAUTHORIZE_ERROR, null, UNAUTHORIZED);
       return ErrorHandler(ApiError, req, res, next);
