@@ -29,8 +29,10 @@ interface AuthState {
   logout: () => void;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (password: string, token: string) => Promise<void>;
+  activateAccount: (password: string, token: string) => Promise<void>;
+  resendActivation: (email: string) => Promise<void>;
   clearError: () => void;
-  updateUserProfile: (user: User) => void; // Add new action
+  updateUserProfile: (user: User) => void;
 }
 
 // Create store with persistence
@@ -113,6 +115,44 @@ export const useAuthStore = create<AuthState>()(
           set({ loading: false });
         } catch (error) {
           console.error('Reset password error:', error);
+          set({ 
+            loading: false, 
+            error: error instanceof Error 
+              ? error.message 
+              : typeof error === 'object' && error !== null && 'data' in error && typeof error.data === 'object' && error.data !== null && 'message' in error.data 
+                ? (error.data as { message: string }).message 
+                : 'An error occurred'
+          });
+        }
+      },
+      
+      // Activate account action
+      activateAccount: async (password: string, token: string) => {
+        set({ loading: true, error: null });
+        try {
+          await BaseClient.post(`users/activate/${token}`, { password });
+          set({ loading: false });
+        } catch (error) {
+          console.error('Account activation error:', error);
+          set({ 
+            loading: false, 
+            error: error instanceof Error 
+              ? error.message 
+              : typeof error === 'object' && error !== null && 'data' in error && typeof error.data === 'object' && error.data !== null && 'message' in error.data 
+                ? (error.data as { message: string }).message 
+                : 'An error occurred'
+          });
+        }
+      },
+      
+      // Resend activation action
+      resendActivation: async (email: string) => {
+        set({ loading: true, error: null });
+        try {
+          await BaseClient.post('users/resend-activation', { email });
+          set({ loading: false });
+        } catch (error) {
+          console.error('Resend activation error:', error);
           set({ 
             loading: false, 
             error: error instanceof Error 

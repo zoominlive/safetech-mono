@@ -123,10 +123,12 @@ class ApiClient {
         break;
       }
       case STATUS_CODES.UNAUTHORIZED: {
-        // If unauthorized, log the user out
-        useAuthStore.getState().logout();
-        // Redirect to login page
-        window.location.href = "/login";
+        // Only redirect if the user is already authenticated (token expired)
+        if (useAuthStore.getState().isAuthenticated) {
+          useAuthStore.getState().logout();
+          window.location.href = "/login";
+        }
+        // Otherwise, just reject and let the page handle the error
         break;
       }
       case STATUS_CODES.NOT_FOUND: {

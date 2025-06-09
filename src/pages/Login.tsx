@@ -20,8 +20,10 @@ export default function Login() {
     
     try {
       await login(values.email, values.password, rememberMe);
-      // If login successful, redirect to the page they were trying to access
-      navigate(from, { replace: true });
+      // Only navigate if there is no error in the store
+      if (!useAuthStore.getState().error) {
+        navigate(from, { replace: true });
+      }
     } catch (err) {
       // Error is handled in the store
       console.error("Login failed:", err);

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router";
 import AuthLayout from "./components/AuthLayout";
 import Login from "./pages/Login";
 import SetNewPassword from "./pages/SetNewPassword";
+import ActivateAccount from "./pages/ActivateAccount";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./ui/ProtectedRoute";
 import RoleBasedRoute from "./ui/RoleBasedRoute";
@@ -37,6 +38,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/reset-password" element={<SetNewPassword />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/activate/:token" element={<ActivateAccount />} />
         </Route>
 
         {/* Protected routes */}
