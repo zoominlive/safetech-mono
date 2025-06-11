@@ -33,7 +33,7 @@ module.exports = {
       const [firstName, lastName] = name.split(' ');
       let role;
       if (index < 5) {
-        role = 'Super Admin';
+        role = 'Admin';
       } else if (index < 15) {
         role = 'Project Manager';
       } else {

@@ -24,7 +24,7 @@ module.exports = {
       },
       role: {
         type: Sequelize.ENUM(
-          'Super Admin',
+          'Admin',
           'Technician',
           'Project Manager'
         ),

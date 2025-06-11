@@ -33,7 +33,7 @@ module.exports = {
   USER_NOT_FOUND: 'User not found!',
   SESSION_EXPIRED: 'Session expired. Please re-login!',
   RECORDS_FOUND: 'Records fetched successfully',
-  SUPERADMIN_ACCESS: 'Only Super Admin can access!',
+  ADMIN_ACCESS: 'Only Admin can access!',
   NO_RECORD_FOUND: 'No record found!',
   DUPLICATE_ERROR: 'Already exist!',
   RECORD_CREATED: 'Record created successfully',
@@ -62,4 +62,8 @@ module.exports = {
     TECHNICIAN: 'Technician',
     API: 'API',
   },
+
+  ADMIN: 'Admin',
+  TECHNICIAN: 'Technician',
+  PROJECT_MANAGER: 'Project Manager',
 };
