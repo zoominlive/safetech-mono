@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { CardSkeleton } from "@/components/ui/skeletons/CardSkeleton";
 import { toast } from "@/components/ui/use-toast";
 import { userService } from "@/services/api/userService";
+import { useAuthStore } from "@/store";
 import { SquarePen } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
@@ -22,6 +23,7 @@ interface UserDetails {
 const UserDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [user, setUser] = useState<UserDetails | null>(null);
+  const loggedInUser = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -79,7 +81,7 @@ const UserDetail: React.FC = () => {
             <h2 className="font-semibold text-xl">User Details</h2>
           </div>
           <div className="space-x-4">
-            {user?.role !== "Technician" && 
+            {loggedInUser.user?.role !== "Technician" && 
             <Button
               className="bg-sf-secondary-300 px-4 py-2.5 text-black"
               asChild
