@@ -22,7 +22,7 @@ import * as Yup from "yup";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import BackButton from "@/components/BackButton";
 import { ImagePreviewModal } from "@/components/ImagePreviewModal";
-import { getProfilePictureUrl } from "@/utils/profilePicture";
+import { useAuthStore } from "@/store";
 
 interface UserFormProps {
   userId?: string;
@@ -46,13 +46,10 @@ const userSchema = Yup.object({
   }),
 });
 
-const BACKEND_URL = window.location.hostname === 'localhost' ? 
-  'http://localhost:8000/api/v1' : 
-  'http://15.156.127.37/api/v1';
-
 function UserForm({ onCancel }: UserFormProps) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user: currentUser } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -91,10 +88,9 @@ function UserForm({ onCancel }: UserFormProps) {
               deactivated_user: userData.deactivated_user || false,
               profile_picture: userData.profile_picture || "",
             });
-            console.log(BACKEND_URL + '' + userData.profile_picture);
             
             if (userData.profile_picture) {
-              setImagePreview(BACKEND_URL + '' + userData.profile_picture);
+              setImagePreview(userData.profile_picture);
             }
           } else {
             toast({
@@ -313,7 +309,7 @@ function UserForm({ onCancel }: UserFormProps) {
                     <div className="flex items-center space-x-4">
                       <Avatar className="h-24 w-24 cursor-pointer" onClick={() => setShowImageModal(true)}>
                         <AvatarImage
-                          src={getProfilePictureUrl({ imagePreview: imagePreview || undefined, profile_picture: values.profile_picture })}
+                          src={imagePreview || values.profile_picture}
                           onError={(e) => {
                             e.currentTarget.onerror = null;
                             e.currentTarget.src = "/user/avatar-sf.png";
@@ -435,8 +431,12 @@ function UserForm({ onCancel }: UserFormProps) {
                           <SelectContent>
                             <SelectGroup>
                               <SelectLabel>Role</SelectLabel>
-                              <SelectItem value="super admin">Super Admin</SelectItem>
-                              <SelectItem value="project manager">Project Manager</SelectItem>
+                              {currentUser?.role?.toLowerCase() === 'admin' && (
+                                <SelectItem value="admin">Admin</SelectItem>
+                              )}
+                              {(currentUser?.role?.toLowerCase() === 'admin' || currentUser?.role?.toLowerCase() === 'project manager') && (
+                                <SelectItem value="project manager">Project Manager</SelectItem>
+                              )}
                               <SelectItem value="technician">Technician</SelectItem>
                             </SelectGroup>
                           </SelectContent>

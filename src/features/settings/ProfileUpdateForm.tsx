@@ -11,7 +11,6 @@ import { Loader2, Save, Upload } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ImagePreviewModal } from "@/components/ImagePreviewModal";
-import { getProfilePictureUrl } from "@/utils/profilePicture";
 
 const ProfileUpdateForm = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -178,7 +177,7 @@ const ProfileUpdateForm = () => {
     const role = user?.role?.toLowerCase() || 'technician';
     
     const variants: Record<string, { label: string, variant: "default" | "secondary" | "destructive" | "outline" }> = {
-      "super admin": { label: "Super Admin", variant: "destructive" },
+      "admin": { label: "Admin", variant: "destructive" },
       "project manager": { label: "Project Manager", variant: "secondary" },
       "technician": { label: "Technician", variant: "outline" }
     };
@@ -204,7 +203,7 @@ const ProfileUpdateForm = () => {
         <div className="flex items-center space-x-4">
           <Avatar className="h-24 w-24 cursor-pointer" onClick={() => setShowImageModal(true)}>
             <AvatarImage
-              src={getProfilePictureUrl({ imagePreview, profile_picture: user?.profile_picture })}
+              src={imagePreview || user?.profile_picture}
               onError={(e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = "/user/avatar-sf.png";
@@ -246,7 +245,7 @@ const ProfileUpdateForm = () => {
         </div>
         <p className="text-sm text-gray-500 mt-2">
           Your role determines what actions you can perform in the system.
-          {user?.role?.toLowerCase() === 'super admin' && " As an administrator, you have full access to all features."}
+          {user?.role?.toLowerCase() === 'admin' && " As an administrator, you have full access to all features."}
         </p>
       </div>
       

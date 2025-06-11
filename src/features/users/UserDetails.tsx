@@ -79,6 +79,7 @@ const UserDetail: React.FC = () => {
             <h2 className="font-semibold text-xl">User Details</h2>
           </div>
           <div className="space-x-4">
+            {user?.role !== "Technician" && 
             <Button
               className="bg-sf-secondary-300 px-4 py-2.5 text-black"
               asChild
@@ -87,6 +88,7 @@ const UserDetail: React.FC = () => {
                 Edit User <SquarePen />
               </Link>
             </Button>
+            }
           </div>
         </div>
         <Card>

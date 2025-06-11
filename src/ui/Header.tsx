@@ -5,13 +5,6 @@ import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store";
 import { Settings } from "lucide-react";
 
-// Backend base URL - should ideally come from environment variables
-console.log('window.location.hostname =>', window.location.hostname);
-
-const BACKEND_URL = window.location.hostname === 'localhost' ? 
-  'http://localhost:8000/api/v1' : 
-  'http://15.156.127.37/api/v1';
-
 function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
@@ -21,15 +14,6 @@ function Header() {
   const avatarRef = useRef(null);
   const title = location.pathname.slice(1).split("/").at(0);
   console.log('user', user);
-  
-  // Function to get the correct profile picture URL
-  const getProfilePictureUrl = () => {
-    if (!user?.profile_picture) return "/user/avatar-sf.png";
-    if (user.profile_picture.startsWith('http')) return user.profile_picture;
-    console.log(`${BACKEND_URL}${user.profile_picture}`);
-    
-    return `${BACKEND_URL}${user.profile_picture}`;
-  };
   
   const handleSignOut = () => {
     signOut();
@@ -68,7 +52,7 @@ function Header() {
           <div ref={avatarRef}>
             <Avatar className="cursor-pointer" onClick={() => setDropdownOpen((v) => !v)}>
               <AvatarImage 
-                src={getProfilePictureUrl()} 
+                src={user?.profile_picture} 
                 onError={(e) => {
                   console.error("Failed to load profile image:", e);
                   // Prevent infinite error loop by removing the src attribute

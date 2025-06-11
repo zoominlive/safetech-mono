@@ -2,7 +2,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import React from "react";
-import { getProfilePictureUrl } from "@/utils/profilePicture";
 
 interface ImagePreviewModalProps {
   open: boolean;
@@ -27,12 +26,11 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
         <DialogTitle>Profile Picture</DialogTitle>
       </DialogHeader>
       <img
-        src={getProfilePictureUrl({ imagePreview, profile_picture })}
+        src={imagePreview || profile_picture || ""}
         alt="Profile Preview"
         className="rounded-full w-40 h-40 object-cover border mb-4"
         onError={(e) => {
           e.currentTarget.onerror = null;
-          e.currentTarget.src = "/user/avatar-sf.png";
         }}
         referrerPolicy="no-referrer"
         crossOrigin="anonymous"

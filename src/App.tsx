@@ -28,7 +28,7 @@ function App() {
   const { isAuthenticated } = useAuthStore();
 
   // Define roles that can create and edit
-  const managerAdminRoles = ["super admin", "project manager"];
+  const managerAdminRoles = ["admin", "project manager"];
 
   return (
     <Router>

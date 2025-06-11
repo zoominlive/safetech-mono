@@ -12,6 +12,7 @@ import { Link, useParams } from "react-router";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import BackButton from "@/components/BackButton";
+import { useAuthStore } from "@/store";
 
 interface ProjectDetails {
   id: string;
@@ -58,6 +59,7 @@ interface ReportFormValues {
 
 const ProjectDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuthStore();
   const [project, setProject] = useState<ProjectDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedReportIndex, setSelectedReportIndex] = useState(0);
@@ -138,6 +140,7 @@ const ProjectDetail: React.FC = () => {
             <h2 className="font-semibold text-xl">Project Details</h2>
           </div>
           <div className="space-x-4">
+            {user?.role !== "Technician" && 
             <Button
               className="bg-sf-secondary-300 px-4 py-2.5 text-black"
               asChild
@@ -146,6 +149,7 @@ const ProjectDetail: React.FC = () => {
                 Edit Project <SquarePen />
               </Link>
             </Button>
+            }
           </div>
         </div>
         <Card>

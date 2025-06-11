@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useAuthStore } from "@/store";
 
 const columns: Column<Project>[] = [
   {
@@ -60,6 +61,7 @@ const columns: Column<Project>[] = [
 function CustomerLayout() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuthStore();
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [customerData, setCustomerData] = useState({
@@ -248,7 +250,7 @@ function CustomerLayout() {
               </div>
             )}
             
-            {id && !isEdit && (
+            {id && !isEdit && user?.role !== "Technician" && (
               <Button
                 className="bg-sf-secondary-300 text-black w-[150px] h-[48px]"
                 onClick={() => setIsEdit(true)}
