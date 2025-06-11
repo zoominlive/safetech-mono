@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Eye, SquarePen, Trash } from "lucide-react";
 import { useAuthStore } from "@/store";
+import { Switch } from "@/components/ui/switch";
 
 export interface Column<T> {
   header: string;
@@ -36,6 +37,9 @@ interface TableProps<T> {
   totalCount?: number;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (size: number) => void;
+  // New props for Reports table
+  isReportsTable?: boolean;
+  onToggleStatus?: (id: string, currentStatus: boolean) => void;
 }
 
 export const StatusBadge = ({ status }: { status: string }) => {
@@ -86,6 +90,8 @@ function Table<T>({
   onDelete,
   onDetails,
   onPageSizeChange,
+  isReportsTable = false,
+  onToggleStatus,
 }: TableProps<T>) {
   // Calculate pagination values
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -199,6 +205,15 @@ function Table<T>({
                                   <Trash className="h-4 w-4" />
                                 </Button>
                               )}
+                              {isReportsTable && onToggleStatus && (
+                                <TableCell className="text-center">
+                                  <Switch
+                                    checked={(row as any).status}
+                                    onCheckedChange={() => onToggleStatus((row as any).id, (row as any).status)}
+                                    className="bg-sf-black-300 data-[state=unchecked]:bg-sf-black-300"
+                                  />
+                                </TableCell>
+                              )}
                             </div>
                           </TableCell>
                           <TableCell key={`status-cell-${rowIndex}`} className={cn("justify-end text-right", column.className)}>
@@ -256,6 +271,15 @@ function Table<T>({
                                   <Trash className="h-4 w-4" />
                                 </Button>
                               )}
+                              {isReportsTable && onToggleStatus && (
+                                <TableCell className="text-center">
+                                  <Switch
+                                    checked={(row as any).status}
+                                    onCheckedChange={() => onToggleStatus((row as any).id, (row as any).status)}
+                                    className="bg-sf-black-300 data-[state=unchecked]:bg-sf-black-300"
+                                  />
+                                </TableCell>
+                              )}
                             </div>
                           </TableCell>
                         </>
@@ -307,6 +331,15 @@ function Table<T>({
                           >
                             <Trash className="h-4 w-4" />
                           </Button>
+                        )}
+                        {isReportsTable && onToggleStatus && (
+                          <TableCell className="text-center">
+                            <Switch
+                              checked={(row as any).status}
+                              onCheckedChange={() => onToggleStatus((row as any).id, (row as any).status)}
+                              className="bg-sf-black-300 data-[state=unchecked]:bg-sf-black-300"
+                            />
+                          </TableCell>
                         )}
                       </div>
                     </TableCell>

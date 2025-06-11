@@ -199,7 +199,7 @@ const ProjectDetail: React.FC = () => {
         <div className="flex justify-between items-center">
           <h2 className="font-semibold text-xl">Project Report</h2>
           {project?.reports && project.reports.length > 1 && (
-            <div className="w-64">
+            <div className="w-auto">
               <Select
                 value={selectedReportIndex.toString()}
                 onValueChange={(value) => setSelectedReportIndex(parseInt(value))}

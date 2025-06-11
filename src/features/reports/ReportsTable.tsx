@@ -1,5 +1,4 @@
 import Table, { Column } from "@/ui/Table";
-import { Switch } from "@/components/ui/switch";
 import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { reportService } from "@/services/api/reportService";
@@ -138,18 +137,6 @@ const ReportsTable: React.FC<ReportsTableProps> = ({ searchQuery, sortBy }) => {
         </span>
       ),
     },
-    {
-      header: "Enable/Disable",
-      accessorKey: "status",
-      className: "text-center",
-      cell: (report) => (
-        <Switch
-          checked={report.status}
-          onCheckedChange={() => handleToggleStatus(report.id, report.status)}
-          className="bg-sf-black-300 data-[state=unchecked]:bg-sf-black-300"
-        />
-      ),
-    },
   ];
 
   if (isLoading && reports.length === 0) {
@@ -174,6 +161,8 @@ const ReportsTable: React.FC<ReportsTableProps> = ({ searchQuery, sortBy }) => {
         totalCount={totalCount}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
+        isReportsTable={true}
+        onToggleStatus={handleToggleStatus}
       />
     </>
   );
