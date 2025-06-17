@@ -115,7 +115,7 @@ const ReportDetail: React.FC = () => {
         </div>
         <Button
           className="bg-safetech-gray text-black"
-          onClick={() => navigate(`/reports/${id}/edit`)}
+          onClick={() => navigate(`/project-reports/${id}/edit`)}
         >
           Edit <SquarePen />
         </Button>

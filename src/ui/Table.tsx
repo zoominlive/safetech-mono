@@ -39,6 +39,7 @@ interface TableProps<T> {
   onPageSizeChange?: (size: number) => void;
   // New props for Reports table
   isReportsTable?: boolean;
+  isReportsTemplateTable?: boolean;
   onToggleStatus?: (id: string, currentStatus: boolean) => void;
 }
 
@@ -91,6 +92,7 @@ function Table<T>({
   onDetails,
   onPageSizeChange,
   isReportsTable = false,
+  isReportsTemplateTable = false,
   onToggleStatus,
 }: TableProps<T>) {
   // Calculate pagination values
@@ -106,58 +108,18 @@ function Table<T>({
         <ShadcnTable>
           <TableHeader>
             <TableRow className="bg-safetech-gray hover:bg-safetech-gray">
-              {columns.map((column, index) => {
-                if (
-                  hasActions &&
-                  (column.header.toLowerCase() === "status" || column.accessorKey === "status")
-                ) {
-                  return (
-                    <>
-                      <TableHead key="actions" className="font-bold text-lg text-center">Actions</TableHead>
-                      <TableHead
-                        key={index}
-                        className={cn(
-                          "font-medium text-muted-foreground justify-end text-right",
-                          column.className
-                        )}
-                      >
-                        {column.header}
-                      </TableHead>
-                    </>
-                  );
-                }
-                if (
-                  hasActions &&
-                  index === columns.length - 1 &&
-                  !columns.some(
-                    c => c.header.toLowerCase() === "status" || c.accessorKey === "status"
-                  )
-                ) {
-                  // If no status column, add Actions at the end
-                  return (
-                    <>
-                      <TableHead key={index} className={cn("font-medium text-muted-foreground", column.className)}>
-                        {column.header}
-                      </TableHead>
-                      <TableHead key="actions" className="font-bold text-lg text-center">Actions</TableHead>
-                    </>
-                  );
-                }
-                return (
-                  <TableHead
-                    key={index}
-                    className={cn(
-                      column.header.toLowerCase() === "status" || column.accessorKey === "status"
-                        ? "font-medium text-muted-foreground justify-end text-right"
-                        : "font-medium text-muted-foreground",
-                      column.className
-                    )}
-                  >
-                    {column.header}
-                  </TableHead>
-                );
-              })}
-              {!columns.some(c => c.header.toLowerCase() === "status" || c.accessorKey === "status") && hasActions && (
+              {columns.map((column, index) => (
+                <TableHead
+                  key={index}
+                  className={cn(
+                    "font-medium text-muted-foreground",
+                    column.className
+                  )}
+                >
+                  {column.header}
+                </TableHead>
+              ))}
+              {hasActions && (
                 <TableHead className="font-bold text-lg text-center">Actions</TableHead>
               )}
             </TableRow>
@@ -166,143 +128,17 @@ function Table<T>({
             {data.length > 0 ? (
               data.map((row, rowIndex) => (
                 <TableRow key={rowIndex} className="bg-white">
-                  {columns.map((column, colIndex) => {
-                    if (
-                      hasActions &&
-                      (column.header.toLowerCase() === "status" || column.accessorKey === "status")
-                    ) {
-                      return (
-                        <>
-                          <TableCell key={`actions-cell-${rowIndex}`} className="text-center">
-                            <div className="flex justify-center space-x-2">
-                              {onDetails && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  onClick={() => onDetails(row)}
-                                  className="px-2 py-1 h-8"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {onEdit && user?.role !== 'Technician' && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  onClick={() => onEdit(row)}
-                                  className="px-2 py-1 h-8"
-                                >
-                                  <SquarePen className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {onDelete && user?.role !== 'Technician' && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  onClick={() => onDelete(row)}
-                                  className="px-2 py-1 h-8 text-red-500 hover:text-red-700"
-                                >
-                                  <Trash className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {isReportsTable && onToggleStatus && (
-                                <TableCell className="text-center">
-                                  <Switch
-                                    checked={(row as any).status}
-                                    onCheckedChange={() => onToggleStatus((row as any).id, (row as any).status)}
-                                    className="bg-sf-black-300 data-[state=unchecked]:bg-sf-black-300"
-                                  />
-                                </TableCell>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell key={`status-cell-${rowIndex}`} className={cn("justify-end text-right", column.className)}>
-                            {column.cell
-                              ? column.cell(row)
-                              : (row[column.accessorKey] as React.ReactNode)}
-                          </TableCell>
-                        </>
-                      );
-                    }
-                    if (
-                      hasActions &&
-                      colIndex === columns.length - 1 &&
-                      !columns.some(
-                        c => c.header.toLowerCase() === "status" || c.accessorKey === "status"
-                      )
-                    ) {
-                      // If no status column, add Actions at the end
-                      return (
-                        <>
-                          <TableCell key={colIndex} className={column.className}>
-                            {column.cell
-                              ? column.cell(row)
-                              : (row[column.accessorKey] as React.ReactNode)}
-                          </TableCell>
-                          <TableCell key={`actions-cell-${rowIndex}`} className="text-center">
-                            <div className="flex justify-center space-x-2">
-                              {onDetails && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  onClick={() => onDetails(row)}
-                                  className="px-2 py-1 h-8"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {onEdit && user?.role !== 'Technician' && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  onClick={() => onEdit(row)}
-                                  className="px-2 py-1 h-8"
-                                >
-                                  <SquarePen className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {onDelete && user?.role !== 'Technician' && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  onClick={() => onDelete(row)}
-                                  className="px-2 py-1 h-8 text-red-500 hover:text-red-700"
-                                >
-                                  <Trash className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {isReportsTable && onToggleStatus && (
-                                <TableCell className="text-center">
-                                  <Switch
-                                    checked={(row as any).status}
-                                    onCheckedChange={() => onToggleStatus((row as any).id, (row as any).status)}
-                                    className="bg-sf-black-300 data-[state=unchecked]:bg-sf-black-300"
-                                  />
-                                </TableCell>
-                              )}
-                            </div>
-                          </TableCell>
-                        </>
-                      );
-                    }
-                    // Normal cell
-                    return (
-                      <TableCell key={colIndex} className={cn(
-                        column.header.toLowerCase() === "status" || column.accessorKey === "status"
-                          ? "justify-end text-right"
-                          : "",
-                        column.className
-                      )}>
-                        {column.cell
-                          ? column.cell(row)
-                          : (row[column.accessorKey] as React.ReactNode)}
-                      </TableCell>
-                    );
-                  })}
-                  {!columns.some(c => c.header.toLowerCase() === "status" || c.accessorKey === "status") && hasActions && (
+                  {columns.map((column, colIndex) => (
+                    <TableCell key={colIndex} className={column.className}>
+                      {column.cell
+                        ? column.cell(row)
+                        : (row[column.accessorKey] as React.ReactNode)}
+                    </TableCell>
+                  ))}
+                  {hasActions && (
                     <TableCell className="text-center">
-                      <div className="flex justify-center space-x-2">
-                        {onDetails && (
+                      <div className="flex justify-center items-center space-x-2">
+                        {onDetails && !isReportsTemplateTable && (
                           <Button 
                             variant="outline" 
                             size="sm" 
@@ -312,7 +148,7 @@ function Table<T>({
                             <Eye className="h-4 w-4" />
                           </Button>
                         )}
-                        {onEdit && user?.role !== 'Technician' && (
+                        {onEdit && (user?.role !== 'Technician' || isReportsTable) && !isReportsTemplateTable && (
                           <Button 
                             variant="outline" 
                             size="sm" 
@@ -322,7 +158,7 @@ function Table<T>({
                             <SquarePen className="h-4 w-4" />
                           </Button>
                         )}
-                        {onDelete && user?.role !== 'Technician' && (
+                        {onDelete && user?.role !== 'Technician' && !isReportsTemplateTable && (
                           <Button 
                             variant="outline" 
                             size="sm" 
@@ -332,14 +168,14 @@ function Table<T>({
                             <Trash className="h-4 w-4" />
                           </Button>
                         )}
-                        {isReportsTable && onToggleStatus && (
-                          <TableCell className="text-center">
+                        {isReportsTemplateTable && onToggleStatus && (
+                          <div className="flex flex-col items-center">
                             <Switch
                               checked={(row as any).status}
                               onCheckedChange={() => onToggleStatus((row as any).id, (row as any).status)}
                               className="bg-sf-black-300 data-[state=unchecked]:bg-sf-black-300"
                             />
-                          </TableCell>
+                          </div>
                         )}
                       </div>
                     </TableCell>

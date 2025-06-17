@@ -11,17 +11,16 @@ interface Report {
   id: string;
   name: string;
   created_at: string;
-  updated_at: string;
-  schema: any;
+  completed_reports: number;
   status: boolean;
 }
 
-interface ReportsTableProps {
+interface ProjectReportTableProps {
   searchQuery?: string;
   sortBy?: string;
 }
 
-const ReportsTable: React.FC<ReportsTableProps> = ({ searchQuery, sortBy }) => {
+const ProjectReportTable: React.FC<ProjectReportTableProps> = ({ searchQuery, sortBy }) => {
   const navigate = useNavigate();
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,18 +40,23 @@ const ReportsTable: React.FC<ReportsTableProps> = ({ searchQuery, sortBy }) => {
   const fetchReports = async () => {
     try {
       setIsLoading(true);
-      const response = await reportService.getAllReportTemplates();
+      const response = await reportService.getAllReports(
+        searchQuery,
+        sortBy,
+        pageSize,
+        currentPage
+      );
 
       if (response.success) {
         setReports(response.data.rows);
         setTotalCount(response.data.count);
         setError(null);
       } else {
-        setError(response.message || "Failed to load report templates");
+        setError(response.message || "Failed to load reports data");
       }
     } catch (err) {
-      console.error("Error fetching report templates:", err);
-      setError("Failed to load report templates");
+      console.error("Error fetching reports data:", err);
+      setError("Failed to load reports data");
     } finally {
       setIsLoading(false);
     }
@@ -60,7 +64,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({ searchQuery, sortBy }) => {
 
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
     try {
-      const response = await reportService.toggleReportTemplateStatus(
+      const response = await reportService.toggleReportStatus(
         id.toString(),
         !currentStatus
       );
@@ -100,7 +104,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({ searchQuery, sortBy }) => {
 
   const columns: Column<Report>[] = [
     {
-      header: "Template Name",
+      header: "Report Name",
       accessorKey: "name",
     },
     {
@@ -112,13 +116,27 @@ const ReportsTable: React.FC<ReportsTableProps> = ({ searchQuery, sortBy }) => {
       ),
     },
     {
-      header: "Last Updated",
-      accessorKey: "updated_at",
+      header: "Completed Reports",
+      accessorKey: "completed_reports",
+      className: "text-center",
+      cell: (report) => <span className="text-center">{report.completed_reports || 0}</span>,
+    },
+    {
+      header: "Status",
+      accessorKey: "status",
       className: "text-center",
       cell: (report) => (
-        <span className="text-center">{formatDate(report.updated_at)}</span>
+        <span className="text-center">
+          <span
+            className={`rounded py-1.5 px-3 text-white text-sm ${
+              report.status ? "bg-[#178D17]" : "bg-red-500"
+            }`}
+          >
+            {report.status ? "Enabled" : "Disabled"}
+          </span>
+        </span>
       ),
-    }
+    },
   ];
 
   if (isLoading && reports.length === 0) {
@@ -135,19 +153,19 @@ const ReportsTable: React.FC<ReportsTableProps> = ({ searchQuery, sortBy }) => {
         columns={columns}
         data={reports}
         hasActions={true}
-        onDetails={(report) => navigate(`/reports/${report.id}`)}
-        onEdit={(report) => navigate(`/reports/${report.id}/edit`)}
+        onDetails={(report) => navigate(`/project-reports/${report.id}`)}
+        onEdit={(report) => navigate(`/project-reports/${report.id}/edit`)}
         pagination={true}
         currentPage={currentPage}
         pageSize={pageSize}
         totalCount={totalCount}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
-        isReportsTemplateTable={true}
+        isReportsTable={true}
         onToggleStatus={handleToggleStatus}
       />
     </>
   );
 };
 
-export default ReportsTable;
+export default ProjectReportTable;

@@ -23,6 +23,8 @@ import Users from "./pages/Users";
 import UserForm from "./features/users/UserForm";
 import UserDetails from "./features/users/UserDetails";
 import Support from "./pages/Support";
+import ProjectReports from "./pages/ProjectReports";
+import ProjectReport from "./pages/ProjectReport";
 
 function App() {
   const { isAuthenticated } = useAuthStore();
@@ -108,8 +110,24 @@ function App() {
               <Route
                 path="edit"
                 element={
-                  <RoleBasedRoute allowedRoles={managerAdminRoles}>
+                  <RoleBasedRoute allowedRoles={[...managerAdminRoles, 'technician']}>
                     <Report />
+                  </RoleBasedRoute>
+                }
+              />
+            </Route>
+          </Route>
+
+          {/* Project Reports section */}
+          <Route path="project-reports">
+            <Route index element={<ProjectReports />} />
+            <Route path=":id">
+              <Route index element={<ReportDetails />} />
+              <Route
+                path="edit"
+                element={
+                  <RoleBasedRoute allowedRoles={[...managerAdminRoles, 'technician']}>
+                    <ProjectReport />
                   </RoleBasedRoute>
                 }
               />

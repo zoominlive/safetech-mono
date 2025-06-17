@@ -133,7 +133,7 @@ const ProjectForm: React.FC = () => {
     return options;
   };
   const fetchReports = async () => {
-    const res = await reportService.getAllReportTemplates();
+    const res = await reportService.getAllActiveReportTemplates();
     if (res.success) {
       return res.data.rows.map((r: any) => ({ value: r.id, label: r.name }));
     }
@@ -211,7 +211,7 @@ const ProjectForm: React.FC = () => {
         }
 
         // Fetch reports
-        const reportsResponse = await reportService.getAllReportTemplates();
+        const reportsResponse = await reportService.getAllActiveReportTemplates();
         if (reportsResponse.success) {
           setReports(reportsResponse.data.rows.map(report => ({
             id: report.id,

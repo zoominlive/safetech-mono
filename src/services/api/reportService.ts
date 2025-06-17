@@ -28,9 +28,32 @@ interface ReportTemplatesResponse {
       id: string,
       name: string,
       schema: any,
+      status: boolean,
       created_at: string,
       updated_at: string
     }>;
+  }
+}
+
+interface ReportTemplateResponse {
+  code: number;
+  message: string;
+  success: boolean;
+  data: {
+    id: string,
+    name: string,
+    schema: any,
+    status: boolean,
+    projects: Array<{
+      id: string,
+      name: string
+    }>,
+    reports: Array<{
+      id: string,
+      name: string
+    }>,
+    created_at: string,
+    updated_at: string
   }
 } 
 
@@ -70,6 +93,11 @@ export interface ReportResponse {
       [key: string]: any;
     } | null,
     status: boolean,
+    template?: {
+      id: string;
+      name: string;
+      schema: string | any;
+    };
   },
   code: number,
   message: string,
@@ -84,6 +112,20 @@ export interface ProjectReportData {
   assessment_due_to: string;
   date_of_loss: string;
   date_of_assessment: string;
+}
+
+export interface ReportTemplateData {
+  name: string;
+  schema: {
+    sections: Array<{
+      title: string;
+      fields: Array<{
+        id: string;
+        type: string;
+        label: string;
+      }>;
+    }>;
+  };
 }
 
 export const reportService = {
@@ -106,9 +148,21 @@ export const reportService = {
     );
     return response.data;
   },
+
+  getAllActiveReportTemplates: async (): Promise<ReportTemplatesResponse> => {    
+    const response: AxiosResponse<ReportTemplatesResponse> = await BaseClient.get(
+      '/report-templates/all-active'
+    );
+    return response.data;
+  },
   
   getReportById: async (id: string): Promise<ReportResponse> => {
     const response: AxiosResponse<ReportResponse> = await BaseClient.get(`/reports/get-report-details/${id}`);
+    return response.data;
+  },
+
+  getReportTemplateById: async (id: string): Promise<ReportTemplateResponse> => {
+    const response: AxiosResponse<ReportTemplateResponse> = await BaseClient.get(`/report-templates/get-report-template-details/${id}`);
     return response.data;
   },
   
@@ -121,9 +175,24 @@ export const reportService = {
     const response: AxiosResponse<{success: boolean; message: string}> = await BaseClient.patch(`/reports/${id}/status`, { status });
     return response.data;
   },
+
+  toggleReportTemplateStatus: async (id: string, status: boolean): Promise<{success: boolean; message: string}> => {
+    const response: AxiosResponse<{success: boolean; message: string}> = await BaseClient.patch(`/report-templates/${id}`, { status });
+    return response.data;
+  },
   
   updateProjectReport: async (projectId: string, reportData: ProjectReportData): Promise<{success: boolean; message: string}> => {
     const response: AxiosResponse<{success: boolean; message: string}> = await BaseClient.put(`/projects/${projectId}/report`, reportData);
+    return response.data;
+  },
+
+  addReportTemplate: async (reportTemplateData: ReportTemplateData): Promise<ReportTemplateResponse> => {
+    const response: AxiosResponse<ReportTemplateResponse> = await BaseClient.post('/report-templates/add', reportTemplateData);
+    return response.data;
+  },
+
+  updateReportTemplate: async (id: string, reportTemplateData: ReportTemplateData): Promise<ReportTemplateResponse> => {
+    const response: AxiosResponse<ReportTemplateResponse> = await BaseClient.put(`/report-templates/edit/${id}`, reportTemplateData);
     return response.data;
   }
 };
