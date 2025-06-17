@@ -102,6 +102,40 @@ const ProjectReportTable: React.FC<ProjectReportTableProps> = ({ searchQuery, so
     setCurrentPage(page);
   };
 
+  const handleDownloadPDF = async (id: string) => {
+    try {
+      const pdfBlob = await reportService.generateReportPDF(id);
+      
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(pdfBlob);
+      
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `report-${id}.pdf`;
+      
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the URL
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Success",
+        description: "Report PDF downloaded successfully",
+      });
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      toast({
+        title: "Error",
+        description: "Failed to download report PDF",
+        variant: "destructive",
+      });
+    }
+  };
+
   const columns: Column<Report>[] = [
     {
       header: "Report Name",
@@ -155,6 +189,7 @@ const ProjectReportTable: React.FC<ProjectReportTableProps> = ({ searchQuery, so
         hasActions={true}
         onDetails={(report) => navigate(`/project-reports/${report.id}`)}
         onEdit={(report) => navigate(`/project-reports/${report.id}/edit`)}
+        onDownload={(report) => handleDownloadPDF(report.id)}
         pagination={true}
         currentPage={currentPage}
         pageSize={pageSize}

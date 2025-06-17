@@ -194,5 +194,12 @@ export const reportService = {
   updateReportTemplate: async (id: string, reportTemplateData: ReportTemplateData): Promise<ReportTemplateResponse> => {
     const response: AxiosResponse<ReportTemplateResponse> = await BaseClient.put(`/report-templates/edit/${id}`, reportTemplateData);
     return response.data;
+  },
+
+  generateReportPDF: async (id: string): Promise<Blob> => {
+    const response: AxiosResponse<Blob> = await BaseClient.get(`/reports/${id}/pdf`, {
+      responseType: 'blob'
+    });
+    return response.data;
   }
 };
