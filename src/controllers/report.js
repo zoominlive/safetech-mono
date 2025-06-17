@@ -15,6 +15,8 @@ const {
 const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
 const { sequelize, Report, Project, ReportTemplate } = require("../models");
+const puppeteer = require('puppeteer');
+
 
 exports.createReport = async (req, res, next) => {
   const transaction = await sequelize.transaction();
@@ -171,18 +173,25 @@ exports.updateReport = async (req, res, next) => {
         success: false,
       });
     }
+
+    const updateData = {
+      project_id,
+      report_template_id,
+      assessment_due_to,
+      date_of_loss,
+      date_of_assessment,
+      answers: answers,
+      photos: photos,
+      status: status
+    };
+
+    // Only add name to update if it's not undefined, null, or empty string
+    if (name !== undefined && name !== null && name.trim() !== '') {
+      updateData.name = name;
+    }
+
     const updated = await Report.update(
-      {
-        name: name,
-        project_id,
-        report_template_id,
-        assessment_due_to,
-        date_of_loss,
-        date_of_assessment,
-        answers: answers,
-        photos: photos,
-        status: status
-      },
+      updateData,
       {
         where: { id: id },
         returning: true,
@@ -265,3 +274,204 @@ exports.deleteReport = async (req, res, next) => {
     next(err);
   }
 }
+
+exports.generatePDFReport = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const report = await Report.findByPk(id, {
+      include: [
+        { model: Project, as: "project", attributes: ["name"] },
+        { model: ReportTemplate, as: "template" },
+      ],
+    });
+
+    if (!report) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+
+    // Prepare the HTML content
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8" />
+          <title>Report PDF</title>
+          <style>
+            @page {
+              margin: 120px 50px 100px 50px;
+            }
+            body {
+              font-family: Arial, sans-serif;
+              font-size: 12px;
+              margin: 0;
+              padding: 0;
+            }
+            header {
+              position: fixed;
+              top: -100px;
+              left: 0;
+              right: 0;
+              height: 100px;
+              text-align: center;
+              border-bottom: 1px solid #ccc;
+            }
+            footer {
+              position: fixed;
+              bottom: -80px;
+              left: 0;
+              right: 0;
+              height: 50px;
+              font-size: 10px;
+              text-align: center;
+              border-top: 1px solid #ccc;
+            }
+            .pagenum:before {
+              content: counter(page);
+            }
+            h1, h2, h3 {
+              color: #222;
+              margin: 30px 0 10px;
+            }
+            .section {
+              page-break-before: always;
+              margin-top: 100px;
+            }
+            .cover {
+              text-align: center;
+              padding-top: 200px;
+              font-size: 24px;
+              font-weight: bold;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 10px 0;
+            }
+            td, th {
+              border: 1px solid #ccc;
+              padding: 8px;
+            }
+            .photos img {
+              max-width: 300px;
+              margin: 10px 0;
+              page-break-inside: avoid;
+            }
+            .toc ul {
+              list-style: none;
+              padding-left: 0;
+            }
+            .toc li {
+              margin-bottom: 5px;
+            }
+          </style>
+        </head>
+        <body>
+          <header>
+            <img src="https://safetech-dev-images.s3.ca-central-1.amazonaws.com/profiles/image.png" height="60" />
+            <div>Safetech Environmental Ltd. | Confidential Assessment Report</div>
+          </header>
+
+          <footer>
+            Page <span class="pagenum"></span>
+          </footer>
+
+          <div class="cover">
+            <div>Assessment Report</div>
+            <div>${report.name}</div>
+            <div>Prepared for: ${report.answers?.clientName || "N/A"}</div>
+          </div>
+
+          <div class="section toc">
+            <h2>Table of Contents</h2>
+            <ul>
+              <li>1. Executive Summary</li>
+              <li>2. Project & Assessment Details</li>
+              <li>3. Responses Summary</li>
+              <li>4. Photos</li>
+            </ul>
+          </div>
+
+          <div class="section">
+            <h2>1. Executive Summary</h2>
+            <p>Safetech Environmental Limited (Safetech) was commissioned by <strong>${report.answers?.clientName || "N/A"}</strong> to conduct a designated substances and hazardous materials assessment in <strong>${report.answers?.projectLocationAddress || "N/A"}</strong>.</p>
+            <p>The objective of the assessment was to determine the presence, location, condition and quantities of designated substances and other hazardous materials that have the potential to be disturbed as part of planned construction activities (<strong>${report.project?.name || "N/A"}</strong>) so that appropriate control measures can be implemented to protect workers during the work.</p>
+            <p>A summary of the assessment results and general recommendations based on our findings are provided in the following sections. This should be considered a summary only. Please refer to Section 2.0 and Section 3.0 of the report for full details.</p>
+          </div>
+
+          <div class="section">
+            <h2>2. Project & Assessment Details</h2>
+            <p><strong>Project:</strong> ${report.project?.name || "N/A"}</p>
+            <p><strong>Assessment Due To:</strong> ${report.assessment_due_to || "N/A"}</p>
+            <p><strong>Date of Loss:</strong> ${report.date_of_loss || "N/A"}</p>
+            <p><strong>Date of Assessment:</strong> ${report.date_of_assessment || "N/A"}</p>
+          </div>
+
+          <div class="section">
+            <h2>3. Responses Summary</h2>
+            <table>
+              <tbody>
+                ${Object.entries(report.answers || {})
+                  .map(([key, value]) => {
+                    if (Array.isArray(value)) {
+                      return `<tr><td>${key}</td><td>${value
+                        .map((v) =>
+                          typeof v === "object"
+                            ? v.label || JSON.stringify(v)
+                            : v
+                        )
+                        .join(", ")}</td></tr>`;
+                    } else if (typeof value === "object" && value !== null) {
+                      return `<tr><td>${key}</td><td>${
+                        value.label || JSON.stringify(value)
+                      }</td></tr>`;
+                    } else {
+                      return `<tr><td>${key}</td><td>${value}</td></tr>`;
+                    }
+                  })
+                  .join("")}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="section photos">
+            <h2>4. Photos</h2>
+            ${
+              report.photos?.length
+                ? report.photos
+                    .map(
+                      (photo) =>
+                        `<img src="http://localhost:8000/uploads/reports/${photo}" alt="Photo" />`
+                    )
+                    .join("")
+                : "<p>No photos uploaded</p>"
+            }
+          </div>
+        </body>
+      </html>
+    `;
+
+    const browser = await puppeteer.launch({ headless: "new" });
+    const page = await browser.newPage();
+    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: { top: "120px", bottom: "100px", left: "50px", right: "50px" },
+    });
+
+    await browser.close();
+
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Length": pdfBuffer.length,
+      "Content-Disposition": `inline; filename="report-${report.id}.pdf"`,
+    });
+
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error("Error generating PDF report:", error);
+    next(error);
+  }
+};

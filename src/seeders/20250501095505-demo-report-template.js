@@ -34,6 +34,7 @@ module.exports = {
             }
           ]
         }),
+        status: true,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -65,6 +66,7 @@ module.exports = {
             }
           ]
         }),
+        status: true,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -97,6 +99,7 @@ module.exports = {
             }
           ]
         }),
+        status: false,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -129,6 +132,7 @@ module.exports = {
             }
           ]
         }),
+        status: true,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -162,6 +166,7 @@ module.exports = {
             }
           ]
         }),
+        status: false,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -201,6 +206,7 @@ module.exports = {
             }
           ]
         }),
+        status: true,
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -242,6 +248,7 @@ module.exports = {
             }
           ]
         }),
+        status: false,
         created_at: new Date(),
         updated_at: new Date()
       }

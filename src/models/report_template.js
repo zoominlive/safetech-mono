@@ -14,6 +14,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.JSON, // The structure/fields expected in this type
       allowNull: true
     },
+    status: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: true
+    },
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,

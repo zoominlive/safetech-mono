@@ -8,5 +8,6 @@ app.route('/:id/status').patch(authenticate, controller.toggleStatus);
 app.route('/delete/:id').delete(authenticate, controller.deleteReport);
 app.route('/get-report-details/:id').get(authenticate, controller.getReportById);
 app.route('/all').get(authenticate, controller.getAllReports);
+app.route('/:id/pdf').get(authenticate, controller.generatePDFReport);
 
 module.exports = app;
