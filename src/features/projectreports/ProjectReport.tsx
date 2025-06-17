@@ -35,12 +35,6 @@ interface SchemaSection {
   fields: SchemaField[];
 }
 
-interface Room {
-  id: string;
-  room_name: string;
-  room_desc: string;
-}
-
 export const ProjectReport: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
