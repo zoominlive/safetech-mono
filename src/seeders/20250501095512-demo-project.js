@@ -73,6 +73,8 @@ module.exports = {
     const projects = Array(projectCount).fill().map(() => {
       const siteName = generateRandomSiteName();
       const startDate = new Date(new Date().setDate(new Date().getDate() - Math.floor(Math.random() * 180)));
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + Math.floor(Math.random() * 30)); // Random end date between 0-30 days after start
       const location = locations[Math.floor(Math.random() * locations.length)];
       return {
         id: uuidv4(),
@@ -88,6 +90,7 @@ module.exports = {
         technician_id: technicianIds[Math.floor(Math.random() * technicianIds.length)],
         customer_id: location.customer_id, // ensure project is linked to the customer of the location
         start_date: startDate,
+        end_date: endDate,
         created_at: new Date(),
         updated_at: new Date(),
       };

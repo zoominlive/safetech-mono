@@ -6,6 +6,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
     },
+    project_no: {
+      allowNull: true,
+      type: DataTypes.STRING,
+    },
     name: {
       allowNull: true,
       type: DataTypes.STRING
@@ -55,6 +59,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     start_date: {
+      allowNull: true,
+      type: DataTypes.DATE
+    },
+    end_date: {
       allowNull: true,
       type: DataTypes.DATE
     },

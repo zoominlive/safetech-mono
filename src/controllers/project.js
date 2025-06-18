@@ -24,6 +24,7 @@ exports.createProject = async (req, res, next) => {
     console.log('user==>', user);
     
     const {
+      project_no,
       name,
       site_name,
       site_contact_name,
@@ -36,6 +37,7 @@ exports.createProject = async (req, res, next) => {
       technician_id,
       customer_id,
       start_date,
+      end_date,
     } = req.body;
 
     if (user.role == USER_ROLE.TECHNICIAN) {
@@ -45,6 +47,7 @@ exports.createProject = async (req, res, next) => {
 
     const projectCreated = await Project.create(
       {
+        project_no: project_no,
         name: name,
         site_name: site_name,
         site_contact_name,
@@ -58,6 +61,7 @@ exports.createProject = async (req, res, next) => {
         technician_id: technician_id,
         customer_id: customer_id,
         start_date: start_date,
+        end_date: end_date,
       },
       { transaction }
     );
@@ -182,6 +186,7 @@ exports.updateProject = async (req, res, next) => {
     const { user } = req;
     const { id } = req.params;
     const {
+      project_no,
       name,
       site_name,
       site_contact_name,
@@ -193,7 +198,8 @@ exports.updateProject = async (req, res, next) => {
       pm_id,
       technician_id,
       customer_id,
-      start_date 
+      start_date,
+      end_date,
     } = req.body;
 
     if (user.role == USER_ROLE.TECHNICIAN) {
@@ -214,6 +220,7 @@ exports.updateProject = async (req, res, next) => {
       // Only allow status change through controlled flows (not direct update)
       const updated = await Project.update(
         {
+          project_no: project_no,
           name: name,
           site_name: site_name,
           site_contact_name,
@@ -227,6 +234,7 @@ exports.updateProject = async (req, res, next) => {
           technician_id: technician_id,
           customer_id: customer_id,
           start_date: start_date,
+          end_date: end_date,
         },
         {
           where: { id: id },
