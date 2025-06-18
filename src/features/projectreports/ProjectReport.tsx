@@ -47,6 +47,12 @@ export const ProjectReport: React.FC = () => {
   const [schema, setSchema] = useState<SchemaSection[]>([]);
   const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
 
+  const alwaysDisabledFields = [
+    'clientCompanyName', 'clientAddress', 'contactName', 'contactPosition', 'contactEmail', 'contactPhone',
+    'projectName', 'projectNumber', 'projectAddress', 'startDate', 'endDate', 'pmName', 'pmEmail', 'pmPhone',
+    'technicianName', 'technicianEmail', 'technicianPhone', 'technicianTitle'
+  ];
+
   useEffect(() => {
     if (id) {
       fetchReportData();
@@ -62,7 +68,37 @@ export const ProjectReport: React.FC = () => {
 
       if (response.success) {
         const answers = response.data.answers || {};
-        setReportData(answers);
+        const project = response.data.project || {};
+        const company = project.company || {};
+        const pm = project.pm || {};
+        const technician = project.technician || {};
+
+        const mergedAnswers = {
+          ...answers,
+          clientCompanyName: company.company_name || '',
+          clientAddress: [company.address_line_1, company.address_line_2, company.city, company.province, company.postal_code].filter(Boolean).join(', '),
+          contactName: [company.first_name, company.last_name].filter(Boolean).join(' '),
+          contactPosition: company.position || '',
+          contactEmail: company.email || '',
+          contactPhone: company.phone || '',
+          projectName: project.name || '',
+          startDate: project.start_date ? project.start_date.split('T')[0] : '',
+          endDate: project.end_date ? project.end_date.split('T')[0] : '',
+          projectNumber: project.project_no || '',
+          projectAddress: project.site_name || '',
+          pmName: [pm.first_name, pm.last_name].filter(Boolean).join(' '),
+          pmEmail: pm.email || '',
+          pmPhone: pm.phone || '',
+          technicianName: [technician.first_name, technician.last_name].filter(Boolean).join(' '),
+          technicianEmail: technician.email || '',
+          technicianPhone: technician.phone || '',
+          technicianTitle: technician.role || '',
+          // Defensive: ensure areaDetails is always an array of unique objects
+          areaDetails: Array.isArray(answers.areaDetails)
+            ? answers.areaDetails.map(item => ({ ...item }))
+            : [],
+        };
+        setReportData(mergedAnswers);
 
         if (response.data.template?.schema) {
           try {
@@ -186,7 +222,9 @@ export const ProjectReport: React.FC = () => {
 
   const renderField = (field: SchemaField) => {
     const value = reportData[field.id];
-    const isEditable = isFieldEditable();
+    // Always disable for prefilled fields
+    const isPrefilledDisabled = alwaysDisabledFields.includes(field.id);
+    const isEditable = isFieldEditable() && !isPrefilledDisabled;
     const files = field.type === "file" ? (Array.isArray(value) ? value : []) : [];
 
     switch (field.type) {
@@ -348,19 +386,26 @@ export const ProjectReport: React.FC = () => {
         const conditionKey = field.showWhen?.split('=')[0];
         const expectedCondition = field.showWhen?.split('=')[1];
         const conditionValue = reportData[conditionKey || ''];
-
+      
         if (conditionValue === expectedCondition) {
           return (
             <div className="space-y-4">
-              {field.fields?.map((nestedField) => (
-                <div key={nestedField.name} className="space-y-2">
-                  <Label>
-                    {nestedField.label}
-                    {nestedField.required && <span className="text-red-500 ml-1">*</span>}
-                  </Label>
-                  {renderField(nestedField)}
-                </div>
-              ))}
+              {field.fields?.map((nestedField) => {
+                let showNestedField = true;
+                if (nestedField.showWhen) {
+                  const [depKey, depValue] = nestedField.showWhen.split('=');
+                  showNestedField = reportData[depKey] === depValue;
+                }
+                return showNestedField ? (
+                  <div key={nestedField.id} className="space-y-2">
+                    <Label>
+                      {nestedField.label}
+                      {nestedField.required && <span className="text-red-500 ml-1">*</span>}
+                    </Label>
+                    {renderField(nestedField)}
+                  </div>
+                ) : null;
+              })}
             </div>
           );
         }
@@ -374,15 +419,15 @@ export const ProjectReport: React.FC = () => {
               <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="space-y-2 w-full">
                   {field.fields?.map((nestedField) => (
-                    <div key={nestedField.name}>
+                    <div key={nestedField.id}>
                       <Label>{nestedField.label}</Label>
                       <Input
-                        value={item[nestedField.name] || ""}
+                        value={item[nestedField.id] || ""}
                         onChange={(e) => {
                           const newItems = [...(reportData[field.id] || [])];
                           newItems[index] = {
                             ...newItems[index],
-                            [nestedField.name]: e.target.value,
+                            [nestedField.id]: e.target.value,
                           };
                           setReportData({
                             ...reportData,
@@ -416,7 +461,7 @@ export const ProjectReport: React.FC = () => {
                 const newItems = [...(reportData[field.id] || [])];
                 const newItem: Record<string, any> = {};
                 field.fields?.forEach(nestedField => {
-                  newItem[nestedField.name] = '';
+                  newItem[nestedField.id] = '';
                 });
                 setReportData({
                   ...reportData,

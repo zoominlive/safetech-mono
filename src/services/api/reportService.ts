@@ -98,6 +98,84 @@ export interface ReportResponse {
       name: string;
       schema: string | any;
     };
+    project: {
+      id: string;
+      project_no: string;
+      name: string;
+      site_name: string;
+      site_contact_name: string;
+      site_contact_title: string;
+      site_email: string;
+      status: string;
+      report_template_id: string;
+      location_id: string;
+      pm_id: string;
+      technician_id: string;
+      customer_id: string;
+      start_date: string;
+      end_date: string;
+      created_at: string;
+      updated_at: string;
+      deleted_at: string | null;
+      company: {
+        id: string;
+        company_name: string;
+        first_name: string;
+        last_name: string;
+        email: string;
+        position: string;
+        phone: string;
+        address_line_1: string;
+        address_line_2: string;
+        city: string;
+        province: string;
+        postal_code: string;
+        status: boolean;
+        created_at: string;
+        updated_at: string;
+        deleted_at: string | null;
+      };
+      pm: {
+        id: string;
+        first_name: string;
+        last_name: string;
+        profile_picture: string | null;
+        role: string;
+        email: string;
+        phone: string;
+        status: string;
+        activation_token: string | null;
+        activation_token_expires: string | null;
+        last_login: string | null;
+        is_verified: boolean;
+        deactivated_user: boolean;
+        password: string | null;
+        created_at: string;
+        updated_at: string;
+        deleted_at: string | null;
+        created_by: string;
+      };
+      technician: {
+        id: string;
+        first_name: string;
+        last_name: string;
+        profile_picture: string | null;
+        role: string;
+        email: string;
+        phone: string;
+        status: string;
+        activation_token: string | null;
+        activation_token_expires: string | null;
+        last_login: string | null;
+        is_verified: boolean;
+        deactivated_user: boolean;
+        password: string | null;
+        created_at: string;
+        updated_at: string;
+        deleted_at: string | null;
+        created_by: string;
+      };
+    };
   },
   code: number,
   message: string,
