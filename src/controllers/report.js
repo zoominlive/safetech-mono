@@ -186,7 +186,6 @@ exports.getReportById = async (req, res, next) => {
 
 exports.updateReport = async (req, res, next) => {
   try {
-    const { user } = req;
     const { id } = req.params;
     const {       
       name,
@@ -200,10 +199,6 @@ exports.updateReport = async (req, res, next) => {
       status
     } = req.body;
 
-    if (user.role == USER_ROLE.TECHNICIAN) {
-      const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
-      return ErrorHandler(ApiError, req, res, next);
-    }
     const fetchReport = await Report.findOne({ where: { id: id } });
     if (!fetchReport) {
       return res
