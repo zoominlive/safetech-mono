@@ -201,5 +201,26 @@ export const reportService = {
       responseType: 'blob'
     });
     return response.data;
+  },
+
+  uploadReportFile: async (reportId: string, formData: FormData) => {
+    try {
+      const response = await BaseClient.postFormData(`/reports/${reportId}/upload`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return { success: true, data: response.data };
+    } catch (error: unknown) {
+      const errorMessage = 
+        error && typeof error === 'object' && 'response' in error
+          ? (error.response as any)?.data?.message
+          : 'Failed to upload file';
+      
+      return { 
+        success: false, 
+        message: errorMessage 
+      };
+    }
   }
 };

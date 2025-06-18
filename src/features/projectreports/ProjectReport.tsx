@@ -1,4 +1,4 @@
-import { CirclePlus, CircleX } from "lucide-react";
+import { CirclePlus, CircleX, Upload } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -45,6 +45,7 @@ export const ProjectReport: React.FC = () => {
 
   const [reportData, setReportData] = useState<Record<string, any>>({});
   const [schema, setSchema] = useState<SchemaSection[]>([]);
+  const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (id) {
@@ -108,7 +109,7 @@ export const ProjectReport: React.FC = () => {
           title: "Success",
           description: "Report updated successfully",
         });
-        navigate("/reports");
+        navigate("/project-reports");
       }
     } catch (error) {
       console.error("Error saving report:", error);
@@ -123,7 +124,7 @@ export const ProjectReport: React.FC = () => {
   };
 
   const handleCancel = () => {
-    navigate("/reports");
+    navigate("/project-reports");
   };
 
   const isFieldEditable = () => {
@@ -131,9 +132,62 @@ export const ProjectReport: React.FC = () => {
     return userRole === "Technician" || userRole === "Project Manager";
   };
 
+  const handleFileUpload = async (fieldId: string, files: FileList | null) => {
+    if (!files || !files.length || !id) return;
+
+    try {
+      setUploadingFiles(prev => ({ ...prev, [fieldId]: true }));
+      
+      const formData = new FormData();
+      Array.from(files).forEach(file => {
+        formData.append('files', file);
+      });
+
+      const response = await reportService.uploadReportFile(id, formData);
+      
+      if (response.success) {
+        // Update the report data with the returned URLs
+        const currentFiles = Array.isArray(reportData[fieldId]) ? reportData[fieldId] : [];
+        setReportData({
+          ...reportData,
+          [fieldId]: [...currentFiles, ...(response.data as { data: { urls: string[] } }).data.urls],
+        });
+        
+        toast({
+          title: "Success",
+          description: "Files uploaded successfully",
+        });
+      } else {
+        toast({
+          title: "Upload failed",
+          description: response.message || "Failed to upload files",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to upload files:", error);
+      toast({
+        title: "Upload failed",
+        description: "An error occurred during upload",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingFiles(prev => ({ ...prev, [fieldId]: false }));
+    }
+  };
+
+  const removeFile = (fieldId: string, fileUrl: string) => {
+    const currentFiles = Array.isArray(reportData[fieldId]) ? reportData[fieldId] : [];
+    setReportData({
+      ...reportData,
+      [fieldId]: currentFiles.filter(url => url !== fileUrl),
+    });
+  };
+
   const renderField = (field: SchemaField) => {
     const value = reportData[field.id];
     const isEditable = isFieldEditable();
+    const files = field.type === "file" ? (Array.isArray(value) ? value : []) : [];
 
     switch (field.type) {
       case "text":
@@ -248,19 +302,47 @@ export const ProjectReport: React.FC = () => {
         );
       case "file":
         return (
-          <Input
-            type="file"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                setReportData({
-                  ...reportData,
-                  [field.id]: file,
-                });
-              }
-            }}
-            disabled={!isEditable}
-          />
+          <div className="space-y-4">
+            <div className="flex items-center space-x-4">
+              <Label htmlFor={`file-${field.id}`} className="cursor-pointer">
+                <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
+                  <Upload size={18} />
+                  <span>{uploadingFiles[field.id] ? "Uploading..." : "Upload Files"}</span>
+                </div>
+              </Label>
+              <input
+                id={`file-${field.id}`}
+                type="file"
+                multiple
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleFileUpload(field.id, e.target.files)}
+                disabled={!isEditable || uploadingFiles[field.id]}
+              />
+            </div>
+            
+            {files.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {files.map((fileUrl, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={fileUrl}
+                      alt={`Uploaded file ${index + 1}`}
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
+                    {isEditable && (
+                      <button
+                        onClick={() => removeFile(field.id, fileUrl)}
+                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <CircleX className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         );
       case "conditional": {
         const conditionKey = field.showWhen?.split('=')[0];
