@@ -1,4 +1,4 @@
-import { CirclePlus, CircleX, Upload } from "lucide-react";
+import { CirclePlus, CircleX, Upload, List } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -12,6 +12,13 @@ import { useNavigate, useParams } from "react-router";
 import BackButton from "@/components/BackButton";
 import { useAuthStore } from "@/store";
 import { Input } from "@/components/ui/input";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 interface SchemaField {
   type: string;
@@ -35,6 +42,12 @@ interface SchemaSection {
   fields: SchemaField[];
 }
 
+interface Area {
+  id: string;
+  name: string;
+  assessments: Record<string, any>;
+}
+
 export const ProjectReport: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -42,6 +55,9 @@ export const ProjectReport: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const { user } = useAuthStore();
   const userRole = user?.role;
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [selectedArea, setSelectedArea] = useState<Area | null>(null);
+  const [areas, setAreas] = useState<Area[]>([]);
 
   const [reportData, setReportData] = useState<Record<string, any>>({});
   const [schema, setSchema] = useState<SchemaSection[]>([]);
@@ -73,30 +89,66 @@ export const ProjectReport: React.FC = () => {
         const pm = project.pm || {};
         const technician = project.technician || {};
 
+        // Initialize areas from areaDetails or create a default area
+        const areaDetails = Array.isArray(answers.areaDetails) ? answers.areaDetails : [];
+        const initialAreas = areaDetails.length > 0 
+          ? areaDetails.map((area: any, index: number) => ({
+              id: area.id || `area-${index}`,
+              name: area.name || `Area ${index + 1}`,
+              assessments: {
+                ...area.assessments,
+                // Prefill common fields for each area
+                clientCompanyName: company.company_name || '',
+                clientAddress: [company.address_line_1, company.address_line_2, company.city, company.province, company.postal_code].filter(Boolean).join(', '),
+                contactName: [company.first_name, company.last_name].filter(Boolean).join(' '),
+                contactPosition: company.position || '',
+                contactEmail: company.email || '',
+                contactPhone: company.phone || '',
+                projectName: project.name || '',
+                startDate: project.start_date ? project.start_date.split('T')[0] : '',
+                endDate: project.end_date ? project.end_date.split('T')[0] : '',
+                projectNumber: project.project_no || '',
+                projectAddress: project.site_name || '',
+                pmName: [pm.first_name, pm.last_name].filter(Boolean).join(' '),
+                pmEmail: pm.email || '',
+                pmPhone: pm.phone || '',
+                technicianName: [technician.first_name, technician.last_name].filter(Boolean).join(' '),
+                technicianEmail: technician.email || '',
+                technicianPhone: technician.phone || '',
+                technicianTitle: technician.role || '',
+              }
+            }))
+          : [{
+              id: 'area-1',
+              name: 'Area 1',
+              assessments: {
+                clientCompanyName: company.company_name || '',
+                clientAddress: [company.address_line_1, company.address_line_2, company.city, company.province, company.postal_code].filter(Boolean).join(', '),
+                contactName: [company.first_name, company.last_name].filter(Boolean).join(' '),
+                contactPosition: company.position || '',
+                contactEmail: company.email || '',
+                contactPhone: company.phone || '',
+                projectName: project.name || '',
+                startDate: project.start_date ? project.start_date.split('T')[0] : '',
+                endDate: project.end_date ? project.end_date.split('T')[0] : '',
+                projectNumber: project.project_no || '',
+                projectAddress: project.site_name || '',
+                pmName: [pm.first_name, pm.last_name].filter(Boolean).join(' '),
+                pmEmail: pm.email || '',
+                pmPhone: pm.phone || '',
+                technicianName: [technician.first_name, technician.last_name].filter(Boolean).join(' '),
+                technicianEmail: technician.email || '',
+                technicianPhone: technician.phone || '',
+                technicianTitle: technician.role || '',
+              }
+            }];
+
+        setAreas(initialAreas);
+        setSelectedArea(initialAreas[0]);
+
         const mergedAnswers = {
           ...answers,
-          clientCompanyName: company.company_name || '',
-          clientAddress: [company.address_line_1, company.address_line_2, company.city, company.province, company.postal_code].filter(Boolean).join(', '),
-          contactName: [company.first_name, company.last_name].filter(Boolean).join(' '),
-          contactPosition: company.position || '',
-          contactEmail: company.email || '',
-          contactPhone: company.phone || '',
-          projectName: project.name || '',
-          startDate: project.start_date ? project.start_date.split('T')[0] : '',
-          endDate: project.end_date ? project.end_date.split('T')[0] : '',
-          projectNumber: project.project_no || '',
-          projectAddress: project.site_name || '',
-          pmName: [pm.first_name, pm.last_name].filter(Boolean).join(' '),
-          pmEmail: pm.email || '',
-          pmPhone: pm.phone || '',
-          technicianName: [technician.first_name, technician.last_name].filter(Boolean).join(' '),
-          technicianEmail: technician.email || '',
-          technicianPhone: technician.phone || '',
-          technicianTitle: technician.role || '',
-          // Defensive: ensure areaDetails is always an array of unique objects
-          areaDetails: Array.isArray(answers.areaDetails)
-            ? answers.areaDetails.map(item => ({ ...item }))
-            : [],
+          areaDetails: initialAreas
         };
         setReportData(mergedAnswers);
 
@@ -135,7 +187,10 @@ export const ProjectReport: React.FC = () => {
       const payload = {
         name: reportData.name || "",
         status: true,
-        answers: reportData
+        answers: {
+          ...reportData,
+          areaDetails: areas
+        }
       };
 
       const response = await reportService.updateReport(id!, payload);
@@ -220,9 +275,8 @@ export const ProjectReport: React.FC = () => {
     });
   };
 
-  const renderField = (field: SchemaField) => {
-    const value = reportData[field.id];
-    // Always disable for prefilled fields
+  const renderField = (field: SchemaField, area: Area) => {
+    const value = area.assessments[field.id];
     const isPrefilledDisabled = alwaysDisabledFields.includes(field.id);
     const isEditable = isFieldEditable() && !isPrefilledDisabled;
     const files = field.type === "file" ? (Array.isArray(value) ? value : []) : [];
@@ -233,10 +287,7 @@ export const ProjectReport: React.FC = () => {
           <Input
             value={value || ""}
             onChange={(e) =>
-              setReportData({
-                ...reportData,
-                [field.id]: e.target.value,
-              })
+              updateAreaAssessment(field.id, e.target.value)
             }
             disabled={!isEditable}
             placeholder={field.placeholder}
@@ -247,10 +298,7 @@ export const ProjectReport: React.FC = () => {
           <RadioGroup
             value={value}
             onValueChange={(newValue) =>
-              setReportData({
-                ...reportData,
-                [field.id]: newValue,
-              })
+              updateAreaAssessment(field.id, newValue)
             }
             disabled={!isEditable}
             className="flex space-x-4"
@@ -269,10 +317,7 @@ export const ProjectReport: React.FC = () => {
             options={field.options?.map((opt: string) => ({ value: opt, label: opt })) || []}
             selected={Array.isArray(value) ? value : []}
             onChange={(selected) =>
-              setReportData({
-                ...reportData,
-                [field.id]: selected,
-              })
+              updateAreaAssessment(field.id, selected)
             }
             className="w-full"
             placeholder={field.placeholder || `Select ${field.label}`}
@@ -285,10 +330,7 @@ export const ProjectReport: React.FC = () => {
             options={field.options?.map((opt: string) => ({ value: opt, label: opt })) || []}
             selected={value ? [value] : []}
             onChange={(selected) =>
-              setReportData({
-                ...reportData,
-                [field.id]: selected[0],
-              })
+              updateAreaAssessment(field.id, selected[0])
             }
             className="w-full"
             placeholder={field.placeholder || `Select ${field.label}`}
@@ -301,10 +343,7 @@ export const ProjectReport: React.FC = () => {
             type="date"
             value={value || ""}
             onChange={(e) =>
-              setReportData({
-                ...reportData,
-                [field.id]: e.target.value,
-              })
+              updateAreaAssessment(field.id, e.target.value)
             }
             disabled={!isEditable}
           />
@@ -315,10 +354,7 @@ export const ProjectReport: React.FC = () => {
             type="number"
             value={value || ""}
             onChange={(e) =>
-              setReportData({
-                ...reportData,
-                [field.id]: e.target.value,
-              })
+              updateAreaAssessment(field.id, e.target.value)
             }
             disabled={!isEditable}
           />
@@ -329,10 +365,7 @@ export const ProjectReport: React.FC = () => {
             type="text"
             value={value || ""}
             onChange={(e) =>
-              setReportData({
-                ...reportData,
-                [field.id]: e.target.value,
-              })
+              updateAreaAssessment(field.id, e.target.value)
             }
             disabled={!isEditable}
             placeholder="Technician Signature (Type to sign)"
@@ -385,7 +418,7 @@ export const ProjectReport: React.FC = () => {
       case "conditional": {
         const conditionKey = field.showWhen?.split('=')[0];
         const expectedCondition = field.showWhen?.split('=')[1];
-        const conditionValue = reportData[conditionKey || ''];
+        const conditionValue = area.assessments[conditionKey || ''];
       
         if (conditionValue === expectedCondition) {
           return (
@@ -394,7 +427,7 @@ export const ProjectReport: React.FC = () => {
                 let showNestedField = true;
                 if (nestedField.showWhen) {
                   const [depKey, depValue] = nestedField.showWhen.split('=');
-                  showNestedField = reportData[depKey] === depValue;
+                  showNestedField = area.assessments[depKey] === depValue;
                 }
                 return showNestedField ? (
                   <div key={nestedField.id} className="space-y-2">
@@ -402,7 +435,7 @@ export const ProjectReport: React.FC = () => {
                       {nestedField.label}
                       {nestedField.required && <span className="text-red-500 ml-1">*</span>}
                     </Label>
-                    {renderField(nestedField)}
+                    {renderField(nestedField, area)}
                   </div>
                 ) : null;
               })}
@@ -412,7 +445,7 @@ export const ProjectReport: React.FC = () => {
         return null;
       }
       case "repeater": {
-        const repeaterItems = Array.isArray(reportData[field.id]) ? reportData[field.id] : [];
+        const repeaterItems = Array.isArray(area.assessments[field.id]) ? area.assessments[field.id] : [];
         return (
           <div className="space-y-4">
             {repeaterItems.map((item: any, index: number) => (
@@ -424,15 +457,12 @@ export const ProjectReport: React.FC = () => {
                       <Input
                         value={item[nestedField.id] || ""}
                         onChange={(e) => {
-                          const newItems = [...(reportData[field.id] || [])];
+                          const newItems = [...repeaterItems];
                           newItems[index] = {
                             ...newItems[index],
                             [nestedField.id]: e.target.value,
                           };
-                          setReportData({
-                            ...reportData,
-                            [field.id]: newItems,
-                          });
+                          updateAreaAssessment(field.id, newItems);
                         }}
                         disabled={!isEditable}
                       />
@@ -444,11 +474,8 @@ export const ProjectReport: React.FC = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      const newItems = (reportData[field.id] || []).filter((_: any, i: number) => i !== index);
-                      setReportData({
-                        ...reportData,
-                        [field.id]: newItems,
-                      });
+                      const newItems = repeaterItems.filter((_: any, i: number) => i !== index);
+                      updateAreaAssessment(field.id, newItems);
                     }}
                   >
                     <CircleX className="h-4 w-4" />
@@ -458,15 +485,12 @@ export const ProjectReport: React.FC = () => {
             ))}
             {isFieldEditable() && (
               <Button onClick={() => {
-                const newItems = [...(reportData[field.id] || [])];
+                const newItems = [...repeaterItems];
                 const newItem: Record<string, any> = {};
                 field.fields?.forEach(nestedField => {
                   newItem[nestedField.id] = '';
                 });
-                setReportData({
-                  ...reportData,
-                  [field.id]: [...newItems, newItem],
-                });
+                updateAreaAssessment(field.id, [...newItems, newItem]);
               }}>
                 <CirclePlus className="h-4 w-4 mr-2" />
                 Add {field.label}
@@ -477,6 +501,64 @@ export const ProjectReport: React.FC = () => {
       }
       default:
         return null;
+    }
+  };
+
+  const addNewArea = () => {
+    const newArea: Area = {
+      id: `area-${areas.length + 1}`,
+      name: `Area ${areas.length + 1}`,
+      assessments: {
+        // Copy common fields from the first area
+        ...areas[0].assessments,
+        // Clear any area-specific fields
+        ...Object.fromEntries(
+          Object.entries(areas[0].assessments)
+            .filter(([key]) => !alwaysDisabledFields.includes(key))
+            .map(([key]) => [key, ''])
+        )
+      }
+    };
+    setAreas([...areas, newArea]);
+    setSelectedArea(newArea);
+  };
+
+  const updateAreaAssessment = (fieldId: string, value: any) => {
+    if (!selectedArea) return;
+
+    const updatedAreas = areas.map(area => {
+      if (area.id === selectedArea.id) {
+        return {
+          ...area,
+          assessments: {
+            ...area.assessments,
+            [fieldId]: value
+          }
+        };
+      }
+      return area;
+    });
+
+    setAreas(updatedAreas);
+    setSelectedArea(updatedAreas.find(area => area.id === selectedArea.id) || null);
+  };
+
+  const removeArea = (areaId: string) => {
+    if (areas.length <= 1) {
+      toast({
+        title: "Error",
+        description: "Cannot remove the last area",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const updatedAreas = areas.filter(area => area.id !== areaId);
+    setAreas(updatedAreas);
+    
+    // If the removed area was selected, select the first remaining area
+    if (selectedArea?.id === areaId) {
+      setSelectedArea(updatedAreas[0]);
     }
   };
 
@@ -492,6 +574,53 @@ export const ProjectReport: React.FC = () => {
           <h1 className="text-2xl font-bold">Project Report</h1>
         </div>
         <div className="flex items-center space-x-2">
+          <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="flex items-center space-x-2">
+                <List className="h-4 w-4" />
+                <span>Areas</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Areas</SheetTitle>
+              </SheetHeader>
+              <div className="mt-6 space-y-4">
+                {areas.map((area) => (
+                  <div key={area.id} className="flex items-center justify-between">
+                    <Button
+                      variant={selectedArea?.id === area.id ? "default" : "outline"}
+                      className="flex-1 justify-start"
+                      onClick={() => {
+                        setSelectedArea(area);
+                        setIsDrawerOpen(false);
+                      }}
+                    >
+                      {area.name}
+                    </Button>
+                    {areas.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="ml-2"
+                        onClick={() => removeArea(area.id)}
+                      >
+                        <CircleX className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={addNewArea}
+                >
+                  <CirclePlus className="h-4 w-4 mr-2" />
+                  Add New Area
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
           <Button
             variant="outline"
             onClick={handleCancel}
@@ -507,28 +636,34 @@ export const ProjectReport: React.FC = () => {
 
       <Card>
         <CardContent className="p-6 space-y-6">
-          {schema.map((section, sectionIndex) => (
-            <div key={sectionIndex} className="space-y-6 border-b pb-7">
-              <h4 className="font-semibold text-xl">{section.title}</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {section.fields.map((field) => {
-                  const showField = field.showWhen ? reportData[field.showWhen.split('=')[0]] === field.showWhen.split('=')[1] : true;
-                  return showField ? (
-                    <div key={field.id} className="space-y-2">
-                      <Label>
-                        {field.label}
-                        {field.required && <span className="text-red-500 ml-1">*</span>}
-                      </Label>
-                      {renderField(field)}
-                    </div>
-                  ) : null;
-                })}
-              </div>
+          {selectedArea && (
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold mb-4">{selectedArea.name}</h3>
+              {schema.map((section, sectionIndex) => (
+                <div key={sectionIndex} className="space-y-6 border-b pb-7">
+                  <h4 className="font-semibold text-xl">{section.title}</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {section.fields.map((field) => {
+                      const showField = field.showWhen 
+                        ? selectedArea.assessments[field.showWhen.split('=')[0]] === field.showWhen.split('=')[1] 
+                        : true;
+                      return showField ? (
+                        <div key={field.id} className="space-y-2">
+                          <Label>
+                            {field.label}
+                            {field.required && <span className="text-red-500 ml-1">*</span>}
+                          </Label>
+                          {renderField(field, selectedArea)}
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </CardContent>
       </Card>
-
     </div>
   );
 }; 
