@@ -14,7 +14,7 @@ const {
 } = require("../helpers/constants");
 const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
-const { sequelize, Report, Project, ReportTemplate } = require("../models");
+const { sequelize, Report, Project, ReportTemplate, Customer, User } = require("../models");
 const puppeteer = require('puppeteer');
 const AWS = require('aws-sdk');
 const { AWS_REGION, AWS_BUCKET, AWS_S3_SECRET_ACCESS_KEY, AWS_S3_ACCESS_KEY_ID } = require("../config/use_env_variable");
@@ -157,9 +157,17 @@ exports.getReportById = async (req, res, next) => {
     const { id } = req.params;
     const report = await Report.findByPk(id, {
       include: [
-      { model: Project, as: 'project', attributes: ["name"] },
-      { model: ReportTemplate, as: 'template' },
-    ],
+        { 
+          model: Project, 
+          as: 'project',
+          include: [
+            { model: Customer, as: 'company' },
+            { model: User, as: 'pm' },
+            { model: User, as: 'technician' }
+          ]
+        },
+        { model: ReportTemplate, as: 'template' },
+      ],
     });
 
     if (!report) {  
