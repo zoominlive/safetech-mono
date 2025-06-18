@@ -63,6 +63,20 @@ const ProjectForm: React.FC = () => {
   const [_customers, setCustomers] = useState<Customer[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [_reports, setReports] = useState<Report[]>([]);
+  const [projectNumber, setProjectNumber] = useState<string>("");
+
+  // Generate a random 5-digit number
+  const generateProjectNumber = () => {
+    return Math.floor(10000 + Math.random() * 90000).toString();
+  };
+
+  useEffect(() => {
+    if (!id) {
+      // Generate new project number only for new projects
+      setProjectNumber(generateProjectNumber());
+    }
+  }, [id]);
+
   const [initialValues, setInitialValues] = useState<ProjectData>({
     name: "",
     company: {
@@ -99,6 +113,7 @@ const ProjectForm: React.FC = () => {
     technician_id: "",
     customer_id: "",
     start_date: "",
+    end_date: "",
   });
 
   // Form validation schema
@@ -241,6 +256,7 @@ const ProjectForm: React.FC = () => {
             const projectDetails = projectResponse.data;
             console.log("Project Details::", projectDetails);
             
+            setProjectNumber(projectDetails.project_no || ""); // Set project number from API
             setInitialValues({
               name: projectDetails.name,
               company: {
@@ -277,6 +293,7 @@ const ProjectForm: React.FC = () => {
               technician_id: projectDetails.technician_id,
               customer_id: projectDetails.customer_id,
               start_date: projectDetails.start_date,
+              end_date: projectDetails.end_date,
             });
           }
         }
@@ -309,6 +326,12 @@ const ProjectForm: React.FC = () => {
       } else {
         values.pm_id = "1"; // fallback or default
       }
+
+      // Add project number for new projects
+      if (!id) {
+        values.project_number = projectNumber;
+      }
+
       const response = id
         ? await projectService.updateProject(id, values)
         : await projectService.createProject(values);
@@ -351,9 +374,16 @@ const ProjectForm: React.FC = () => {
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-4 mb-8">
         <BackButton/>
-        <h2 className="font-semibold text-xl text-sf-black-300">
-          {id ? "Edit Project" : "Add Project"}
-        </h2>
+        <div>
+          <h2 className="font-semibold text-xl text-sf-black-300">
+            {id ? "Edit Project" : "Add Project"}
+          </h2>
+          {projectNumber && (
+            <p className="text-sm text-gray-500 mt-1">
+              Project Number: {projectNumber}
+            </p>
+          )}
+        </div>
       </div>
       <Formik
         initialValues={initialValues}
@@ -548,6 +578,23 @@ const ProjectForm: React.FC = () => {
                     setDate={(date) => {
                       if (date) {
                         setFieldValue("start_date", date.toISOString().split('T')[0]);
+                      }
+                    }}
+                  />
+                  <div className="min-h-[20px] relative">
+                    {errors.start_date && touched.start_date && (
+                      <div className="text-red-500 text-sm absolute left-0 top-0">{errors.start_date}</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="end_date">Expected End Date</Label>
+                  <DatePicker 
+                    date={values.end_date ? new Date(values.end_date) : undefined} 
+                    setDate={(date) => {
+                      if (date) {
+                        setFieldValue("end_date", date.toISOString().split('T')[0]);
                       }
                     }}
                   />

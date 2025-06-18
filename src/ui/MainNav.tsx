@@ -59,8 +59,8 @@ function MainNav({ onItemClick, expanded }: MainNavProps) {
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
     { icon: FileCog, label: "Projects", path: "/projects" },
     { icon: UserRoundPlus, label: "Customers", path: "/customers" },
-    { icon: FileChartLine, label: "Report Templates", path: "/reports" },
     { icon: FileChartLine, label: "Project Reports", path: "/project-reports" },
+    { icon: FileChartLine, label: "Report Templates", path: "/reports" },
     { icon: Users, label: "Staff", path: "/staff" },
     { icon: ChartNoAxesCombined, label: "Analytics", path: "/analytics" },
   ];

@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, SquarePen, Trash, Download } from "lucide-react";
+import { Eye, SquarePen, Trash, Download, FileChartLine } from "lucide-react";
 import { useAuthStore } from "@/store";
 import { Switch } from "@/components/ui/switch";
 
@@ -31,6 +31,7 @@ interface TableProps<T> {
   onEdit?: (row: T) => void;
   onDelete?: (row: T) => void;
   onDownload?: (row: T) => void;
+  onViewReport?: (row: T) => void;
   pagination?: boolean;
   // New pagination props
   currentPage?: number;
@@ -92,6 +93,7 @@ function Table<T>({
   onDelete,
   onDetails,
   onDownload,
+  onViewReport,
   onPageSizeChange,
   isReportsTable = false,
   isReportsTemplateTable = false,
@@ -158,6 +160,17 @@ function Table<T>({
                             className="px-2 py-1 h-8"
                           >
                             <SquarePen className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {onViewReport && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => onViewReport(row)}
+                            className="px-2 py-1 h-8"
+                            title="View Latest Report"
+                          >
+                            <FileChartLine className="h-4 w-4" />
                           </Button>
                         )}
                         {onDownload && isReportsTable && (

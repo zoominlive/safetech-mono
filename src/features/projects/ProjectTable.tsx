@@ -25,6 +25,7 @@ interface Project {
   pm: string;
   technician: string;
   status: string;
+  latestReportId?: string;
 }
 
 interface ProjectTableProps {
@@ -100,15 +101,23 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
       );
       
       if (response.success) {
-        const mappedProjects = response.data.rows.map(project => ({
-          id: project.id,
-          projectName: project.name,
-          company: project.company?.first_name + ' ' +  project.company?.last_name || '-',
-          startDate: formatDate(project.start_date),
-          pm: project.pm?.first_name + ' ' + project.pm?.last_name || '-',
-          technician: project.technician?.first_name + ' ' + project.technician?.last_name || '-',
-          status: project.status || 'new',
-        }));
+        const mappedProjects = response.data.rows.map(project => {
+          let latestReportId = undefined;
+          if (project.reports && project.reports.length > 0) {
+            // Get the last report (assuming sorted by creation or as latest)
+            latestReportId = project.reports[project.reports.length - 1].id;
+          }
+          return {
+            id: project.id,
+            projectName: project.name,
+            company: project.company?.first_name + ' ' +  project.company?.last_name || '-',
+            startDate: formatDate(project.start_date),
+            pm: project.pm?.first_name + ' ' + project.pm?.last_name || '-',
+            technician: project.technician?.first_name + ' ' + project.technician?.last_name || '-',
+            status: project.status || 'new',
+            latestReportId,
+          };
+        });
         
         setProjects(mappedProjects);
         setTotalCount(response.data.count);
@@ -183,6 +192,19 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
     }
   };
 
+  // Add handler for navigating to the latest report
+  const handleViewReport = (project: Project) => {
+    if (project.latestReportId) {
+      navigate(`/project-reports/${project.latestReportId}`);
+    } else {
+      toast({
+        title: "No Report",
+        description: "No report available for this project.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading && projects.length === 0) {
     return <TableSkeleton columns={5} rows={5} hasActions={true} />;
   }
@@ -201,6 +223,7 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
           onDetails={handleDetails}
           onDelete={openDeleteDialog}
           onEdit={handleEdit}
+          onViewReport={handleViewReport}
           pagination={true}
           currentPage={currentPage}
           pageSize={pageSize}

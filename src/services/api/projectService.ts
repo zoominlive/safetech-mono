@@ -9,12 +9,16 @@ interface ProjectsResponse {
     count: number
     rows: Array<{
       id: string,
+      project_no: string,
       name: string,
       site_name: string,
       site_email: string,
       status: string,
       location_id: string,
       pm_id: string,
+      reports: Array<{
+        id: string
+      }>,
       pm: {
         first_name: string;
         last_name: string;
@@ -30,6 +34,7 @@ interface ProjectsResponse {
       },
       customer_id: string,
       start_date: string,
+      end_date: string,
       created_at: string,
       updated_at: string,
       deleted_at: string,
@@ -73,6 +78,8 @@ export interface ProjectData {
     last_name: string;
   }
   start_date: string;
+  end_date: string;
+  project_number?: string;
 }
 
 export interface ProjectResponse {
@@ -81,6 +88,7 @@ export interface ProjectResponse {
   success: boolean;
   data: {
     id: string,
+    project_no: string,
     name: string,
     site_name: string,
     site_contact_name: string;
@@ -130,6 +138,7 @@ export interface ProjectResponse {
   }>;
     customer_id: string,
     start_date: string,
+    end_date: string,
     created_at: string,
     updated_at: string,
     deleted_at: string | null,
