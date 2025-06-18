@@ -16,7 +16,41 @@ const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
 const { sequelize, Report, Project, ReportTemplate } = require("../models");
 const puppeteer = require('puppeteer');
+const AWS = require('aws-sdk');
+const { AWS_REGION, AWS_BUCKET, AWS_S3_SECRET_ACCESS_KEY, AWS_S3_ACCESS_KEY_ID } = require("../config/use_env_variable");
 
+// AWS S3 configuration
+const s3 = new AWS.S3({
+  accessKeyId: AWS_S3_ACCESS_KEY_ID,
+  secretAccessKey: AWS_S3_SECRET_ACCESS_KEY,
+  region: AWS_REGION
+});
+
+// Helper function to upload to S3
+const uploadToS3 = (file, reportId) => {
+  if (!s3) {
+    throw new Error('AWS S3 configuration is missing');
+  }
+  
+  return new Promise((resolve, reject) => {
+    const params = {
+      Bucket: AWS_BUCKET,
+      Key: `reports/${reportId}/${Date.now()}-${file.originalname}`,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+      ACL: 'public-read'
+    };
+    
+    s3.upload(params, (err, data) => {
+      if (err) {
+        console.error('S3 Upload Error:', err);
+        reject(err);
+      } else {
+        resolve(data.Location);
+      }
+    });
+  });
+};
 
 exports.createReport = async (req, res, next) => {
   const transaction = await sequelize.transaction();
@@ -388,7 +422,7 @@ exports.generatePDFReport = async (req, res, next) => {
               <li>1. Executive Summary</li>
               <li>2. Project & Assessment Details</li>
               <li>3. Responses Summary</li>
-              <li>4. Photos</li>
+              <li>4. Additional Photos</li>
             </ul>
           </div>
 
@@ -413,20 +447,38 @@ exports.generatePDFReport = async (req, res, next) => {
               <tbody>
                 ${Object.entries(report.answers || {})
                   .map(([key, value]) => {
+                    let photoHtml = '';
+                    // Check if this field has associated photos
+                    const isPhotoField = key === 'sprayedFireproofingPhoto' || key === 'mechanicalPipeInsulationStraightsPhoto' || key === 'sprayedInsulationPhoto';
+                    if (isPhotoField) {
+                      if (Array.isArray(value) && value.length > 0) {
+                        photoHtml = value.map(photo => `<img src="${photo}" alt="${key}" style="max-width: 300px; margin: 10px 0;" />`).join('');
+                      }
+                      // Only show images for photo fields
+                      return `<tr><td>${key}</td><td>${photoHtml}</td></tr>`;
+                    }
+
                     if (Array.isArray(value)) {
-                      return `<tr><td>${key}</td><td>${value
-                        .map((v) =>
-                          typeof v === "object"
-                            ? v.label || JSON.stringify(v)
-                            : v
-                        )
-                        .join(", ")}</td></tr>`;
+                      return `<tr>
+                        <td>${key}</td>
+                        <td>
+                          ${value.map((v) => typeof v === "object" ? v.label || JSON.stringify(v) : v).join(", ")}
+                        </td>
+                      </tr>`;
                     } else if (typeof value === "object" && value !== null) {
-                      return `<tr><td>${key}</td><td>${
-                        value.label || JSON.stringify(value)
-                      }</td></tr>`;
+                      return `<tr>
+                        <td>${key}</td>
+                        <td>
+                          ${value.label || JSON.stringify(value)}
+                        </td>
+                      </tr>`;
                     } else {
-                      return `<tr><td>${key}</td><td>${value}</td></tr>`;
+                      return `<tr>
+                        <td>${key}</td>
+                        <td>
+                          ${value}
+                        </td>
+                      </tr>`;
                     }
                   })
                   .join("")}
@@ -434,17 +486,20 @@ exports.generatePDFReport = async (req, res, next) => {
             </table>
           </div>
 
-          <div class="section photos">
-            <h2>4. Photos</h2>
+          <div class="section">
+            <h2>4. Additional Photos</h2>
             ${
               report.photos?.length
                 ? report.photos
+                    .filter(photo => !photo.includes('sprayedFireproofingPhoto') && 
+                                   !photo.includes('mechanicalPipeInsulationStraightsPhoto') && 
+                                   !photo.includes('sprayedInsulationPhoto'))
                     .map(
                       (photo) =>
-                        `<img src="http://localhost:8000/uploads/reports/${photo}" alt="Photo" />`
+                        `<img src="${photo}" alt="Photo" style="max-width: 300px; margin: 10px 0;" />`
                     )
                     .join("")
-                : "<p>No photos uploaded</p>"
+                : "<p>No additional photos uploaded</p>"
             }
           </div>
         </body>
@@ -473,5 +528,49 @@ exports.generatePDFReport = async (req, res, next) => {
   } catch (error) {
     console.error("Error generating PDF report:", error);
     next(error);
+  }
+};
+
+exports.uploadFiles = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const files = req.files;
+
+    if (!files || files.length === 0) {
+      const apiError = new APIError("File upload error", "No files provided", BAD_REQUEST);
+      return ErrorHandler(apiError, req, res, next);
+    }
+
+    const report = await Report.findByPk(id);
+    if (!report) {
+      return res.status(NOT_FOUND).json({ 
+        code: NOT_FOUND, 
+        message: NO_RECORD_FOUND, 
+        success: false 
+      });
+    }
+
+    // Upload all files to S3
+    const uploadPromises = files.map(file => uploadToS3(file, id));
+    const urls = await Promise.all(uploadPromises);
+
+    // Update report with new photo URLs
+    const currentPhotos = report.photos || [];
+    const updatedPhotos = [...currentPhotos, ...urls];
+    
+    await Report.update(
+      { photos: updatedPhotos },
+      { where: { id } }
+    );
+
+    res.status(OK).json({
+      success: true,
+      data: {
+        urls
+      },
+      message: "Files uploaded successfully"
+    });
+  } catch (err) {
+    next(err);
   }
 };
