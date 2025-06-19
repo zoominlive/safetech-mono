@@ -47,6 +47,11 @@ interface Report {
 interface Location {
   id: string;
   name: string;
+  address_line_1: string;
+  address_line_2: string;
+  city: string;
+  province: string;
+  postal_code: string;
 }
 
 interface SelectOption {
@@ -64,6 +69,7 @@ const ProjectForm: React.FC = () => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [_reports, setReports] = useState<Report[]>([]);
   const [projectNumber, setProjectNumber] = useState<string>("");
+  const [projectManagers, setProjectManagers] = useState<User[]>([]);
 
   // Generate a random 5-digit number
   const generateProjectNumber = () => {
@@ -117,15 +123,20 @@ const ProjectForm: React.FC = () => {
   });
 
   // Form validation schema
-  const validationSchema = Yup.object({
-    name: Yup.string().required("Project name is required"),
-    site_name: Yup.string().required("Site name is required"),
-    site_contact_name: Yup.string().required("Site contact name is required"),
-    site_contact_title: Yup.string().required("Site contact title is required"),
-    customer_id: Yup.string().required("Customer is required"),
-    technician_id: Yup.string().required("Technician is required"),
-    site_email: Yup.string().email("Invalid email address"),
-  });
+  const getValidationSchema = (userRole?: string) =>
+    Yup.object({
+      name: Yup.string().required("Project name is required"),
+      // site_name: Yup.string().required("Site name is required"),
+      site_contact_name: Yup.string().required("Site contact name is required"),
+      site_contact_title: Yup.string().required("Site contact title is required"),
+      customer_id: Yup.string().required("Customer is required"),
+      technician_id: Yup.string().required("Technician is required"),
+      site_email: Yup.string().email("Invalid email address"),
+      pm_id:
+        userRole && userRole.toLowerCase() === "admin"
+          ? Yup.string().required("Project Manager is required")
+          : Yup.string(),
+    });
 
   const fetchCustomers = async (query: string, selectedId?: string) => {
     const res = await customerService.getAllCustomers(query, undefined, undefined, 10, 1);
@@ -189,7 +200,12 @@ const ProjectForm: React.FC = () => {
       if (res.success) {
         setLocations(res.data.map((location: any) => ({
           id: location.id,
-          name: location.name
+          name: location.name,
+          address_line_1: location.address_line_1,
+          address_line_2: location.address_line_2,
+          city: location.city,
+          postal_code: location.postal_code,
+          province: location.province
         })));
       } else {
         setLocations([]);
@@ -242,7 +258,12 @@ const ProjectForm: React.FC = () => {
           if (locationsResponse.success) {
             setLocations(locationsResponse.data.map(location => ({
               id: location.id,
-              name: location.name
+              name: location.name,
+              address_line_1: location.address_line_1,
+              address_line_2: location.address_line_2,
+              city: location.city,
+              postal_code: location.postal_code,
+              province: location.province
             })));
           }
         }
@@ -312,30 +333,51 @@ const ProjectForm: React.FC = () => {
     fetchData();
   }, [id, initialValues.customer_id]);
 
+  // Fetch Project Managers for Admin
+  useEffect(() => {
+    const fetchProjectManagers = async () => {
+      if (user && user.role && user.role.toLowerCase() === "admin") {
+        const res = await userService.getAllUsers(undefined, undefined, undefined, 20, 1, "project manager");
+        if (res.success) {
+          setProjectManagers(res.data.rows.map((u: any) => ({ id: u.id, first_name: u.first_name, last_name: u.last_name })));
+        }
+      }
+    };
+    fetchProjectManagers();
+  }, [user]);
+
   const handleSubmit = async (values: ProjectData, { setSubmitting }: FormikHelpers<ProjectData>) => {
     try {
       setIsLoading(true);
-      // If user is Project Manager, set pm_id to their user id
-      if (user && user.role && user.role.toLowerCase() === "project manager") {
-        values.pm_id = user.id;
-        values.pm = {
-          id: user.id,
-          first_name: user.first_name,
-          last_name: user.last_name,
+      if (user && user.role) {
+        if (user.role.toLowerCase() === "project manager") {
+          values.pm_id = user.id;
+          values.pm = {
+            id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+          };
+        } else if (user.role.toLowerCase() === "admin") {
+          // pm_id already set from form
+          const selectedPM = projectManagers.find(pm => pm.id === values.pm_id);
+          if (selectedPM) {
+            values.pm = {
+              id: selectedPM.id,
+              first_name: selectedPM.first_name,
+              last_name: selectedPM.last_name,
+            };
+          }
+        } else {
+          values.pm_id = "1"; // fallback or default
         }
-      } else {
-        values.pm_id = "1"; // fallback or default
       }
-
       // Add project number for new projects
       if (!id) {
         values.project_number = projectNumber;
       }
-
       const response = id
         ? await projectService.updateProject(id, values)
         : await projectService.createProject(values);
-      
       if (response.success) {
         toast({
           title: "Success",
@@ -387,7 +429,7 @@ const ProjectForm: React.FC = () => {
       </div>
       <Formik
         initialValues={initialValues}
-        validationSchema={validationSchema}
+        validationSchema={getValidationSchema(user?.role)}
         onSubmit={handleSubmit}
         enableReinitialize
       >
@@ -468,7 +510,7 @@ const ProjectForm: React.FC = () => {
                         ) : (
                           locations.map((location) => (
                             <SelectItem key={location.id} value={location.id.toString()}>
-                              {location.name}
+                              {location.name + ' - ' + location.address_line_1 + ' - ' + location.address_line_2 + ' - ' + location.city + ' - ' + location.province + ' - ' + location.postal_code}
                             </SelectItem>
                           ))
                         )}
@@ -477,7 +519,7 @@ const ProjectForm: React.FC = () => {
                   </Select>
                 </div>
 
-                <div className="grid w-full items-center gap-3 relative">
+                {/* <div className="grid w-full items-center gap-3 relative">
                   <Label htmlFor="site_name">Site Name *</Label>
                   <Input
                     type="text"
@@ -497,7 +539,7 @@ const ProjectForm: React.FC = () => {
                 
                 <div className="grid w-full items-center gap-3 relative">
                   
-                </div>
+                </div> */}
 
                 <div className="grid w-full items-center gap-3 relative">
                   <Label htmlFor="site_contact_name">Contact Name</Label>
@@ -604,6 +646,36 @@ const ProjectForm: React.FC = () => {
                     )}
                   </div>
                 </div>
+
+                {user && user.role && user.role.toLowerCase() === "admin" && (
+                  <div className="grid w-full items-center gap-3 relative">
+                    <Label htmlFor="pm_id">Project Manager *</Label>
+                    <Select
+                      value={values.pm_id}
+                      onValueChange={val => setFieldValue("pm_id", val)}
+                    >
+                      <SelectTrigger className="w-full py-7.5">
+                        <SelectValue placeholder="Select project manager" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {projectManagers.length === 0 ? (
+                            <div className="text-center text-gray-500 py-2">No Project Managers Found</div>
+                          ) : (
+                            projectManagers.map(pm => (
+                              <SelectItem key={pm.id} value={pm.id}>{pm.first_name} {pm.last_name}</SelectItem>
+                            ))
+                          )}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    <div className="min-h-[20px] relative">
+                      {errors.pm_id && touched.pm_id && (
+                        <div className="text-red-500 text-sm absolute left-0 top-0">{errors.pm_id}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <div className="grid w-full items-center gap-3 relative">
                   <Label htmlFor="technician_id">Technician *</Label>

@@ -62,6 +62,8 @@ export const ProjectReport: React.FC = () => {
   const [reportData, setReportData] = useState<Record<string, any>>({});
   const [schema, setSchema] = useState<SchemaSection[]>([]);
   const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
+  const [projectId, setProjectId] = useState<string>("");
+  const [projectStatus, setProjectStatus] = useState<string>("");
 
   const alwaysDisabledFields = [
     'clientCompanyName', 'clientAddress', 'contactName', 'contactPosition', 'contactEmail', 'contactPhone',
@@ -88,6 +90,8 @@ export const ProjectReport: React.FC = () => {
         const company = project.company || {};
         const pm = project.pm || {};
         const technician = project.technician || {};
+        setProjectId(project.id || "");
+        setProjectStatus(project.status || "");
 
         // Initialize areas from areaDetails or create a default area
         const areaDetails = Array.isArray(answers.areaDetails) ? answers.areaDetails : [];
@@ -187,6 +191,7 @@ export const ProjectReport: React.FC = () => {
       const payload = {
         name: reportData.name || "",
         status: true,
+        project_id: projectId,
         answers: {
           ...reportData,
           areaDetails: areas
@@ -220,7 +225,10 @@ export const ProjectReport: React.FC = () => {
 
   const isFieldEditable = () => {
     if (!userRole) return false;
-    return userRole === "Technician" || userRole === "Project Manager";
+    if (projectStatus === "Complete") {
+      return userRole === "Project Manager";
+    }
+    return userRole === "Technician" || userRole === "Project Manager" || userRole === "Admin";
   };
 
   const handleFileUpload = async (fieldId: string, files: FileList | null) => {

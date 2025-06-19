@@ -157,7 +157,7 @@ function CustomerLayout() {
   };
 
   const handleEdit = (project: Project) => {
-      navigate(`/staff/${project.id}/edit`);
+      navigate(`/projects/${project.id}/edit`);
     };
     
   const openDeleteDialog = (project: Project) => {
@@ -295,7 +295,6 @@ function CustomerLayout() {
             data={customerData.projects}
             hasActions={true}
             onDetails={handleDetails}
-            onDelete={openDeleteDialog}
             onEdit={handleEdit}
           />
           <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

@@ -7,6 +7,11 @@ interface LocationsResponse {
   data: Array<{
     id: string,
     name: string,
+    address_line_1: string;
+    address_line_2: string;
+    city: string;
+    province: string;
+    postal_code: string;
     active: boolean,
     created_at: string,
     updated_at: string,
