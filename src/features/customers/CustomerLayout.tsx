@@ -160,10 +160,10 @@ function CustomerLayout() {
       navigate(`/projects/${project.id}/edit`);
     };
     
-  const openDeleteDialog = (project: Project) => {
-    setProjectToDelete(project);
-    setIsDeleteDialogOpen(true);
-  };
+  // const openDeleteDialog = (project: Project) => {
+  //   setProjectToDelete(project);
+  //   setIsDeleteDialogOpen(true);
+  // };
   
   const handleDelete = async () => {
     if (!projectToDelete) return;
