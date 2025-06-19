@@ -58,7 +58,7 @@ exports.createUser = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
     const { user } = req;
-    const { email, phone, role, first_name, last_name, profile_picture } = req.body;
+    const { email, phone, role, first_name, last_name, profile_picture, technician_signature } = req.body;
 
     if (user.role == USER_ROLE.TECHNICIAN) {
       const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
@@ -79,6 +79,7 @@ exports.createUser = async (req, res, next) => {
         first_name: first_name,
         last_name: last_name,
         profile_picture: profile_picture,
+        technician_signature: technician_signature,
         status: 'invited',
         activation_token: token,
         activation_token_expires: expires
@@ -191,7 +192,7 @@ exports.updateUser = async (req, res, next) => {
   try {
     const { user } = req;
     const { id } = req.params;
-    const { email, phone, role, created_by, first_name, last_name, profile_picture, deactivated_user } = req.body;
+    const { email, phone, role, created_by, first_name, last_name, profile_picture, technician_signature, deactivated_user } = req.body;
 
     if (user.role == USER_ROLE.TECHNICIAN && user.id != id) {
       const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
@@ -207,6 +208,7 @@ exports.updateUser = async (req, res, next) => {
         first_name: first_name,
         last_name: last_name,
         profile_picture: profile_picture,
+        technician_signature: technician_signature,
         deactivated_user: deactivated_user
       },
       {
@@ -310,6 +312,54 @@ exports.uploadProfilePicture = async (req, res, next) => {
       // Update the user with the profile picture URL
       await User.update(
         { profile_picture: profilePictureUrl },
+        {
+          where: { id: id },
+          returning: true,
+        }
+      );
+      
+      const updatedUser = await User.findByPk(id);
+      
+      res.status(OK).json({
+        code: OK,
+        message: RECORD_UPDATED,
+        data: updatedUser,
+        success: true,
+      });
+    } catch (s3Error) {
+      const apiError = new APIError("S3 upload error", s3Error.message, BAD_REQUEST);
+      return ErrorHandler(apiError, req, res, next);
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.uploadTechnicianSignature = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      const apiError = new APIError("File upload error", "No file provided", BAD_REQUEST);
+      return ErrorHandler(apiError, req, res, next);
+    }
+
+    const { id } = req.params;
+    const userToUpdate = await User.findByPk(id);
+    
+    if (!userToUpdate) {
+      return res.status(NOT_FOUND).json({ 
+        code: NOT_FOUND, 
+        message: NO_RECORD_FOUND, 
+        success: false 
+      });
+    }
+    
+    try {
+      // Upload to S3
+      const signatureUrl = await uploadToS3(req.file);
+      
+      // Update the user with the profile picture URL
+      await User.update(
+        { technician_signature: signatureUrl },
         {
           where: { id: id },
           returning: true,
