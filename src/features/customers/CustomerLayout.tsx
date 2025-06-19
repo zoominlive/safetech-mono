@@ -117,7 +117,7 @@ function CustomerLayout() {
             startDate: project.start_date,
             status: project.status,
             company: customerName,
-            endDate: null, // Keeping end date null for now as requested
+            endDate: project.end_date, // Keeping end date null for now as requested
           })) || [];
 
         setCustomerData({
