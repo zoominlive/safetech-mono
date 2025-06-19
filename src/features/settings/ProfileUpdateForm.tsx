@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { profileUpdateSchema } from "@/schemas/authSchemas";
+import type { UpdateProfileRequest } from "@/services/api/userService";
 import { useAuthStore } from "@/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,8 @@ const ProfileUpdateForm = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
+  const [uploadingSignature, setUploadingSignature] = useState(false);
   const { user, updateUserProfile } = useAuthStore();
 
   // Handle image file selection
@@ -132,7 +135,110 @@ const ProfileUpdateForm = () => {
     }
   };
 
-  const handleSubmit = async (values: { first_name: string; last_name: string; email: string, phone: string }) => {
+  // Handle technician signature file selection
+  const handleSignatureChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSignaturePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      // Upload the signature
+      handleSignatureUpload(file);
+    }
+  };
+
+  // Remove technician signature handler
+  const handleRemoveSignature = async (formikValues?: { first_name: string; last_name: string; email: string; phone: string }) => {
+    if (!user?.id) {
+      toast({
+        title: "Remove failed",
+        description: "User ID not found",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      setUploadingSignature(true);
+      const values = formikValues || {
+        first_name: user.first_name || "",
+        last_name: user.last_name || "",
+        email: user.email || "",
+        phone: user.phone || ""
+      };
+      // Call backend to remove signature (set to empty string)
+      const response = await userService.updateProfile(user.id, { ...values, technician_signature: "" });
+      if (response.success) {
+        updateUserProfile({ ...user, technician_signature: "" });
+        setSignaturePreview(null);
+        toast({
+          title: "Removed",
+          description: "Technician signature removed successfully",
+        });
+      } else {
+        toast({
+          title: "Remove failed",
+          description: response.message || "Failed to remove technician signature",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Remove failed",
+        description: error?.data?.message || "An error occurred while removing the technician signature",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingSignature(false);
+    }
+  };
+
+  // Handle technician signature upload
+  const handleSignatureUpload = async (file: File) => {
+    if (!user?.id) {
+      toast({
+        title: "Upload failed",
+        description: "User ID not found",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      setUploadingSignature(true);
+      const formData = new FormData();
+      formData.append("technicianSignature", file);
+      const response: any = await userService.uploadTechnicianSignature(user.id, formData);
+      if (response.success) {
+        updateUserProfile({
+          ...user,
+          technician_signature: response?.data.data.technician_signature
+        });
+        toast({
+          title: "Success",
+          description: "Technician signature updated successfully",
+        });
+      } else {
+        toast({
+          title: "Upload failed",
+          description: response.message || "Failed to upload technician signature",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Upload failed",
+        description: error?.data?.message || "An error occurred during upload",
+        variant: "destructive",
+      });
+      setSignaturePreview(null);
+    } finally {
+      setUploadingSignature(false);
+    }
+  };
+
+  const handleSubmit = async (values: UpdateProfileRequest) => {
     console.log('reached');
     
     try {
@@ -235,6 +341,57 @@ const ProfileUpdateForm = () => {
         </div>
       </div>
       
+      {/* Technician Signature Section (only for technicians) */}
+      {user?.role?.toLowerCase() === 'technician' && (
+        <div className="space-y-4 mb-8">
+          <Label>Technician Signature</Label>
+          <div className="flex items-center space-x-4">
+            <Avatar className="h-24 w-24">
+              <AvatarImage
+                src={signaturePreview || user?.technician_signature}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/user/avatar-sf.png";
+                }}
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
+              />
+              <AvatarFallback>TS</AvatarFallback>
+            </Avatar>
+            <div>
+              <Label htmlFor="technician-signature" className="cursor-pointer">
+                <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
+                  <Upload size={18} />
+                  <span>{uploadingSignature ? "Uploading..." : "Change signature"}</span>
+                </div>
+              </Label>
+              <input
+                id="technician-signature"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleSignatureChange}
+                disabled={uploadingSignature}
+              />
+              <p className="text-sm text-gray-500 mt-2">
+                JPG, PNG or GIF. Max size 2MB.
+              </p>
+              {(user?.technician_signature || signaturePreview) && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="mt-2"
+                  onClick={() => handleRemoveSignature()}
+                  disabled={uploadingSignature}
+                >
+                  Remove Signature
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Add role information display */}
       <div className="p-4 rounded-md bg-gray-50 border mb-6">
         <div className="flex items-center">
@@ -257,7 +414,14 @@ const ProfileUpdateForm = () => {
           phone: user?.phone || "",
         }}
         validationSchema={profileUpdateSchema}
-        onSubmit={handleSubmit}
+        onSubmit={async (values) => {
+          // If technician, include technician_signature in payload
+          const payload: UpdateProfileRequest = { ...values };
+          if (user?.role?.toLowerCase() === 'technician') {
+            payload.technician_signature = user?.technician_signature || "";
+          }
+          await handleSubmit(payload);
+        }}
         enableReinitialize
       >
         {({ errors, touched, values }: { errors: Record<string, any>; touched: Record<string, any>; values: { first_name: string; last_name: string; email: string; phone: string } }) => (

@@ -67,7 +67,7 @@ export const ProjectReport: React.FC = () => {
 
   const alwaysDisabledFields = [
     'clientCompanyName', 'clientAddress', 'contactName', 'contactPosition', 'contactEmail', 'contactPhone',
-    'projectName', 'projectNumber', 'projectAddress', 'startDate', 'endDate', 'pmName', 'pmEmail', 'pmPhone',
+    'projectName', 'specificLocation', 'projectNumber', 'projectAddress', 'startDate', 'endDate', 'pmName', 'pmEmail', 'pmPhone',
     'technicianName', 'technicianEmail', 'technicianPhone', 'technicianTitle'
   ];
 
@@ -109,6 +109,7 @@ export const ProjectReport: React.FC = () => {
                 contactEmail: company.email || '',
                 contactPhone: company.phone || '',
                 projectName: project.name || '',
+                specificLocation: project.specific_location || '',
                 startDate: project.start_date ? project.start_date.split('T')[0] : '',
                 endDate: project.end_date ? project.end_date.split('T')[0] : '',
                 projectNumber: project.project_no || '',
@@ -120,6 +121,7 @@ export const ProjectReport: React.FC = () => {
                 technicianEmail: technician.email || '',
                 technicianPhone: technician.phone || '',
                 technicianTitle: technician.role || '',
+                technicianSignature: technician.technician_signature || '',
               }
             }))
           : [{
@@ -133,6 +135,7 @@ export const ProjectReport: React.FC = () => {
                 contactEmail: company.email || '',
                 contactPhone: company.phone || '',
                 projectName: project.name || '',
+                specificLocation: project.specific_location || '',
                 startDate: project.start_date ? project.start_date.split('T')[0] : '',
                 endDate: project.end_date ? project.end_date.split('T')[0] : '',
                 projectNumber: project.project_no || '',
@@ -144,6 +147,7 @@ export const ProjectReport: React.FC = () => {
                 technicianEmail: technician.email || '',
                 technicianPhone: technician.phone || '',
                 technicianTitle: technician.role || '',
+                technicianSignature: technician.technician_signature || '',
               }
             }];
 
@@ -646,7 +650,7 @@ export const ProjectReport: React.FC = () => {
         <CardContent className="p-6 space-y-6">
           {selectedArea && (
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold mb-4">{selectedArea.name}</h3>
+              {/* <h3 className="text-xl font-semibold mb-4">{selectedArea.name}</h3> */}
               {schema.map((section, sectionIndex) => (
                 <div key={sectionIndex} className="space-y-6 border-b pb-7">
                   <h4 className="font-semibold text-xl">{section.title}</h4>

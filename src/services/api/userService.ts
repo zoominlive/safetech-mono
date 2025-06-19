@@ -57,6 +57,7 @@ export interface UpdateProfileRequest {
   email: string;
   phone: string;
   profile_picture?: string; // Optional, can be undefined if not updating
+  technician_signature?: string; // Optional, for technician signature
 }
 
 interface UpdateProfileResponse {
@@ -114,6 +115,28 @@ export const userService = {
         error && typeof error === 'object' && 'response' in error
           ? (error.response as any)?.data?.message
           : 'Failed to upload profile picture';
+      
+      return { 
+        success: false, 
+        message: errorMessage 
+      };
+    }
+  },
+
+  // Upload technician signature
+  uploadTechnicianSignature: async (userId: string, formData: FormData) => {
+    try {
+      const response = await BaseClient.post(`/users/${userId}/technician-signature`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return { success: true, data: response.data };
+    } catch (error: unknown) {
+      const errorMessage = 
+        error && typeof error === 'object' && 'response' in error
+          ? (error.response as any)?.data?.message
+          : 'Failed to upload technician signature';
       
       return { 
         success: false, 

@@ -103,6 +103,7 @@ export interface ReportResponse {
       project_no: string;
       name: string;
       site_name: string;
+      specific_location: string;
       site_contact_name: string;
       site_contact_title: string;
       site_email: string;
@@ -160,6 +161,7 @@ export interface ReportResponse {
         first_name: string;
         last_name: string;
         profile_picture: string | null;
+        technician_signature: string | null;
         role: string;
         email: string;
         phone: string;

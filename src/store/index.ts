@@ -10,6 +10,7 @@ export interface User {
   email: string;
   role: string;
   profile_picture: string;
+  technician_signature?: string; // Optional field for technician signature
   last_login: string;
   deactivated_user: boolean;
   phone: string;

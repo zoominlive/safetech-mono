@@ -45,6 +45,7 @@ interface ProjectsResponse {
 export interface ProjectData {
   name: string;
   site_name: string;
+  specific_location: string;
   site_email: string;
   site_contact_name: string;
   site_contact_title: string;
@@ -91,6 +92,7 @@ export interface ProjectResponse {
     project_no: string,
     name: string,
     site_name: string,
+    specific_location: string,
     site_contact_name: string;
     site_contact_title: string;
     reportTemplate: {

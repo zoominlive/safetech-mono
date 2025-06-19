@@ -105,6 +105,7 @@ const ProjectForm: React.FC = () => {
       name: "",
     },
     site_name: "",
+    specific_location: "",
     site_email: "",
     site_contact_name: "",
     site_contact_title: "",
@@ -127,6 +128,7 @@ const ProjectForm: React.FC = () => {
     Yup.object({
       name: Yup.string().required("Project name is required"),
       // site_name: Yup.string().required("Site name is required"),
+      specific_location: Yup.string().required("Specific Location is required"),
       site_contact_name: Yup.string().required("Site contact name is required"),
       site_contact_title: Yup.string().required("Site contact title is required"),
       customer_id: Yup.string().required("Customer is required"),
@@ -304,6 +306,7 @@ const ProjectForm: React.FC = () => {
                 name: projectDetails.location.name,
               },
               site_name: projectDetails.site_name,
+              specific_location: projectDetails.specific_location,
               site_email: projectDetails.site_email,
               site_contact_name: projectDetails.site_contact_name,
               site_contact_title: projectDetails.site_contact_title,
@@ -519,6 +522,24 @@ const ProjectForm: React.FC = () => {
                   </Select>
                 </div>
 
+                <div className="grid w-full items-center gap-3 relative">
+                  <Label htmlFor="specific_location">Specific Location</Label>
+                  <Input
+                    type="text"
+                    id="specific_location"
+                    name="specific_location"
+                    placeholder="Kitchen or East Wing"
+                    className="py-7.5"
+                    value={values.specific_location}
+                    onChange={handleChange}
+                  />
+                  <div className="min-h-[20px] relative">
+                    {errors.specific_location && touched.specific_location && (
+                      <div className="text-red-500 text-sm absolute left-0 top-0">{errors.specific_location}</div>
+                    )}
+                  </div>
+                </div>
+
                 {/* <div className="grid w-full items-center gap-3 relative">
                   <Label htmlFor="site_name">Site Name *</Label>
                   <Input
@@ -536,10 +557,11 @@ const ProjectForm: React.FC = () => {
                     )}
                   </div>
                 </div>
+                */}
                 
                 <div className="grid w-full items-center gap-3 relative">
                   
-                </div> */}
+                </div> 
 
                 <div className="grid w-full items-center gap-3 relative">
                   <Label htmlFor="site_contact_name">Contact Name</Label>
