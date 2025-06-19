@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/store";
+import { formatDate } from "@/lib/utils";
 
 const columns: Column<Project>[] = [
   {
@@ -114,10 +115,10 @@ function CustomerLayout() {
           response.data.projects?.map((project: any) => ({
             ...project,
             projectName: project.name,
-            startDate: project.start_date,
+            startDate: formatDate(project.start_date),
             status: project.status,
             company: customerName,
-            endDate: project.end_date, // Keeping end date null for now as requested
+            endDate: formatDate(project.end_date), // Keeping end date null for now as requested
           })) || [];
 
         setCustomerData({
