@@ -18,6 +18,7 @@ const { sequelize, Report, Project, ReportTemplate, Customer, User } = require("
 const puppeteer = require('puppeteer');
 const AWS = require('aws-sdk');
 const { AWS_REGION, AWS_BUCKET, AWS_S3_SECRET_ACCESS_KEY, AWS_S3_ACCESS_KEY_ID } = require("../config/use_env_variable");
+const { Op } = require("sequelize");
 
 // AWS S3 configuration
 const s3 = new AWS.S3({
@@ -235,6 +236,26 @@ exports.updateReport = async (req, res, next) => {
       }
     );
     console.log("updated=>", updated);
+ 
+    // Update Project status to 'In Progress' only if answers is not empty/null/undefined/empty string
+    const isAnswersFilled = (
+      answers !== null &&
+      answers !== undefined &&
+      !(typeof answers === 'string' && answers.trim() === '') &&
+      !(typeof answers === 'object' && Object.keys(answers).length === 0 && answers.constructor === Object)
+    );
+    
+    if (isAnswersFilled && project_id) {
+      await Project.update(
+        { status: 'In Progress' },
+        {
+          where: {
+            id: project_id,
+            status: { [Op.ne]: 'In Progress' }
+          }
+        }
+      );
+    }
 
     if (!updated) {
       return res
