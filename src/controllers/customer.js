@@ -126,7 +126,7 @@ exports.getCustomerById = async (req, res, next) => {
     const { id } = req.params;
     const customer = await Customer.findByPk(id, {
       include: [
-        { model: Project, as: "projects", attributes: ["id", "name", "status", "start_date"] },
+        { model: Project, as: "projects", attributes: ["id", "name", "status", "start_date", "end_date"] },
         { model: Location, as: "locations" }
       ]
     });
