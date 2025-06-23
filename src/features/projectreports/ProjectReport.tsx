@@ -19,6 +19,16 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface SchemaField {
   type: string;
@@ -66,6 +76,7 @@ export const ProjectReport: React.FC = () => {
   const [projectId, setProjectId] = useState<string>("");
   const [projectStatus, setProjectStatus] = useState<string>("");
   const [projectData, setProjectData] = useState<any>();
+  const [areaToDelete, setAreaToDelete] = useState<Area | null>(null);
 
   const alwaysDisabledFields = [
     'clientCompanyName', 'clientAddress', 'contactName', 'contactPosition', 'contactEmail', 'contactPhone',
@@ -594,6 +605,9 @@ export const ProjectReport: React.FC = () => {
     if (selectedArea?.id === areaId) {
       setSelectedArea(updatedAreas[0]);
     }
+
+    // Reset the area to delete
+    setAreaToDelete(null);
   };
 
   if (isLoading) {
@@ -637,7 +651,7 @@ export const ProjectReport: React.FC = () => {
                         variant="ghost"
                         size="icon"
                         className="ml-2"
-                        onClick={() => removeArea(area.id)}
+                        onClick={() => setAreaToDelete(area)}
                       >
                         <CircleX className="h-4 w-4" />
                       </Button>
@@ -667,6 +681,26 @@ export const ProjectReport: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      <AlertDialog open={!!areaToDelete} onOpenChange={(open) => !open && setAreaToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Area</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {areaToDelete?.name}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => areaToDelete && removeArea(areaToDelete.id)}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Card>
         <CardContent className="p-6 space-y-6">
