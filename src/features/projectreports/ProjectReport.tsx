@@ -7,7 +7,7 @@ import { MultiSelect } from "@/components/MultiSelect";
 import { CardSkeleton } from "@/components/ui/skeletons/CardSkeleton";
 import { toast } from "@/components/ui/use-toast";
 import { reportService } from "@/services/api/reportService";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router";
 import BackButton from "@/components/BackButton";
 import { useAuthStore } from "@/store";
@@ -29,6 +29,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 interface SchemaField {
   type: string;
@@ -77,6 +80,13 @@ export const ProjectReport: React.FC = () => {
   const [projectStatus, setProjectStatus] = useState<string>("");
   const [projectData, setProjectData] = useState<any>();
   const [areaToDelete, setAreaToDelete] = useState<Area | null>(null);
+
+  // State for Add Area dialog
+  const [isAddAreaDialogOpen, setIsAddAreaDialogOpen] = useState(false);
+  const [newAreaName, setNewAreaName] = useState("");
+  const [newAreaDescription, setNewAreaDescription] = useState("");
+  const [newAreaSqft, setNewAreaSqft] = useState("");
+  const areaNameInputRef = useRef<HTMLInputElement>(null);
 
   const alwaysDisabledFields = [
     'clientCompanyName', 'clientAddress', 'contactName', 'contactPosition', 'contactEmail', 'contactPhone',
@@ -610,6 +620,44 @@ export const ProjectReport: React.FC = () => {
     setAreaToDelete(null);
   };
 
+  // Helper to update area name inline
+  const updateAreaName = (areaId: string, newName: string) => {
+    const updatedAreas = areas.map(area =>
+      area.id === areaId ? { ...area, name: newName } : area
+    );
+    setAreas(updatedAreas);
+    if (selectedArea?.id === areaId) {
+      setSelectedArea({ ...selectedArea, name: newName });
+    }
+  };
+
+  // Helper to open Add Area dialog and reset fields
+  const openAddAreaDialog = () => {
+    setNewAreaName("");
+    setNewAreaDescription("");
+    setNewAreaSqft("");
+    setIsAddAreaDialogOpen(true);
+    setTimeout(() => areaNameInputRef.current?.focus(), 100);
+  };
+
+  // Helper to add area from dialog
+  const handleAddAreaFromDialog = () => {
+    if (!newAreaName.trim()) return;
+    const newArea = {
+      id: `area-${areas.length + 1}-${Date.now()}`,
+      name: newAreaName,
+      assessments: {
+        ...areas[0]?.assessments,
+        areaName: newAreaName,
+        areaDescription: newAreaDescription,
+        areaSquareFeet: newAreaSqft,
+      },
+    };
+    setAreas([...areas, newArea]);
+    setSelectedArea(newArea);
+    setIsAddAreaDialogOpen(false);
+  };
+
   if (isLoading) {
     return <CardSkeleton />;
   }
@@ -661,7 +709,7 @@ export const ProjectReport: React.FC = () => {
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={addNewArea}
+                  onClick={openAddAreaDialog}
                 >
                   <CirclePlus className="h-4 w-4 mr-2" />
                   Add New Area
@@ -702,59 +750,192 @@ export const ProjectReport: React.FC = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Card>
-        <CardContent className="p-6 space-y-6">
-          {selectedArea && (
-            <div className="space-y-6">
-              {schema.map((section, sectionIndex) => {
-                // Check if section has showWhen and if it should be shown
-                let showSection = true;
-                if (section.showWhen) {
-                  const [depKey, depValue] = section.showWhen.split('=');
-                  showSection = selectedArea.assessments[depKey] === depValue;
-                }
-                if (!showSection) return null;
+      {/* If no areas, show Add Area button and dialog */}
+      {areas.length === 0 ? (
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <Button size="lg" onClick={openAddAreaDialog}>
+            <CirclePlus className="h-5 w-5 mr-2" /> Add Area
+          </Button>
+          <Dialog open={isAddAreaDialogOpen} onOpenChange={setIsAddAreaDialogOpen}>
+            <DialogContent className="bg-white">
+              <DialogHeader>
+                <DialogTitle>Add Area</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <Input ref={areaNameInputRef} placeholder="Area Name" value={newAreaName} onChange={e => setNewAreaName(e.target.value)} />
+                <Input placeholder="Area Description" value={newAreaDescription} onChange={e => setNewAreaDescription(e.target.value)} />
+                <Input placeholder="Area Square Feet" type="number" value={newAreaSqft} onChange={e => setNewAreaSqft(e.target.value)} />
+              </div>
+              <DialogFooter>
+                <Button onClick={handleAddAreaFromDialog} disabled={!newAreaName.trim()}>Add Area</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      ) : (
+        <Tabs
+          value={selectedArea?.id}
+          onValueChange={(areaId) => {
+            const found = areas.find((a) => a.id === areaId);
+            if (found) setSelectedArea(found);
+          }}
+          className="w-full"
+        >
+          <TabsList className="overflow-x-auto flex-nowrap w-full scrollbar-thin scrollbar-thumb-gray-300">
+            {areas.map((area) => (
+              <TabsTrigger
+                key={area.id}
+                value={area.id}
+                className="relative max-w-xs min-w-[120px] px-4"
+              >
+                <input
+                  className="bg-transparent border-none outline-none font-semibold w-full text-center"
+                  value={area.name}
+                  onChange={e => updateAreaName(area.id, e.target.value)}
+                  onClick={e => e.stopPropagation()}
+                  onFocus={e => e.stopPropagation()}
+                  disabled={!isFieldEditable()}
+                  style={{ pointerEvents: isFieldEditable() ? 'auto' : 'none' }}
+                />
+                {areas.length > 1 && (
+                  <button
+                    type="button"
+                    className="absolute top-1 right-1 text-gray-400 hover:text-red-500"
+                    onClick={e => {
+                      e.stopPropagation();
+                      setAreaToDelete(area);
+                    }}
+                    tabIndex={-1}
+                  >
+                    <CircleX className="h-4 w-4" />
+                  </button>
+                )}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {areas.map((area) => (
+            <TabsContent key={area.id} value={area.id} className="w-full">
+              {/* Accordions for Client and Project Info */}
+              <div className="mb-6">
+                <Accordion type="multiple" defaultValue={[]}>
+                  <AccordionItem value="client-info">
+                    <AccordionTrigger>Client Information</AccordionTrigger>
+                    <AccordionContent className="bg-white rounded-md shadow-sm">
+                      {/* Render client info fields (read-only) */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><Label>Company Name</Label><div>{area.assessments.clientCompanyName}</div></div>
+                        <div><Label>Address</Label><div>{area.assessments.clientAddress}</div></div>
+                        <div><Label>Contact Name</Label><div>{area.assessments.contactName}</div></div>
+                        <div><Label>Contact Position</Label><div>{area.assessments.contactPosition}</div></div>
+                        <div><Label>Contact Email</Label><div>{area.assessments.contactEmail}</div></div>
+                        <div><Label>Contact Phone</Label><div>{area.assessments.contactPhone}</div></div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="project-info">
+                    <AccordionTrigger>Project Information</AccordionTrigger>
+                    <AccordionContent className="bg-white rounded-md shadow-sm">
+                      {/* Render project info fields (read-only) */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><Label>Project Name</Label><div>{area.assessments.projectName}</div></div>
+                        <div><Label>Specific Location</Label><div>{area.assessments.specificLocation}</div></div>
+                        <div><Label>Project Number</Label><div>{area.assessments.projectNumber}</div></div>
+                        <div><Label>Project Address</Label><div>{area.assessments.projectAddress}</div></div>
+                        <div><Label>Start Date</Label><div>{area.assessments.startDate}</div></div>
+                        <div><Label>End Date</Label><div>{area.assessments.endDate}</div></div>
+                        <div><Label>PM Name</Label><div>{area.assessments.pmName}</div></div>
+                        <div><Label>PM Email</Label><div>{area.assessments.pmEmail}</div></div>
+                        <div><Label>PM Phone</Label><div>{area.assessments.pmPhone}</div></div>
+                        <div><Label>Technician Name</Label><div>{area.assessments.technicianName}</div></div>
+                        <div><Label>Technician Email</Label><div>{area.assessments.technicianEmail}</div></div>
+                        <div><Label>Technician Phone</Label><div>{area.assessments.technicianPhone}</div></div>
+                        <div><Label>Technician Title</Label><div>{area.assessments.technicianTitle}</div></div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </div>
+              {/* Area-specific questions */}
+              <Card>
+                <CardContent className="p-6 space-y-6">
+                  <div className="space-y-6">
+                    {schema.map((section, sectionIndex) => {
+                      // Check if section has showWhen and if it should be shown
+                      let showSection = true;
+                      if (section.showWhen) {
+                        const [depKey, depValue] = section.showWhen.split('=');
+                        showSection = area.assessments[depKey] === depValue;
+                      }
+                      if (!showSection) return null;
 
-                return (
-                  <div key={sectionIndex} className="space-y-6 border-b pb-7">
-                    <h4 className="font-semibold text-xl">{section.title}</h4>
-                    <div className="space-y-4">
-                      {section.fields.map((field, fieldIndex) => {
-                        const showField = field.showWhen 
-                          ? selectedArea.assessments[field.showWhen.split('=')[0]] === field.showWhen.split('=')[1] 
-                          : true;
-                        return showField ? (
-                          <div 
-                            key={field.id} 
-                            className={`p-4 rounded-lg ${
-                              fieldIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'
-                            }`}
-                          >
-                            <div className="space-y-2">
-                              <Label className="flex items-start space-x-2">
-                                <span className="text-gray-500 font-medium min-w-[24px]">
-                                  {`${sectionIndex + 1}.${fieldIndex + 1}`}
-                                </span>
-                                <span>
-                                  {field.label}
-                                  {field.required && <span className="text-red-500 ml-1">*</span>}
-                                </span>
-                              </Label>
-                              <div className="pl-8">
-                                {renderField(field, selectedArea)}
-                              </div>
-                            </div>
+                      // Hide client/project info fields from area form
+                      if (["Client Information", "Project Information"].includes(section.title)) return null;
+
+                      return (
+                        <div key={sectionIndex} className="space-y-6 border-b pb-7">
+                          <h4 className="font-semibold text-xl">{section.title}</h4>
+                          <div className="space-y-4">
+                            {section.fields.map((field, fieldIndex) => {
+                              const showField = field.showWhen 
+                                ? area.assessments[field.showWhen.split('=')[0]] === field.showWhen.split('=')[1] 
+                                : true;
+                              return showField ? (
+                                <div 
+                                  key={field.id} 
+                                  className={`p-4 rounded-lg ${
+                                    fieldIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                                  }`}
+                                >
+                                  <div className="space-y-2">
+                                    <Label className="flex items-start space-x-2">
+                                      <span className="text-gray-500 font-medium min-w-[24px]">
+                                        {`${sectionIndex + 1}.${fieldIndex + 1}`}
+                                      </span>
+                                      <span>
+                                        {field.label}
+                                        {field.required && <span className="text-red-500 ml-1">*</span>}
+                                      </span>
+                                    </Label>
+                                    <div className="pl-8">
+                                      {renderField(field, area)}
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : null;
+                            })}
                           </div>
-                        ) : null;
-                      })}
-                    </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  {/* Add Area button at the bottom */}
+                  <div className="flex justify-end pt-4">
+                    <Button variant="outline" onClick={openAddAreaDialog}>
+                      <CirclePlus className="h-4 w-4 mr-2" /> Add Area
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              {/* Add Area Dialog */}
+              <Dialog open={isAddAreaDialogOpen} onOpenChange={setIsAddAreaDialogOpen}>
+                <DialogContent className="bg-white">
+                  <DialogHeader>
+                    <DialogTitle>Add Area</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <Input ref={areaNameInputRef} placeholder="Area Name" value={newAreaName} onChange={e => setNewAreaName(e.target.value)} />
+                    <Input placeholder="Area Description" value={newAreaDescription} onChange={e => setNewAreaDescription(e.target.value)} />
+                    <Input placeholder="Area Square Feet" type="number" value={newAreaSqft} onChange={e => setNewAreaSqft(e.target.value)} />
+                  </div>
+                  <DialogFooter>
+                    <Button onClick={handleAddAreaFromDialog} disabled={!newAreaName.trim()}>Add Area</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </TabsContent>
+          ))}
+        </Tabs>
+      )}
     </div>
   );
 }; 
