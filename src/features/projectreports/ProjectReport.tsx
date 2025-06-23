@@ -559,24 +559,24 @@ export const ProjectReport: React.FC = () => {
     }
   };
 
-  const addNewArea = () => {
-    const newArea: Area = {
-      id: `area-${areas.length + 1}`,
-      name: `Area ${areas.length + 1}`,
-      assessments: {
-        // Copy common fields from the first area
-        ...areas[0].assessments,
-        // Clear any area-specific fields
-        ...Object.fromEntries(
-          Object.entries(areas[0].assessments)
-            .filter(([key]) => !alwaysDisabledFields.includes(key))
-            .map(([key]) => [key, ''])
-        )
-      }
-    };
-    setAreas([...areas, newArea]);
-    setSelectedArea(newArea);
-  };
+  // const addNewArea = () => {
+  //   const newArea: Area = {
+  //     id: `area-${areas.length + 1}`,
+  //     name: `Area ${areas.length + 1}`,
+  //     assessments: {
+  //       // Copy common fields from the first area
+  //       ...areas[0].assessments,
+  //       // Clear any area-specific fields
+  //       ...Object.fromEntries(
+  //         Object.entries(areas[0].assessments)
+  //           .filter(([key]) => !alwaysDisabledFields.includes(key))
+  //           .map(([key]) => [key, ''])
+  //       )
+  //     }
+  //   };
+  //   setAreas([...areas, newArea]);
+  //   setSelectedArea(newArea);
+  // };
 
   const updateAreaAssessment = (fieldId: string, value: any) => {
     if (!selectedArea) return;
