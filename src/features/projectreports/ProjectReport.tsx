@@ -40,6 +40,7 @@ interface SchemaField {
 interface SchemaSection {
   title: string;
   fields: SchemaField[];
+  showWhen?: string;
 }
 
 interface Area {
@@ -115,7 +116,7 @@ export const ProjectReport: React.FC = () => {
                 startDate: project.start_date ? project.start_date.split('T')[0] : '',
                 endDate: project.end_date ? project.end_date.split('T')[0] : '',
                 projectNumber: project.project_no || '',
-                projectAddress: project.site_name || '',
+                projectAddress: [company.address_line_1, company.address_line_2, company.city, company.province, company.postal_code].filter(Boolean).join(', ') || '',
                 pmName: [pm.first_name, pm.last_name].filter(Boolean).join(' '),
                 pmEmail: pm.email || '',
                 pmPhone: pm.phone || '',
@@ -141,7 +142,7 @@ export const ProjectReport: React.FC = () => {
                 startDate: project.start_date ? project.start_date.split('T')[0] : '',
                 endDate: project.end_date ? project.end_date.split('T')[0] : '',
                 projectNumber: project.project_no || '',
-                projectAddress: project.site_name || '',
+                projectAddress: [company.address_line_1, company.address_line_2, company.city, company.province, company.postal_code].filter(Boolean).join(', ') || '',
                 pmName: [pm.first_name, pm.last_name].filter(Boolean).join(' '),
                 pmEmail: pm.email || '',
                 pmPhone: pm.phone || '',
@@ -671,28 +672,51 @@ export const ProjectReport: React.FC = () => {
         <CardContent className="p-6 space-y-6">
           {selectedArea && (
             <div className="space-y-6">
-              {/* <h3 className="text-xl font-semibold mb-4">{selectedArea.name}</h3> */}
-              {schema.map((section, sectionIndex) => (
-                <div key={sectionIndex} className="space-y-6 border-b pb-7">
-                  <h4 className="font-semibold text-xl">{section.title}</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {section.fields.map((field) => {
-                      const showField = field.showWhen 
-                        ? selectedArea.assessments[field.showWhen.split('=')[0]] === field.showWhen.split('=')[1] 
-                        : true;
-                      return showField ? (
-                        <div key={field.id} className="space-y-2">
-                          <Label>
-                            {field.label}
-                            {field.required && <span className="text-red-500 ml-1">*</span>}
-                          </Label>
-                          {renderField(field, selectedArea)}
-                        </div>
-                      ) : null;
-                    })}
+              {schema.map((section, sectionIndex) => {
+                // Check if section has showWhen and if it should be shown
+                let showSection = true;
+                if (section.showWhen) {
+                  const [depKey, depValue] = section.showWhen.split('=');
+                  showSection = selectedArea.assessments[depKey] === depValue;
+                }
+                if (!showSection) return null;
+
+                return (
+                  <div key={sectionIndex} className="space-y-6 border-b pb-7">
+                    <h4 className="font-semibold text-xl">{section.title}</h4>
+                    <div className="space-y-4">
+                      {section.fields.map((field, fieldIndex) => {
+                        const showField = field.showWhen 
+                          ? selectedArea.assessments[field.showWhen.split('=')[0]] === field.showWhen.split('=')[1] 
+                          : true;
+                        return showField ? (
+                          <div 
+                            key={field.id} 
+                            className={`p-4 rounded-lg ${
+                              fieldIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                            }`}
+                          >
+                            <div className="space-y-2">
+                              <Label className="flex items-start space-x-2">
+                                <span className="text-gray-500 font-medium min-w-[24px]">
+                                  {`${sectionIndex + 1}.${fieldIndex + 1}`}
+                                </span>
+                                <span>
+                                  {field.label}
+                                  {field.required && <span className="text-red-500 ml-1">*</span>}
+                                </span>
+                              </Label>
+                              <div className="pl-8">
+                                {renderField(field, selectedArea)}
+                              </div>
+                            </div>
+                          </div>
+                        ) : null;
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
