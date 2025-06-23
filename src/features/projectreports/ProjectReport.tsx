@@ -64,6 +64,7 @@ export const ProjectReport: React.FC = () => {
   const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
   const [projectId, setProjectId] = useState<string>("");
   const [projectStatus, setProjectStatus] = useState<string>("");
+  const [projectData, setProjectData] = useState<any>();
 
   const alwaysDisabledFields = [
     'clientCompanyName', 'clientAddress', 'contactName', 'contactPosition', 'contactEmail', 'contactPhone',
@@ -90,11 +91,12 @@ export const ProjectReport: React.FC = () => {
         const company = project.company || {};
         const pm = project.pm || {};
         const technician = project.technician || {};
-        setProjectId(project.id || "");
-        setProjectStatus(project.status || "");
+        setProjectId(project?.id ?? "");
+        setProjectStatus(project?.status ?? "");
+        setProjectData(response?.data?.project ?? {});
 
         // Initialize areas from areaDetails or create a default area
-        const areaDetails = Array.isArray(answers.areaDetails) ? answers.areaDetails : [];
+        const areaDetails = Array.isArray(answers?.areaDetails) ? answers.areaDetails : [];
         const initialAreas = areaDetails.length > 0 
           ? areaDetails.map((area: any, index: number) => ({
               id: area.id || `area-${index}`,
@@ -288,10 +290,18 @@ export const ProjectReport: React.FC = () => {
   };
 
   const renderField = (field: SchemaField, area: Area) => {
-    const value = area.assessments[field.id];
+    let value = area.assessments[field.id];
+    if (typeof value === "undefined" && reportData[field.id]) {
+      value = reportData[field.id];
+    }
     const isPrefilledDisabled = alwaysDisabledFields.includes(field.id);
     const isEditable = isFieldEditable() && !isPrefilledDisabled;
-    const files = field.type === "file" ? (Array.isArray(value) ? value : []) : [];
+    
+    // Get project object from reportData or state
+    const projectObj = projectData || {};
+    const technicianObj = projectObj?.technician || {};
+
+    let fileUrls: string[] = [];
 
     switch (field.type) {
       case "text":
@@ -384,6 +394,18 @@ export const ProjectReport: React.FC = () => {
           />
         );
       case "file":
+        // For technicianSignature, show the technician signature from project if not present in value
+        if (Array.isArray(value)) {
+          fileUrls = value;
+        } else if (typeof value === "string" && value.startsWith("http")) {
+          fileUrls = [value];
+        } else if (
+          field.id === "technicianSignature" &&
+          typeof technicianObj.technician_signature === "string" &&
+          technicianObj.technician_signature.startsWith("http")
+        ) {
+          fileUrls = [technicianObj.technician_signature];
+        }
         return (
           <div className="space-y-4">
             <div className="flex items-center space-x-4">
@@ -403,10 +425,9 @@ export const ProjectReport: React.FC = () => {
                 disabled={!isEditable || uploadingFiles[field.id]}
               />
             </div>
-            
-            {files.length > 0 && (
+            {fileUrls.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {files.map((fileUrl, index) => (
+                {fileUrls.map((fileUrl, index) => (
                   <div key={index} className="relative group">
                     <img
                       src={fileUrl}
