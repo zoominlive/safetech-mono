@@ -751,10 +751,32 @@ export const ProjectReport: React.FC = () => {
       id: `area-${areas.length + 1}-${Date.now()}`,
       name: newAreaName,
       assessments: {
-        ...areas[0]?.assessments,
+        // Only prefill client/project info fields if needed, but reset all area-specific fields
+        clientCompanyName: areas[0]?.assessments.clientCompanyName || '',
+        clientAddress: areas[0]?.assessments.clientAddress || '',
+        contactName: areas[0]?.assessments.contactName || '',
+        contactPosition: areas[0]?.assessments.contactPosition || '',
+        contactEmail: areas[0]?.assessments.contactEmail || '',
+        contactPhone: areas[0]?.assessments.contactPhone || '',
+        projectName: areas[0]?.assessments.projectName || '',
+        specificLocation: areas[0]?.assessments.specificLocation || '',
+        startDate: areas[0]?.assessments.startDate || '',
+        endDate: areas[0]?.assessments.endDate || '',
+        projectNumber: areas[0]?.assessments.projectNumber || '',
+        projectAddress: areas[0]?.assessments.projectAddress || '',
+        pmName: areas[0]?.assessments.pmName || '',
+        pmEmail: areas[0]?.assessments.pmEmail || '',
+        pmPhone: areas[0]?.assessments.pmPhone || '',
+        technicianName: areas[0]?.assessments.technicianName || '',
+        technicianEmail: areas[0]?.assessments.technicianEmail || '',
+        technicianPhone: areas[0]?.assessments.technicianPhone || '',
+        technicianTitle: areas[0]?.assessments.technicianTitle || '',
+        technicianSignature: areas[0]?.assessments.technicianSignature || '',
+        // Reset area-specific fields
         areaName: newAreaName,
         areaDescription: newAreaDescription,
         areaSquareFeet: newAreaSqft,
+        // Remove any other fields that may have been present in the previous area
       },
     };
     setAreas([...areas, newArea]);
