@@ -1,4 +1,4 @@
-import { CirclePlus, CircleX, Upload, List } from "lucide-react";
+import { CirclePlus, CircleX, Upload, List, ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -32,6 +32,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface SchemaField {
   type: string;
@@ -658,6 +659,14 @@ export const ProjectReport: React.FC = () => {
     setIsAddAreaDialogOpen(false);
   };
 
+  // For tab overflow
+  const MAX_VISIBLE_TABS = 5;
+  const visibleTabs = areas.slice(0, MAX_VISIBLE_TABS);
+  const overflowTabs = areas.slice(MAX_VISIBLE_TABS);
+
+  // Popover open state for dropdown
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
   if (isLoading) {
     return <CardSkeleton />;
   }
@@ -677,11 +686,11 @@ export const ProjectReport: React.FC = () => {
                 <span>Areas</span>
               </Button>
             </SheetTrigger>
-            <SheetContent>
+            <SheetContent className="flex flex-col h-full">
               <SheetHeader>
                 <SheetTitle>Areas</SheetTitle>
               </SheetHeader>
-              <div className="mt-6 space-y-4">
+              <div className="flex-1 overflow-y-auto mt-6 space-y-4 pr-2">
                 {areas.map((area) => (
                   <div key={area.id} className="flex items-center justify-between">
                     <Button
@@ -706,6 +715,8 @@ export const ProjectReport: React.FC = () => {
                     )}
                   </div>
                 ))}
+              </div>
+              <div className="pt-4 pb-2 bg-white sticky bottom-0">
                 <Button
                   variant="outline"
                   className="w-full justify-start"
@@ -781,8 +792,8 @@ export const ProjectReport: React.FC = () => {
           }}
           className="w-full"
         >
-          <TabsList className="overflow-x-auto flex-nowrap w-full scrollbar-thin scrollbar-thumb-gray-300">
-            {areas.map((area) => (
+          <TabsList className="w-full flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300">
+            {visibleTabs.map((area) => (
               <TabsTrigger
                 key={area.id}
                 value={area.id}
@@ -812,44 +823,70 @@ export const ProjectReport: React.FC = () => {
                 )}
               </TabsTrigger>
             ))}
+            {overflowTabs.length > 0 && (
+              <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="ml-2 flex items-center">
+                    <ChevronDown className="h-4 w-4 mr-1" /> More
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="p-0 w-48">
+                  <div className="flex flex-col">
+                    {overflowTabs.map((area) => (
+                      <button
+                        key={area.id}
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-100 ${selectedArea?.id === area.id ? 'bg-gray-200 font-semibold' : ''}`}
+                        onClick={() => {
+                          setSelectedArea(area);
+                          toast({ title: 'Area selected', description: `Area "${area.name}" is now active` });
+                          setIsPopoverOpen(false);
+                        }}
+                      >
+                        {area.name}
+                      </button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )}
           </TabsList>
           {areas.map((area) => (
             <TabsContent key={area.id} value={area.id} className="w-full">
               {/* Accordions for Client and Project Info */}
               <div className="mb-6">
                 <Accordion type="multiple" defaultValue={[]}>
-                  <AccordionItem value="client-info">
-                    <AccordionTrigger>Client Information</AccordionTrigger>
-                    <AccordionContent className="bg-white rounded-md shadow-sm">
+                  <AccordionItem value="client-info" className="bg-white rounded-md shadow-sm mb-4">
+                    <AccordionTrigger className="pl-4">Client Information</AccordionTrigger>
+                    <AccordionContent className="p-6">
                       {/* Render client info fields (read-only) */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><Label>Company Name</Label><div>{area.assessments.clientCompanyName}</div></div>
-                        <div><Label>Address</Label><div>{area.assessments.clientAddress}</div></div>
-                        <div><Label>Contact Name</Label><div>{area.assessments.contactName}</div></div>
-                        <div><Label>Contact Position</Label><div>{area.assessments.contactPosition}</div></div>
-                        <div><Label>Contact Email</Label><div>{area.assessments.contactEmail}</div></div>
-                        <div><Label>Contact Phone</Label><div>{area.assessments.contactPhone}</div></div>
+                        <div><Label>Company Name</Label><div className="text-gray-500">{area.assessments.clientCompanyName}</div></div>
+                        <div><Label>Address</Label><div className="text-gray-500">{area.assessments.clientAddress}</div></div>
+                        <div><Label>Contact Name</Label><div className="text-gray-500">{area.assessments.contactName}</div></div>
+                        <div><Label>Contact Position</Label><div className="text-gray-500">{area.assessments.contactPosition}</div></div>
+                        <div><Label>Contact Email</Label><div className="text-gray-500">{area.assessments.contactEmail}</div></div>
+                        <div><Label>Contact Phone</Label><div className="text-gray-500">{area.assessments.contactPhone}</div></div>
                       </div>
                     </AccordionContent>
                   </AccordionItem>
-                  <AccordionItem value="project-info">
-                    <AccordionTrigger>Project Information</AccordionTrigger>
-                    <AccordionContent className="bg-white rounded-md shadow-sm">
+                  <AccordionItem value="project-info" className="bg-white rounded-md shadow-sm">
+                    <AccordionTrigger className="pl-4">Project Information</AccordionTrigger>
+                    <AccordionContent className="p-6">
                       {/* Render project info fields (read-only) */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><Label>Project Name</Label><div>{area.assessments.projectName}</div></div>
-                        <div><Label>Specific Location</Label><div>{area.assessments.specificLocation}</div></div>
-                        <div><Label>Project Number</Label><div>{area.assessments.projectNumber}</div></div>
-                        <div><Label>Project Address</Label><div>{area.assessments.projectAddress}</div></div>
-                        <div><Label>Start Date</Label><div>{area.assessments.startDate}</div></div>
-                        <div><Label>End Date</Label><div>{area.assessments.endDate}</div></div>
-                        <div><Label>PM Name</Label><div>{area.assessments.pmName}</div></div>
-                        <div><Label>PM Email</Label><div>{area.assessments.pmEmail}</div></div>
-                        <div><Label>PM Phone</Label><div>{area.assessments.pmPhone}</div></div>
-                        <div><Label>Technician Name</Label><div>{area.assessments.technicianName}</div></div>
-                        <div><Label>Technician Email</Label><div>{area.assessments.technicianEmail}</div></div>
-                        <div><Label>Technician Phone</Label><div>{area.assessments.technicianPhone}</div></div>
-                        <div><Label>Technician Title</Label><div>{area.assessments.technicianTitle}</div></div>
+                        <div><Label>Project Name</Label><div className="text-gray-500">{area.assessments.projectName}</div></div>
+                        <div><Label>Specific Location</Label><div className="text-gray-500">{area.assessments.specificLocation}</div></div>
+                        <div><Label>Project Number</Label><div className="text-gray-500">{area.assessments.projectNumber}</div></div>
+                        <div><Label>Project Address</Label><div className="text-gray-500">{area.assessments.projectAddress}</div></div>
+                        <div><Label>Start Date</Label><div className="text-gray-500">{area.assessments.startDate}</div></div>
+                        <div><Label>End Date</Label><div className="text-gray-500">{area.assessments.endDate}</div></div>
+                        <div><Label>PM Name</Label><div className="text-gray-500">{area.assessments.pmName}</div></div>
+                        <div><Label>PM Email</Label><div className="text-gray-500">{area.assessments.pmEmail}</div></div>
+                        <div><Label>PM Phone</Label><div className="text-gray-500">{area.assessments.pmPhone}</div></div>
+                        <div><Label>Technician Name</Label><div className="text-gray-500">{area.assessments.technicianName}</div></div>
+                        <div><Label>Technician Email</Label><div className="text-gray-500">{area.assessments.technicianEmail}</div></div>
+                        <div><Label>Technician Phone</Label><div className="text-gray-500">{area.assessments.technicianPhone}</div></div>
+                        <div><Label>Technician Title</Label><div className="text-gray-500">{area.assessments.technicianTitle}</div></div>
                       </div>
                     </AccordionContent>
                   </AccordionItem>
