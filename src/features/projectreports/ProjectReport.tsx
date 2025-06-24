@@ -89,6 +89,9 @@ export const ProjectReport: React.FC = () => {
   const [newAreaSqft, setNewAreaSqft] = useState("");
   const areaNameInputRef = useRef<HTMLInputElement>(null);
 
+  // Add this state at the top, after other useState hooks
+  const [isEditingAreaDetails, setIsEditingAreaDetails] = useState(false);
+
   const alwaysDisabledFields = [
     'clientCompanyName', 'clientAddress', 'contactName', 'contactPosition', 'contactEmail', 'contactPhone',
     'projectName', 'specificLocation', 'projectNumber', 'projectAddress', 'startDate', 'endDate', 'pmName', 'pmEmail', 'pmPhone',
@@ -213,28 +216,36 @@ export const ProjectReport: React.FC = () => {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (area:boolean) => {
     try {
       setIsSaving(true);
-
       const payload = {
         name: reportData.name || "",
         status: true,
         project_id: projectId,
         answers: {
           ...reportData,
+          // Remove any top-level image fields
+          sprayedInsulationPhoto: undefined,
+          sprayedFireproofingPhoto: undefined,
+          mechanicalPipeInsulationStraightsPhoto: undefined,
+          haslooseFillOrvermiculiteInsulationPhoto: undefined,
           areaDetails: areas
         }
       };
-
+      // Remove undefined fields with type guard
+      Object.keys(payload.answers as Record<string, any>).forEach(key => {
+        if ((payload.answers as Record<string, any>)[key] === undefined) {
+          delete (payload.answers as Record<string, any>)[key];
+        }
+      });
       const response = await reportService.updateReport(id!, payload);
-
       if (response.success) {
         toast({
           title: "Success",
           description: "Report updated successfully",
         });
-        navigate("/project-reports");
+        if (!area) navigate("/project-reports");
       }
     } catch (error) {
       console.error("Error saving report:", error);
@@ -265,22 +276,28 @@ export const ProjectReport: React.FC = () => {
 
     try {
       setUploadingFiles(prev => ({ ...prev, [fieldId]: true }));
-      
       const formData = new FormData();
       Array.from(files).forEach(file => {
         formData.append('files', file);
       });
-
       const response = await reportService.uploadReportFile(id, formData);
-      
       if (response.success) {
-        // Update the report data with the returned URLs
-        const currentFiles = Array.isArray(reportData[fieldId]) ? reportData[fieldId] : [];
-        setReportData({
-          ...reportData,
-          [fieldId]: [...currentFiles, ...(response.data as { data: { urls: string[] } }).data.urls],
+        // Update the selected area's assessments with the returned URLs
+        const updatedAreas = areas.map(area => {
+          if (area.id === selectedArea?.id) {
+            const currentFiles = Array.isArray(area.assessments[fieldId]) ? area.assessments[fieldId] : [];
+            return {
+              ...area,
+              assessments: {
+                ...area.assessments,
+                [fieldId]: [...currentFiles, ...(response.data as { data: { urls: string[] } }).data.urls],
+              }
+            };
+          }
+          return area;
         });
-        
+        setAreas(updatedAreas);
+        setSelectedArea(updatedAreas.find(area => area.id === selectedArea?.id) || null);
         toast({
           title: "Success",
           description: "Files uploaded successfully",
@@ -305,18 +322,25 @@ export const ProjectReport: React.FC = () => {
   };
 
   const removeFile = (fieldId: string, fileUrl: string) => {
-    const currentFiles = Array.isArray(reportData[fieldId]) ? reportData[fieldId] : [];
-    setReportData({
-      ...reportData,
-      [fieldId]: currentFiles.filter(url => url !== fileUrl),
+    const updatedAreas = areas.map(area => {
+      if (area.id === selectedArea?.id) {
+        const currentFiles = Array.isArray(area.assessments[fieldId]) ? area.assessments[fieldId] : [];
+        return {
+          ...area,
+          assessments: {
+            ...area.assessments,
+            [fieldId]: currentFiles.filter(url => url !== fileUrl),
+          }
+        };
+      }
+      return area;
     });
+    setAreas(updatedAreas);
+    setSelectedArea(updatedAreas.find(area => area.id === selectedArea?.id) || null);
   };
 
   const renderField = (field: SchemaField, area: Area) => {
-    let value = area.assessments[field.id];
-    if (typeof value === "undefined" && reportData[field.id]) {
-      value = reportData[field.id];
-    }
+    const value = area.assessments[field.id];
     const isPrefilledDisabled = alwaysDisabledFields.includes(field.id);
     const isEditable = isFieldEditable() && !isPrefilledDisabled;
     
@@ -502,6 +526,7 @@ export const ProjectReport: React.FC = () => {
       }
       case "repeater": {
         const repeaterItems = Array.isArray(area.assessments[field.id]) ? area.assessments[field.id] : [];
+        const hasAreaDetails = !!(selectedArea?.assessments.areaDescription || selectedArea?.assessments.areaSquareFeet);
         return (
           <div className="space-y-4">
             {repeaterItems.map((item: any, index: number) => (
@@ -520,36 +545,76 @@ export const ProjectReport: React.FC = () => {
                           };
                           updateAreaAssessment(field.id, newItems);
                         }}
-                        disabled={!isEditable}
+                        disabled={!isFieldEditable()}
                       />
                     </div>
                   ))}
                 </div>
-                {isFieldEditable() && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      const newItems = repeaterItems.filter((_: any, i: number) => i !== index);
-                      updateAreaAssessment(field.id, newItems);
-                    }}
-                  >
-                    <CircleX className="h-4 w-4" />
-                  </Button>
-                )}
               </div>
             ))}
-            {isFieldEditable() && (
-              <Button onClick={() => {
-                const newItems = [...repeaterItems];
-                const newItem: Record<string, any> = {};
-                field.fields?.forEach(nestedField => {
-                  newItem[nestedField.id] = '';
-                });
-                updateAreaAssessment(field.id, [...newItems, newItem]);
-              }}>
-                <CirclePlus className="h-4 w-4 mr-2" />
-                Add {field.label}
+            {isEditingAreaDetails ? (
+              <div className="space-y-4">
+                <Input
+                  placeholder="Area Name"
+                  value={selectedArea?.name || ""}
+                  onChange={e => {
+                    if (selectedArea) updateAreaName(selectedArea.id, e.target.value);
+                  }}
+                />
+                <Input
+                  placeholder="Area Description"
+                  value={selectedArea?.assessments.areaDescription || ""}
+                  onChange={e => {
+                    updateAreaAssessment("areaDescription", e.target.value);
+                  }}
+                />
+                <Input
+                  placeholder="Area Square Feet"
+                  type="number"
+                  value={selectedArea?.assessments.areaSquareFeet || ""}
+                  onChange={e => {
+                    updateAreaAssessment("areaSquareFeet", e.target.value);
+                  }}
+                />
+                <Button
+                  onClick={() => {
+                    handleSave(true);
+                    setIsEditingAreaDetails(false);
+                  }}
+                >
+                  Save Details
+                </Button>
+              </div>
+            ) : hasAreaDetails ? (
+              <div className="space-y-4">
+                <Input
+                  placeholder="Area Name"
+                  value={selectedArea?.name || ""}
+                  disabled
+                />
+                <Input
+                  placeholder="Area Description"
+                  value={selectedArea?.assessments.areaDescription || ""}
+                  disabled
+                />
+                <Input
+                  placeholder="Area Square Feet"
+                  type="number"
+                  value={selectedArea?.assessments.areaSquareFeet || ""}
+                  disabled
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditingAreaDetails(true)}
+                >
+                  Edit
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={() => setIsEditingAreaDetails(true)}
+              >
+                Add Area Details
               </Button>
             )}
           </div>
@@ -559,25 +624,6 @@ export const ProjectReport: React.FC = () => {
         return null;
     }
   };
-
-  // const addNewArea = () => {
-  //   const newArea: Area = {
-  //     id: `area-${areas.length + 1}`,
-  //     name: `Area ${areas.length + 1}`,
-  //     assessments: {
-  //       // Copy common fields from the first area
-  //       ...areas[0].assessments,
-  //       // Clear any area-specific fields
-  //       ...Object.fromEntries(
-  //         Object.entries(areas[0].assessments)
-  //           .filter(([key]) => !alwaysDisabledFields.includes(key))
-  //           .map(([key]) => [key, ''])
-  //       )
-  //     }
-  //   };
-  //   setAreas([...areas, newArea]);
-  //   setSelectedArea(newArea);
-  // };
 
   const updateAreaAssessment = (fieldId: string, value: any) => {
     if (!selectedArea) return;
@@ -735,7 +781,7 @@ export const ProjectReport: React.FC = () => {
           >
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button onClick={() => handleSave(false)} disabled={isSaving}>
             {isSaving ? "Saving..." : "Save Report"}
           </Button>
         </div>
