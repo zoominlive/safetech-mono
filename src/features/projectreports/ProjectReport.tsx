@@ -525,100 +525,157 @@ export const ProjectReport: React.FC = () => {
         return null;
       }
       case "repeater": {
-        const repeaterItems = Array.isArray(area.assessments[field.id]) ? area.assessments[field.id] : [];
-        const hasAreaDetails = !!(selectedArea?.assessments.areaDescription || selectedArea?.assessments.areaSquareFeet);
-        return (
-          <div className="space-y-4">
-            {repeaterItems.map((item: any, index: number) => (
-              <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="space-y-2 w-full">
-                  {field.fields?.map((nestedField) => (
-                    <div key={nestedField.id}>
-                      <Label>{nestedField.label}</Label>
-                      <Input
-                        value={item[nestedField.id] || ""}
-                        onChange={(e) => {
-                          const newItems = [...repeaterItems];
-                          newItems[index] = {
-                            ...newItems[index],
-                            [nestedField.id]: e.target.value,
-                          };
-                          updateAreaAssessment(field.id, newItems);
-                        }}
-                        disabled={!isFieldEditable()}
-                      />
-                    </div>
-                  ))}
+        if (field.id === "areaDetails") {
+          const repeaterItems = Array.isArray(area.assessments[field.id]) ? area.assessments[field.id] : [];
+          const hasAreaDetails = !!(selectedArea?.assessments.areaDescription || selectedArea?.assessments.areaSquareFeet);
+          return (
+            <div className="space-y-4">
+              {repeaterItems.map((item: any, index: number) => (
+                <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-2 w-full">
+                    {field.fields?.map((nestedField) => (
+                      <div key={nestedField.id}>
+                        <Label>{nestedField.label}</Label>
+                        <Input
+                          value={item[nestedField.id] || ""}
+                          onChange={(e) => {
+                            const newItems = [...repeaterItems];
+                            newItems[index] = {
+                              ...newItems[index],
+                              [nestedField.id]: e.target.value,
+                            };
+                            updateAreaAssessment(field.id, newItems);
+                          }}
+                          disabled={!isFieldEditable()}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-            {isEditingAreaDetails ? (
-              <div className="space-y-4">
-                <Input
-                  placeholder="Area Name"
-                  value={selectedArea?.name || ""}
-                  onChange={e => {
-                    if (selectedArea) updateAreaName(selectedArea.id, e.target.value);
-                  }}
-                />
-                <Input
-                  placeholder="Area Description"
-                  value={selectedArea?.assessments.areaDescription || ""}
-                  onChange={e => {
-                    updateAreaAssessment("areaDescription", e.target.value);
-                  }}
-                />
-                <Input
-                  placeholder="Area Square Feet"
-                  type="number"
-                  value={selectedArea?.assessments.areaSquareFeet || ""}
-                  onChange={e => {
-                    updateAreaAssessment("areaSquareFeet", e.target.value);
-                  }}
-                />
+              ))}
+              {isEditingAreaDetails ? (
+                <div className="space-y-4">
+                  <Input
+                    placeholder="Area Name"
+                    value={selectedArea?.name || ""}
+                    onChange={e => {
+                      if (selectedArea) updateAreaName(selectedArea.id, e.target.value);
+                    }}
+                  />
+                  <Input
+                    placeholder="Area Description"
+                    value={selectedArea?.assessments.areaDescription || ""}
+                    onChange={e => {
+                      updateAreaAssessment("areaDescription", e.target.value);
+                    }}
+                  />
+                  <Input
+                    placeholder="Area Square Feet"
+                    type="number"
+                    value={selectedArea?.assessments.areaSquareFeet || ""}
+                    onChange={e => {
+                      updateAreaAssessment("areaSquareFeet", e.target.value);
+                    }}
+                  />
+                  <Button
+                    onClick={() => {
+                      handleSave(true);
+                      setIsEditingAreaDetails(false);
+                    }}
+                  >
+                    Save Details
+                  </Button>
+                </div>
+              ) : hasAreaDetails ? (
+                <div className="space-y-4">
+                  <Input
+                    placeholder="Area Name"
+                    value={selectedArea?.name || ""}
+                    disabled
+                  />
+                  <Input
+                    placeholder="Area Description"
+                    value={selectedArea?.assessments.areaDescription || ""}
+                    disabled
+                  />
+                  <Input
+                    placeholder="Area Square Feet"
+                    type="number"
+                    value={selectedArea?.assessments.areaSquareFeet || ""}
+                    disabled
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditingAreaDetails(true)}
+                  >
+                    Edit
+                  </Button>
+                </div>
+              ) : (
                 <Button
-                  onClick={() => {
-                    handleSave(true);
-                    setIsEditingAreaDetails(false);
-                  }}
-                >
-                  Save Details
-                </Button>
-              </div>
-            ) : hasAreaDetails ? (
-              <div className="space-y-4">
-                <Input
-                  placeholder="Area Name"
-                  value={selectedArea?.name || ""}
-                  disabled
-                />
-                <Input
-                  placeholder="Area Description"
-                  value={selectedArea?.assessments.areaDescription || ""}
-                  disabled
-                />
-                <Input
-                  placeholder="Area Square Feet"
-                  type="number"
-                  value={selectedArea?.assessments.areaSquareFeet || ""}
-                  disabled
-                />
-                <Button
-                  variant="outline"
                   onClick={() => setIsEditingAreaDetails(true)}
                 >
-                  Edit
+                  Add Area Details
                 </Button>
-              </div>
-            ) : (
-              <Button
-                onClick={() => setIsEditingAreaDetails(true)}
-              >
-                Add Area Details
-              </Button>
-            )}
-          </div>
-        );
+              )}
+            </div>
+          );
+        } else {
+          // Default repeater logic for all other repeater fields
+          const repeaterItems = Array.isArray(area.assessments[field.id]) ? area.assessments[field.id] : [];
+          return (
+            <div className="space-y-4">
+              {repeaterItems.map((item: any, index: number) => (
+                <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="space-y-2 w-full">
+                    {field.fields?.map((nestedField) => (
+                      <div key={nestedField.id}>
+                        <Label>{nestedField.label}</Label>
+                        <Input
+                          value={item[nestedField.id] || ""}
+                          onChange={(e) => {
+                            const newItems = [...repeaterItems];
+                            newItems[index] = {
+                              ...newItems[index],
+                              [nestedField.id]: e.target.value,
+                            };
+                            updateAreaAssessment(field.id, newItems);
+                          }}
+                          disabled={!isFieldEditable()}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  {isFieldEditable() && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const newItems = repeaterItems.filter((_: any, i: number) => i !== index);
+                        updateAreaAssessment(field.id, newItems);
+                      }}
+                    >
+                      <CircleX className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              {isFieldEditable() && (
+                <Button onClick={() => {
+                  const newItems = [...repeaterItems];
+                  const newItem: Record<string, any> = {};
+                  field.fields?.forEach(nestedField => {
+                    newItem[nestedField.id] = '';
+                  });
+                  updateAreaAssessment(field.id, [...newItems, newItem]);
+                }}>
+                  <CirclePlus className="h-4 w-4 mr-2" />
+                  Add {field.label}
+                </Button>
+              )}
+            </div>
+          );
+        }
       }
       default:
         return null;
