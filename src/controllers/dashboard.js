@@ -1,4 +1,4 @@
-const { Project, Customer, User } = require('../models');
+const { Project, Customer, User, Report } = require('../models');
 const { Op } = require('sequelize');
 const { msToTime } = require('../utils/msToTime');
 const { OK } = require('../helpers/constants');
@@ -53,7 +53,8 @@ exports.getDashboardSummary = async (req, res, next) => {
       },
       include: [
         { model: Customer, as: 'company', attributes: ['first_name', 'last_name'] },
-        { model: User, as: 'technician', attributes: ['first_name', 'last_name'] }
+        { model: User, as: 'technician', attributes: ['first_name', 'last_name'] },
+        { model: Report, as: "reports", attributes: ["id", "name"] }
       ],
       order: [['start_date', 'DESC']]
     });
@@ -65,7 +66,8 @@ exports.getDashboardSummary = async (req, res, next) => {
       },
       include: [
         { model: Customer, as: 'company', attributes: ['first_name', 'last_name'] },
-        { model: User, as: 'technician', attributes: ['first_name', 'last_name'] }
+        { model: User, as: 'technician', attributes: ['first_name', 'last_name'] },
+        { model: Report, as: "reports", attributes: ["id", "name"] }
       ],
       order: [['start_date', 'DESC']]
     });
@@ -77,7 +79,8 @@ exports.getDashboardSummary = async (req, res, next) => {
       },
       include: [
         { model: Customer, as: 'company', attributes: ['first_name', 'last_name'] },
-        { model: User, as: 'technician', attributes: ['first_name', 'last_name'] }
+        { model: User, as: 'technician', attributes: ['first_name', 'last_name'] },
+        { model: Report, as: "reports", attributes: ["id", "name"] }
       ],
       order: [['updated_at', 'DESC']]
     });
@@ -186,23 +189,41 @@ exports.getDashboardSummary = async (req, res, next) => {
           }
         },
         inProgress: inProgress.map(p => ({
+          id: p.id,
           projectName: p.name,
           company: p.company.first_name + ' ' + p.company.last_name,
           startDate: p.start_date,
           technician: `${p.technician?.first_name}`,
-          status: p.status
+          status: p.status,
+          reports: p.reports.map(r => ({
+            id: r.id,
+            reportName: r.name,
+            reportDate: r.date_of_assessment
+          }))
         })),
         newProjects: newProjects.map(p => ({
+          id: p.id,
           projectName: p.name,
           company: p.company.first_name + ' ' + p.company.last_name,
           startDate: p.start_date,
           technician: `${p.technician?.first_name}`,
-          status: p.status
+          status: p.status,
+          reports: p.reports.map(r => ({
+            id: r.id,
+            reportName: r.name,
+            reportDate: r.date_of_assessment
+          }))
         })),
         awaitingReview: awaitingReview.map(p => ({
+          id: p.id,
           projectName: p.name,
           company: p.company.first_name + ' ' + p.company.last_name,
-          completedDate: p.updated_at
+          completedDate: p.updated_at,
+          reports: p.reports.map(r => ({
+            id: r.id,
+            reportName: r.name,
+            reportDate: r.date_of_assessment
+          }))
         }))
       }
     });
