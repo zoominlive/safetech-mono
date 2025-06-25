@@ -356,92 +356,106 @@ export const ProjectReport: React.FC = () => {
     switch (field.type) {
       case "text":
         return (
-          <Input
-            value={value || ""}
-            onChange={(e) =>
-              updateAreaAssessment(field.id, e.target.value)
-            }
-            disabled={!isEditable}
-            placeholder={field.placeholder}
-          />
+          <div className="space-y-2">
+            <Input
+              value={value || ""}
+              onChange={(e) =>
+                updateAreaAssessment(field.id, e.target.value)
+              }
+              disabled={!isEditable}
+              placeholder={field.placeholder}
+            />
+          </div>
         );
       case "radio":
         return (
-          <RadioGroup
-            value={value}
-            onValueChange={(newValue) =>
-              updateAreaAssessment(field.id, newValue)
-            }
-            disabled={!isEditable}
-            className="flex space-x-4"
-          >
-            {field.options?.map((option: string) => (
-              <div key={option} className="flex items-center space-x-2">
-                <RadioGroupItem value={option} id={`${field.id}-${option}`} />
-                <Label htmlFor={`${field.id}-${option}`}>{option}</Label>
-              </div>
-            ))}
-          </RadioGroup>
+          <div className="space-y-2">
+            <RadioGroup
+              value={value}
+              onValueChange={(newValue) =>
+                updateAreaAssessment(field.id, newValue)
+              }
+              disabled={!isEditable}
+              className="flex space-x-4"
+            >
+              {field.options?.map((option: string) => (
+                <div key={option} className="flex items-center space-x-2">
+                  <RadioGroupItem value={option} id={`${field.id}-${option}`} />
+                  <Label htmlFor={`${field.id}-${option}`}>{option}</Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
         );
       case "multiselect":
         return (
-          <MultiSelect
-            options={field.options?.map((opt: string) => ({ value: opt, label: opt })) || []}
-            selected={Array.isArray(value) ? value : []}
-            onChange={(selected) =>
-              updateAreaAssessment(field.id, selected)
-            }
-            className="w-full"
-            placeholder={field.placeholder || `Select ${field.label}`}
-            disabled={!isEditable}
-          />
+          <div className="space-y-2">
+            <MultiSelect
+              options={field.options?.map((opt: string) => ({ value: opt, label: opt })) || []}
+              selected={Array.isArray(value) ? value : []}
+              onChange={(selected) =>
+                updateAreaAssessment(field.id, selected)
+              }
+              className="w-full"
+              placeholder={field.placeholder || `Select ${field.label}`}
+              disabled={!isEditable}
+            />
+          </div>
         );
       case "select":
         return (
-          <MultiSelect
-            options={field.options?.map((opt: string) => ({ value: opt, label: opt })) || []}
-            selected={value ? [value] : []}
-            onChange={(selected) =>
-              updateAreaAssessment(field.id, selected[0])
-            }
-            className="w-full"
-            placeholder={field.placeholder || `Select ${field.label}`}
-            disabled={!isEditable}
-          />
+          <div className="space-y-2">
+            <MultiSelect
+              options={field.options?.map((opt: string) => ({ value: opt, label: opt })) || []}
+              selected={value ? [value] : []}
+              onChange={(selected) =>
+                updateAreaAssessment(field.id, selected[0])
+              }
+              className="w-full"
+              placeholder={field.placeholder || `Select ${field.label}`}
+              disabled={!isEditable}
+            />
+          </div>
         );
       case "date":
         return (
-          <Input
-            type="date"
-            value={value || ""}
-            onChange={(e) =>
-              updateAreaAssessment(field.id, e.target.value)
-            }
-            disabled={!isEditable}
-          />
+          <div className="space-y-2">
+            <Input
+              type="date"
+              value={value || ""}
+              onChange={(e) =>
+                updateAreaAssessment(field.id, e.target.value)
+              }
+              disabled={!isEditable}
+            />
+          </div>
         );
       case "number":
         return (
-          <Input
-            type="number"
-            value={value || ""}
-            onChange={(e) =>
-              updateAreaAssessment(field.id, e.target.value)
-            }
-            disabled={!isEditable}
-          />
+          <div className="space-y-2">
+            <Input
+              type="number"
+              value={value || ""}
+              onChange={(e) =>
+                updateAreaAssessment(field.id, e.target.value)
+              }
+              disabled={!isEditable}
+            />
+          </div>
         );
       case "signature":
         return (
-          <Input
-            type="text"
-            value={value || ""}
-            onChange={(e) =>
-              updateAreaAssessment(field.id, e.target.value)
-            }
-            disabled={!isEditable}
-            placeholder="Technician Signature (Type to sign)"
-          />
+          <div className="space-y-2">
+            <Input
+              type="text"
+              value={value || ""}
+              onChange={(e) =>
+                updateAreaAssessment(field.id, e.target.value)
+              }
+              disabled={!isEditable}
+              placeholder="Technician Signature (Type to sign)"
+            />
+          </div>
         );
       case "file":
         // For technicianSignature, show the technician signature from project if not present in value
@@ -529,16 +543,65 @@ export const ProjectReport: React.FC = () => {
       }
       case "repeater": {
         if (field.id === "areaDetails") {
-          const repeaterItems = Array.isArray(area.assessments[field.id]) ? area.assessments[field.id] : [];
+        const repeaterItems = Array.isArray(area.assessments[field.id]) ? area.assessments[field.id] : [];
           const hasAreaDetails = !!(selectedArea?.assessments.areaDescription || selectedArea?.assessments.areaSquareFeet);
-          return (
-            <div className="space-y-4">
-              {repeaterItems.map((item: any, index: number) => (
-                <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="space-y-2 w-full">
-                    {field.fields?.map((nestedField) => (
-                      <div key={nestedField.id}>
-                        <Label>{nestedField.label}</Label>
+        return (
+          <div className="space-y-4">
+            {repeaterItems.map((item: any, index: number) => (
+              <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="space-y-2 w-full">
+                  {field.fields?.map((nestedField) => (
+                    <div key={nestedField.id} className="space-y-2">
+                      <Label>{nestedField.label}</Label>
+                      {nestedField.type === "file" ? (
+                        <div className="space-y-4">
+                          <div className="flex items-center space-x-4">
+                            <Label htmlFor={`file-${nestedField.id}-${index}`} className="cursor-pointer">
+                              <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
+                                <Upload size={18} />
+                                <span>{uploadingFiles[`${nestedField.id}-${index}`] ? "Uploading..." : "Upload Files"}</span>
+                              </div>
+                            </Label>
+                            <input
+                              id={`file-${nestedField.id}-${index}`}
+                              type="file"
+                              multiple
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => handleRepeaterFileUpload(field.id, nestedField.id, index, e.target.files)}
+                              disabled={!isFieldEditable() || uploadingFiles[`${nestedField.id}-${index}`]}
+                            />
+                          </div>
+                          {Array.isArray(item[nestedField.id]) && item[nestedField.id].length > 0 && (
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                              {item[nestedField.id].map((fileUrl: string, photoIndex: number) => (
+                                <div key={photoIndex} className="relative group">
+                                  <img
+                                    src={fileUrl}
+                                    alt={`Uploaded file ${photoIndex + 1}`}
+                                    className="w-full h-32 object-cover rounded-lg"
+                                  />
+                                  {isFieldEditable() && (
+                                    <button
+                                      onClick={() => {
+                                        const newItems = [...repeaterItems];
+                                        newItems[index] = {
+                                          ...newItems[index],
+                                          [nestedField.id]: item[nestedField.id].filter((_: string, i: number) => i !== photoIndex),
+                                        };
+                                        updateAreaAssessment(field.id, newItems);
+                                      }}
+                                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                      <CircleX className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
                         <Input
                           value={item[nestedField.id] || ""}
                           onChange={(e) => {
@@ -551,9 +614,10 @@ export const ProjectReport: React.FC = () => {
                           }}
                           disabled={!isFieldEditable()}
                         />
-                      </div>
-                    ))}
-                  </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
                 </div>
               ))}
               {isEditingAreaDetails ? (
@@ -691,52 +755,102 @@ export const ProjectReport: React.FC = () => {
                 <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="space-y-2 w-full">
                     {field.fields?.map((nestedField) => (
-                      <div key={nestedField.id}>
+                      <div key={nestedField.id} className="space-y-2">
                         <Label>{nestedField.label}</Label>
-                        <Input
-                          value={item[nestedField.id] || ""}
-                          onChange={(e) => {
-                            const newItems = [...repeaterItems];
-                            newItems[index] = {
-                              ...newItems[index],
-                              [nestedField.id]: e.target.value,
-                            };
-                            updateAreaAssessment(field.id, newItems);
-                          }}
-                          disabled={!isFieldEditable()}
-                        />
+                        {nestedField.type === "file" ? (
+                          <div className="space-y-4">
+                            <div className="flex items-center space-x-4">
+                              <Label htmlFor={`file-${nestedField.id}-${index}`} className="cursor-pointer">
+                                <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
+                                  <Upload size={18} />
+                                  <span>{uploadingFiles[`${nestedField.id}-${index}`] ? "Uploading..." : "Upload Files"}</span>
+                                </div>
+                              </Label>
+                              <input
+                                id={`file-${nestedField.id}-${index}`}
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => handleRepeaterFileUpload(field.id, nestedField.id, index, e.target.files)}
+                                disabled={!isFieldEditable() || uploadingFiles[`${nestedField.id}-${index}`]}
+                              />
+                            </div>
+                            {Array.isArray(item[nestedField.id]) && item[nestedField.id].length > 0 && (
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                {item[nestedField.id].map((fileUrl: string, photoIndex: number) => (
+                                  <div key={photoIndex} className="relative group">
+                                    <img
+                                      src={fileUrl}
+                                      alt={`Uploaded file ${photoIndex + 1}`}
+                                      className="w-full h-32 object-cover rounded-lg"
+                                    />
+                                    {isFieldEditable() && (
+                                      <button
+                                        onClick={() => {
+                                          const newItems = [...repeaterItems];
+                                          newItems[index] = {
+                                            ...newItems[index],
+                                            [nestedField.id]: item[nestedField.id].filter((_: string, i: number) => i !== photoIndex),
+                                          };
+                                          updateAreaAssessment(field.id, newItems);
+                                        }}
+                                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                      >
+                                        <CircleX className="h-4 w-4" />
+                                      </button>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <Input
+                            value={item[nestedField.id] || ""}
+                            onChange={(e) => {
+                              const newItems = [...repeaterItems];
+                              newItems[index] = {
+                                ...newItems[index],
+                                [nestedField.id]: e.target.value,
+                              };
+                              updateAreaAssessment(field.id, newItems);
+                            }}
+                            disabled={!isFieldEditable()}
+                          />
+                        )}
                       </div>
                     ))}
                   </div>
                   {isFieldEditable() && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        const newItems = repeaterItems.filter((_: any, i: number) => i !== index);
-                        updateAreaAssessment(field.id, newItems);
-                      }}
-                    >
-                      <CircleX className="h-4 w-4" />
-                    </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const newItems = repeaterItems.filter((_: any, i: number) => i !== index);
+                      updateAreaAssessment(field.id, newItems);
+                    }}
+                  >
+                    <CircleX className="h-4 w-4" />
+                  </Button>
                   )}
-                </div>
-              ))}
-              {isFieldEditable() && (
-                <Button onClick={() => {
-                  const newItems = [...repeaterItems];
-                  const newItem: Record<string, any> = {};
-                  field.fields?.forEach(nestedField => {
-                    newItem[nestedField.id] = '';
-                  });
-                  updateAreaAssessment(field.id, [...newItems, newItem]);
-                }}>
-                  <CirclePlus className="h-4 w-4 mr-2" />
-                  Add {field.label}
-                </Button>
-              )}
-            </div>
-          );
+              </div>
+            ))}
+            {isFieldEditable() && (
+              <Button onClick={() => {
+                const newItems = [...repeaterItems];
+                const newItem: Record<string, any> = {};
+                field.fields?.forEach(nestedField => {
+                    newItem[nestedField.id] = nestedField.type === "file" ? [] : '';
+                });
+                updateAreaAssessment(field.id, [...newItems, newItem]);
+              }}>
+                <CirclePlus className="h-4 w-4 mr-2" />
+                Add {field.label}
+              </Button>
+            )}
+          </div>
+        );
         }
       }
       default:
@@ -886,6 +1000,55 @@ export const ProjectReport: React.FC = () => {
     }
   };
 
+  // Add a new function to handle repeater file uploads
+  const handleRepeaterFileUpload = async (fieldId: string, repeaterFieldId: string, itemIndex: number, files: FileList | null) => {
+    if (!files || !files.length || !id) return;
+
+    try {
+      setUploadingFiles(prev => ({ ...prev, [`${repeaterFieldId}-${itemIndex}`]: true }));
+      const formData = new FormData();
+      Array.from(files).forEach(file => {
+        formData.append('files', file);
+      });
+      const response = await reportService.uploadReportFile(id, formData);
+      if (response.success) {
+        const newPhotos = (response.data as { data: { urls: string[] } }).data.urls;
+        
+        // Update the specific repeater item with the new photos
+        const repeaterItems = Array.isArray(selectedArea?.assessments[fieldId]) ? selectedArea.assessments[fieldId] : [];
+        const updatedItems = [...repeaterItems];
+        const currentPhotos = Array.isArray(updatedItems[itemIndex]?.[repeaterFieldId]) ? updatedItems[itemIndex][repeaterFieldId] : [];
+        
+        updatedItems[itemIndex] = {
+          ...updatedItems[itemIndex],
+          [repeaterFieldId]: [...currentPhotos, ...newPhotos],
+        };
+        
+        updateAreaAssessment(fieldId, updatedItems);
+        
+        toast({
+          title: "Success",
+          description: "Files uploaded successfully",
+        });
+      } else {
+        toast({
+          title: "Upload failed",
+          description: response.message || "Failed to upload files",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to upload files:", error);
+      toast({
+        title: "Upload failed",
+        description: "An error occurred during upload",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingFiles(prev => ({ ...prev, [`${repeaterFieldId}-${itemIndex}`]: false }));
+    }
+  };
+
   // For tab overflow
   const MAX_VISIBLE_TABS = 5;
   const visibleTabs = areas.slice(0, MAX_VISIBLE_TABS);
@@ -923,15 +1086,15 @@ export const ProjectReport: React.FC = () => {
                   const latestPhoto = areaPhotos.length > 0 ? areaPhotos[areaPhotos.length - 1] : null;
                   
                   return (
-                    <div key={area.id} className="flex items-center justify-between">
-                      <Button
-                        variant={selectedArea?.id === area.id ? "default" : "outline"}
-                        className="flex-1 justify-start"
-                        onClick={() => {
-                          setSelectedArea(area);
-                          setIsDrawerOpen(false);
-                        }}
-                      >
+                  <div key={area.id} className="flex items-center justify-between">
+                    <Button
+                      variant={selectedArea?.id === area.id ? "default" : "outline"}
+                      className="flex-1 justify-start"
+                      onClick={() => {
+                        setSelectedArea(area);
+                        setIsDrawerOpen(false);
+                      }}
+                    >
                         <div className="flex items-center space-x-3 w-full">
                           {latestPhoto && (
                             <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0">
@@ -944,18 +1107,18 @@ export const ProjectReport: React.FC = () => {
                           )}
                           <span className="truncate">{area.name}</span>
                         </div>
+                    </Button>
+                    {areas.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="ml-2"
+                        onClick={() => setAreaToDelete(area)}
+                      >
+                        <CircleX className="h-4 w-4" />
                       </Button>
-                      {areas.length > 1 && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="ml-2"
-                          onClick={() => setAreaToDelete(area)}
-                        >
-                          <CircleX className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
+                    )}
+                  </div>
                   );
                 })}
               </div>

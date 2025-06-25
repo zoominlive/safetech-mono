@@ -217,7 +217,7 @@ const ProfileUpdateForm = () => {
         });
         toast({
           title: "Success",
-          description: "Technician signature updated successfully",
+          description: "Signature updated successfully",
         });
       } else {
         toast({
@@ -341,56 +341,54 @@ const ProfileUpdateForm = () => {
         </div>
       </div>
       
-      {/* Technician Signature Section (only for technicians) */}
-      {user?.role?.toLowerCase() === 'technician' && (
-        <div className="space-y-4 mb-8">
-          <Label>Technician Signature</Label>
-          <div className="flex items-center space-x-4">
-            <Avatar className="h-24 w-24">
-              <AvatarImage
-                src={signaturePreview || user?.technician_signature}
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = "/user/avatar-sf.png";
-                }}
-                referrerPolicy="no-referrer"
-                crossOrigin="anonymous"
-              />
-              <AvatarFallback>TS</AvatarFallback>
-            </Avatar>
-            <div>
-              <Label htmlFor="technician-signature" className="cursor-pointer">
-                <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
-                  <Upload size={18} />
-                  <span>{uploadingSignature ? "Uploading..." : "Change signature"}</span>
-                </div>
-              </Label>
-              <input
-                id="technician-signature"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleSignatureChange}
+      {/* Signature Section (for all users) */}
+      <div className="space-y-4 mb-8">
+        <Label>Signature</Label>
+        <div className="flex items-center space-x-4">
+          <Avatar className="h-24 w-24">
+            <AvatarImage
+              src={signaturePreview || user?.technician_signature}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = "/user/avatar-sf.png";
+              }}
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
+            />
+            <AvatarFallback>S</AvatarFallback>
+          </Avatar>
+          <div>
+            <Label htmlFor="technician-signature" className="cursor-pointer">
+              <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
+                <Upload size={18} />
+                <span>{uploadingSignature ? "Uploading..." : "Change signature"}</span>
+              </div>
+            </Label>
+            <input
+              id="technician-signature"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleSignatureChange}
+              disabled={uploadingSignature}
+            />
+            <p className="text-sm text-gray-500 mt-2">
+              JPG, PNG or GIF. Max size 2MB.
+            </p>
+            {(user?.technician_signature || signaturePreview) && (
+              <Button
+                type="button"
+                variant="destructive"
+                className="mt-2"
+                onClick={() => handleRemoveSignature()}
                 disabled={uploadingSignature}
-              />
-              <p className="text-sm text-gray-500 mt-2">
-                JPG, PNG or GIF. Max size 2MB.
-              </p>
-              {(user?.technician_signature || signaturePreview) && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  className="mt-2"
-                  onClick={() => handleRemoveSignature()}
-                  disabled={uploadingSignature}
-                >
-                  Remove Signature
-                </Button>
-              )}
-            </div>
+              >
+                Remove Signature
+              </Button>
+            )}
           </div>
         </div>
-      )}
+      </div>
       
       {/* Add role information display */}
       <div className="p-4 rounded-md bg-gray-50 border mb-6">
