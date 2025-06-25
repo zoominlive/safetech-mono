@@ -92,6 +92,9 @@ export const ProjectReport: React.FC = () => {
   // Add this state at the top, after other useState hooks
   const [isEditingAreaDetails, setIsEditingAreaDetails] = useState(false);
 
+  // Add this state after other useState hooks
+  const [dialogUploadedPhotos, setDialogUploadedPhotos] = useState<string[]>([]);
+
   const alwaysDisabledFields = [
     'clientCompanyName', 'clientAddress', 'contactName', 'contactPosition', 'contactEmail', 'contactPhone',
     'projectName', 'specificLocation', 'projectNumber', 'projectAddress', 'startDate', 'endDate', 'pmName', 'pmEmail', 'pmPhone',
@@ -577,6 +580,49 @@ export const ProjectReport: React.FC = () => {
                       updateAreaAssessment("areaSquareFeet", e.target.value);
                     }}
                   />
+                  <div className="space-y-2">
+                    <Label>Area Photo</Label>
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-4">
+                        <Label htmlFor={`file-areaPhoto`} className="cursor-pointer">
+                          <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
+                            <Upload size={18} />
+                            <span>{uploadingFiles["areaPhoto"] ? "Uploading..." : "Upload Files"}</span>
+                          </div>
+                        </Label>
+                        <input
+                          id={`file-areaPhoto`}
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleFileUpload("areaPhoto", e.target.files)}
+                          disabled={!isFieldEditable() || uploadingFiles["areaPhoto"]}
+                        />
+                      </div>
+                      {Array.isArray(selectedArea?.assessments.areaPhoto) && selectedArea?.assessments.areaPhoto.length > 0 && (
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          {selectedArea.assessments.areaPhoto.map((fileUrl: string, index: number) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={fileUrl}
+                                alt={`Area photo ${index + 1}`}
+                                className="w-full h-32 object-cover rounded-lg"
+                              />
+                              {isFieldEditable() && (
+                                <button
+                                  onClick={() => removeFile("areaPhoto", fileUrl)}
+                                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <CircleX className="h-4 w-4" />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                   <Button
                     onClick={() => {
                       handleSave(true);
@@ -604,6 +650,22 @@ export const ProjectReport: React.FC = () => {
                     value={selectedArea?.assessments.areaSquareFeet || ""}
                     disabled
                   />
+                  {Array.isArray(selectedArea?.assessments.areaPhoto) && selectedArea?.assessments.areaPhoto.length > 0 && (
+                    <div className="space-y-2">
+                      <Label>Area Photo</Label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {selectedArea.assessments.areaPhoto.map((fileUrl: string, index: number) => (
+                          <div key={index} className="relative">
+                            <img
+                              src={fileUrl}
+                              alt={`Area photo ${index + 1}`}
+                              className="w-full h-32 object-cover rounded-lg"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <Button
                     variant="outline"
                     onClick={() => setIsEditingAreaDetails(true)}
@@ -740,6 +802,7 @@ export const ProjectReport: React.FC = () => {
     setNewAreaName("");
     setNewAreaDescription("");
     setNewAreaSqft("");
+    setDialogUploadedPhotos([]); // Reset uploaded photos
     setIsAddAreaDialogOpen(true);
     setTimeout(() => areaNameInputRef.current?.focus(), 100);
   };
@@ -776,12 +839,51 @@ export const ProjectReport: React.FC = () => {
         areaName: newAreaName,
         areaDescription: newAreaDescription,
         areaSquareFeet: newAreaSqft,
+        areaPhoto: dialogUploadedPhotos, // Include uploaded photos
         // Remove any other fields that may have been present in the previous area
       },
     };
     setAreas([...areas, newArea]);
     setSelectedArea(newArea);
     setIsAddAreaDialogOpen(false);
+    setDialogUploadedPhotos([]); // Reset after adding
+  };
+
+  // Add a new function to handle dialog file uploads
+  const handleDialogFileUpload = async (files: FileList | null) => {
+    if (!files || !files.length || !id) return;
+
+    try {
+      setUploadingFiles(prev => ({ ...prev, ["areaPhoto"]: true }));
+      const formData = new FormData();
+      Array.from(files).forEach(file => {
+        formData.append('files', file);
+      });
+      const response = await reportService.uploadReportFile(id, formData);
+      if (response.success) {
+        const newPhotos = (response.data as { data: { urls: string[] } }).data.urls;
+        setDialogUploadedPhotos(prev => [...prev, ...newPhotos]);
+        toast({
+          title: "Success",
+          description: "Files uploaded successfully",
+        });
+      } else {
+        toast({
+          title: "Upload failed",
+          description: response.message || "Failed to upload files",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to upload files:", error);
+      toast({
+        title: "Upload failed",
+        description: "An error occurred during upload",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingFiles(prev => ({ ...prev, ["areaPhoto"]: false }));
+    }
   };
 
   // For tab overflow
@@ -901,6 +1003,47 @@ export const ProjectReport: React.FC = () => {
                 <Input ref={areaNameInputRef} placeholder="Area Name" value={newAreaName} onChange={e => setNewAreaName(e.target.value)} />
                 <Input placeholder="Area Description" value={newAreaDescription} onChange={e => setNewAreaDescription(e.target.value)} />
                 <Input placeholder="Area Square Feet" type="number" value={newAreaSqft} onChange={e => setNewAreaSqft(e.target.value)} />
+                <div className="space-y-2">
+                  <Label>Area Photo</Label>
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-4">
+                      <Label htmlFor={`dialog-file-areaPhoto`} className="cursor-pointer">
+                        <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
+                          <Upload size={18} />
+                          <span>{uploadingFiles["areaPhoto"] ? "Uploading..." : "Upload Files"}</span>
+                        </div>
+                      </Label>
+                      <input
+                        id={`dialog-file-areaPhoto`}
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleDialogFileUpload(e.target.files)}
+                        disabled={!isFieldEditable() || uploadingFiles["areaPhoto"]}
+                      />
+                    </div>
+                    {dialogUploadedPhotos.length > 0 && (
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {dialogUploadedPhotos.map((fileUrl: string, index: number) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={fileUrl}
+                              alt={`Area photo ${index + 1}`}
+                              className="w-full h-32 object-cover rounded-lg"
+                            />
+                            <button
+                              onClick={() => setDialogUploadedPhotos(prev => prev.filter((_, i) => i !== index))}
+                              className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <CircleX className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
               <DialogFooter>
                 <Button onClick={handleAddAreaFromDialog} disabled={!newAreaName.trim()}>Add Area</Button>
@@ -1088,6 +1231,47 @@ export const ProjectReport: React.FC = () => {
                     <Input ref={areaNameInputRef} placeholder="Area Name" value={newAreaName} onChange={e => setNewAreaName(e.target.value)} />
                     <Input placeholder="Area Description" value={newAreaDescription} onChange={e => setNewAreaDescription(e.target.value)} />
                     <Input placeholder="Area Square Feet" type="number" value={newAreaSqft} onChange={e => setNewAreaSqft(e.target.value)} />
+                    <div className="space-y-2">
+                      <Label>Area Photo</Label>
+                      <div className="space-y-4">
+                        <div className="flex items-center space-x-4">
+                          <Label htmlFor={`dialog-file-areaPhoto-2`} className="cursor-pointer">
+                            <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
+                              <Upload size={18} />
+                              <span>{uploadingFiles["areaPhoto"] ? "Uploading..." : "Upload Files"}</span>
+                            </div>
+                          </Label>
+                          <input
+                            id={`dialog-file-areaPhoto-2`}
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleDialogFileUpload(e.target.files)}
+                            disabled={!isFieldEditable() || uploadingFiles["areaPhoto"]}
+                          />
+                        </div>
+                        {dialogUploadedPhotos.length > 0 && (
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {dialogUploadedPhotos.map((fileUrl: string, index: number) => (
+                              <div key={index} className="relative group">
+                                <img
+                                  src={fileUrl}
+                                  alt={`Area photo ${index + 1}`}
+                                  className="w-full h-32 object-cover rounded-lg"
+                                />
+                                <button
+                                  onClick={() => setDialogUploadedPhotos(prev => prev.filter((_, i) => i !== index))}
+                                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <CircleX className="h-4 w-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                   <DialogFooter>
                     <Button onClick={handleAddAreaFromDialog} disabled={!newAreaName.trim()}>Add Area</Button>
