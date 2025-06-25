@@ -13,16 +13,26 @@ interface DashboardResponse {
       projectsOlderThan48Hrs: number;
     };
     inProgress: Array<{
+      id: string;
       projectName: string;
       company: string;
       startDate: string | Date;
       technician: string;
       status: string;
+      reports: Array<{
+        id: string;
+        reportName: string;
+      }>;
     }>;
     awaitingReview: Array<{
+      id: string;
       projectName: string;
       company: string;
       completedDate: string | Date;
+      reports: Array<{
+        id: string;
+        reportName: string;
+      }>;
     }>;
   };
 } 

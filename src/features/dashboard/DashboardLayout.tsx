@@ -6,6 +6,7 @@ import { dashboardService } from "@/services/api/dashboardService";
 import { TableSkeleton } from "@/components/ui/skeletons/TableSkeleton";
 import { StatsSkeleton } from "@/components/ui/skeletons/StatsSkeleton";
 import { formatDate } from "@/lib/utils";
+import { useNavigate } from "react-router";
 
 interface DashboardResponse {
   code: number;
@@ -24,29 +25,65 @@ interface DashboardResponse {
       projectsOlderThan48HrsChange: any
     }
     };
-    inProgress: InProgressProject[];
-    newProjects: InProgressProject[];
-    awaitingReview: AwaitingReviewProject[];
+    inProgress: Array<{
+      id: string;
+      projectName: string;
+      company: string;
+      startDate: string | Date;
+      technician: string;
+      status: string;
+      reports: Array<{
+        id: string;
+        reportName: string;
+      }>;
+    }>;
+    newProjects: Array<{
+      id: string;
+      projectName: string;
+      company: string;
+      startDate: string | Date;
+      technician: string;
+      status: string;
+      reports: Array<{
+        id: string;
+        reportName: string;
+      }>;
+    }>;
+    awaitingReview: Array<{
+      id: string;
+      projectName: string;
+      company: string;
+      completedDate: string | Date;
+      reports: Array<{
+        id: string;
+        reportName: string;
+      }>;
+    }>;
   };
 }
 
 interface InProgressProject {
+  id: string;
   projectName: string;
   company: string;
   startDate: string | Date;
   technician: string;
   status: string;
+  latestReportId?: string;
 }
 
 interface AwaitingReviewProject {
+  id: string;
   projectName: string;
   company: string;
   completedDate: string | Date;
+  latestReportId?: string;
 }
 
 // Project type can be either in progress or awaiting review
 
 function DashboardLayout() {
+  const navigate = useNavigate();
   const [overview, setOverview] = useState({
     totalOpenProjects: 0,
     projectsCompletedLast30Days: 0,
@@ -76,9 +113,47 @@ function DashboardLayout() {
 
         if (dashboardData.success) {
           setOverview(dashboardData.data.overview);
-          setInProgressProjects(dashboardData.data.inProgress || []);
-          setNewProjects(dashboardData.data.newProjects || []);
-          setAwaitingReviewProjects(dashboardData.data.awaitingReview || []);
+          
+          // Map inProgress projects with latest report ID
+          const mappedInProgress = (dashboardData.data.inProgress || []).map(project => ({
+            id: project.id,
+            projectName: project.projectName,
+            company: project.company,
+            startDate: project.startDate,
+            technician: project.technician,
+            status: project.status,
+            latestReportId: project.reports && project.reports.length > 0 
+              ? project.reports[project.reports.length - 1].id 
+              : undefined
+          }));
+          
+          // Map new projects with latest report ID
+          const mappedNewProjects = (dashboardData.data.newProjects || []).map(project => ({
+            id: project.id,
+            projectName: project.projectName,
+            company: project.company,
+            startDate: project.startDate,
+            technician: project.technician,
+            status: project.status,
+            latestReportId: project.reports && project.reports.length > 0 
+              ? project.reports[project.reports.length - 1].id 
+              : undefined
+          }));
+          
+          // Map awaiting review projects with latest report ID
+          const mappedAwaitingReview = (dashboardData.data.awaitingReview || []).map(project => ({
+            id: project.id,
+            projectName: project.projectName,
+            company: project.company,
+            completedDate: project.completedDate,
+            latestReportId: project.reports && project.reports.length > 0 
+              ? project.reports[project.reports.length - 1].id 
+              : undefined
+          }));
+          
+          setInProgressProjects(mappedInProgress);
+          setNewProjects(mappedNewProjects);
+          setAwaitingReviewProjects(mappedAwaitingReview);
           setError(null);
         } else {
           setError(dashboardData.message || "Failed to load dashboard data");
@@ -93,6 +168,16 @@ function DashboardLayout() {
 
     fetchDashboardData();
   }, [token]);
+
+  const handleProjectDetails = (project: InProgressProject | AwaitingReviewProject) => {
+    
+    if (project.latestReportId) {
+      navigate(`/project-reports/${project.latestReportId}/view`);
+    } else {
+      // If no report exists, navigate to project details
+      navigate(`/projects/${project.id}`);
+    }
+  };
 
   const inProgressColumns: Column<InProgressProject>[] = [
     {
@@ -154,13 +239,31 @@ function DashboardLayout() {
         <>
           <Stats overview={overview} />
           <div className="overflow-x-auto">
-            <Table columns={inProgressColumns} data={newProjects} title="New" />
+            <Table 
+              columns={inProgressColumns} 
+              data={newProjects} 
+              title="New" 
+              hasActions={true}
+              onDetails={handleProjectDetails}
+            />
           </div>
           <div className="overflow-x-auto">
-            <Table columns={inProgressColumns} data={inProgressProjects} title="In Progress" />
+            <Table 
+              columns={inProgressColumns} 
+              data={inProgressProjects} 
+              title="In Progress" 
+              hasActions={true}
+              onDetails={handleProjectDetails}
+            />
           </div>
           <div className="overflow-x-auto">
-            <Table columns={awaitingReviewColumns} data={awaitingReviewProjects} title="Awaiting PM Review" />
+            <Table 
+              columns={awaitingReviewColumns} 
+              data={awaitingReviewProjects} 
+              title="Awaiting PM Review" 
+              hasActions={true}
+              onDetails={handleProjectDetails}
+            />
           </div>
         </>
       )}
