@@ -7,7 +7,7 @@ import { MultiSelect } from "@/components/MultiSelect";
 import { CardSkeleton } from "@/components/ui/skeletons/CardSkeleton";
 import { toast } from "@/components/ui/use-toast";
 import { reportService } from "@/services/api/reportService";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router";
 import BackButton from "@/components/BackButton";
 import { useAuthStore } from "@/store";
@@ -82,6 +82,14 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   const [projectData, setProjectData] = useState<any>();
   const [areaToDelete, setAreaToDelete] = useState<Area | null>(null);
 
+  // Auto-save related state
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const periodicSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSavedDataRef = useRef<string>('');
+
   // State for Add Area dialog
   const [isAddAreaDialogOpen, setIsAddAreaDialogOpen] = useState(false);
   const [newAreaName, setNewAreaName] = useState("");
@@ -100,6 +108,213 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     'projectName', 'specificLocation', 'projectNumber', 'projectAddress', 'startDate', 'endDate', 'pmName', 'pmEmail', 'pmPhone',
     'technicianName', 'technicianEmail', 'technicianPhone', 'technicianTitle'
   ];
+
+  // Auto-save configuration
+  const AUTO_SAVE_DELAY = 2000; // 2 seconds after last change
+  const PERIODIC_SAVE_INTERVAL = 30000; // 30 seconds
+
+  // Debounced auto-save function
+  const debouncedAutoSave = useCallback(() => {
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      if (hasUnsavedChanges && !readOnly) {
+        performAutoSave();
+      }
+    }, AUTO_SAVE_DELAY);
+  }, [hasUnsavedChanges, readOnly]);
+
+  // Perform the actual auto-save
+  const performAutoSave = async () => {
+    if (!id || readOnly || !hasUnsavedChanges) return;
+
+    try {
+      setAutoSaveStatus('saving');
+      const payload = {
+        name: reportData.name || "",
+        status: true,
+        project_id: projectId,
+        answers: {
+          ...reportData,
+          sprayedInsulationPhoto: undefined,
+          sprayedFireproofingPhoto: undefined,
+          mechanicalPipeInsulationStraightsPhoto: undefined,
+          haslooseFillOrvermiculiteInsulationPhoto: undefined,
+          areaDetails: areas
+        }
+      };
+
+      // Remove undefined fields
+      Object.keys(payload.answers as Record<string, any>).forEach(key => {
+        if ((payload.answers as Record<string, any>)[key] === undefined) {
+          delete (payload.answers as Record<string, any>)[key];
+        }
+      });
+
+      const response = await reportService.updateReport(id, payload);
+      
+      if (response.success) {
+        setAutoSaveStatus('saved');
+        setLastSaved(new Date());
+        setHasUnsavedChanges(false);
+        lastSavedDataRef.current = JSON.stringify({ areas, reportData });
+        
+        // Show success toast only if it's been a while since last save
+        const timeSinceLastToast = lastSaved ? Date.now() - lastSaved.getTime() : 60000;
+        if (timeSinceLastToast > 60000) { // Only show toast if more than 1 minute since last save
+          toast({
+            title: "Auto-saved",
+            description: "Your changes have been automatically saved",
+          });
+        }
+      } else {
+        throw new Error(response.message || 'Auto-save failed');
+      }
+    } catch (error) {
+      console.error("Auto-save error:", error);
+      setAutoSaveStatus('error');
+      toast({
+        title: "Auto-save failed",
+        description: "Your changes could not be saved automatically. Please save manually.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Check for changes and trigger auto-save
+  const checkForChanges = useCallback(() => {
+    const currentData = JSON.stringify({ areas, reportData });
+    const hasChanges = currentData !== lastSavedDataRef.current;
+    
+    if (hasChanges && !hasUnsavedChanges) {
+      setHasUnsavedChanges(true);
+    } else if (!hasChanges && hasUnsavedChanges) {
+      setHasUnsavedChanges(false);
+    }
+
+    if (hasChanges) {
+      debouncedAutoSave();
+    }
+  }, [areas, reportData, hasUnsavedChanges, debouncedAutoSave]);
+
+  // Set up periodic auto-save
+  useEffect(() => {
+    if (!readOnly && id) {
+      periodicSaveIntervalRef.current = setInterval(() => {
+        if (hasUnsavedChanges) {
+          performAutoSave();
+        }
+      }, PERIODIC_SAVE_INTERVAL);
+    }
+
+    return () => {
+      if (periodicSaveIntervalRef.current) {
+        clearInterval(periodicSaveIntervalRef.current);
+      }
+    };
+  }, [readOnly, id, hasUnsavedChanges]);
+
+  // Clean up timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+      if (periodicSaveIntervalRef.current) {
+        clearInterval(periodicSaveIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // Check for changes whenever areas or reportData changes
+  useEffect(() => {
+    if (areas.length > 0 && reportData) {
+      checkForChanges();
+    }
+  }, [areas, reportData, checkForChanges]);
+
+  // Warn user before leaving with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges && !readOnly) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    // Add keyboard shortcut for manual save (Ctrl+S or Cmd+S)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (!readOnly && !isSaving) {
+          handleSave(false);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [hasUnsavedChanges, readOnly, isSaving]);
+
+  // Manual save function that can be called when auto-save fails
+  const handleManualSave = async () => {
+    if (readOnly || isSaving) return;
+    
+    try {
+      setIsSaving(true);
+      setAutoSaveStatus('saving');
+      const payload = {
+        name: reportData.name || "",
+        status: true,
+        project_id: projectId,
+        answers: {
+          ...reportData,
+          sprayedInsulationPhoto: undefined,
+          sprayedFireproofingPhoto: undefined,
+          mechanicalPipeInsulationStraightsPhoto: undefined,
+          haslooseFillOrvermiculiteInsulationPhoto: undefined,
+          areaDetails: areas
+        }
+      };
+      
+      Object.keys(payload.answers as Record<string, any>).forEach(key => {
+        if ((payload.answers as Record<string, any>)[key] === undefined) {
+          delete (payload.answers as Record<string, any>)[key];
+        }
+      });
+      
+      const response = await reportService.updateReport(id!, payload);
+      if (response.success) {
+        setAutoSaveStatus('saved');
+        setLastSaved(new Date());
+        setHasUnsavedChanges(false);
+        lastSavedDataRef.current = JSON.stringify({ areas, reportData });
+        toast({
+          title: "Success",
+          description: "Report saved successfully",
+        });
+      } else {
+        throw new Error(response.message || 'Save failed');
+      }
+    } catch (error) {
+      console.error("Manual save error:", error);
+      setAutoSaveStatus('error');
+      toast({
+        title: "Save failed",
+        description: "Failed to save report. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   useEffect(() => {
     if (id) {
@@ -191,6 +406,9 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
         };
         setReportData(mergedAnswers);
 
+        // Initialize last saved data reference
+        lastSavedDataRef.current = JSON.stringify({ areas: initialAreas, reportData: mergedAnswers });
+
         if (response.data.template?.schema) {
           try {
             const parsedSchema = typeof response.data.template.schema === 'string' 
@@ -244,6 +462,9 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
       });
       const response = await reportService.updateReport(id!, payload);
       if (response.success) {
+        setHasUnsavedChanges(false);
+        setLastSaved(new Date());
+        lastSavedDataRef.current = JSON.stringify({ areas, reportData });
         toast({
           title: "Success",
           description: "Report updated successfully",
@@ -263,7 +484,13 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   };
 
   const handleCancel = () => {
-    navigate("/project-reports");
+    if (hasUnsavedChanges && !readOnly) {
+      if (window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
+        navigate("/project-reports");
+      }
+    } else {
+      navigate("/project-reports");
+    }
   };
 
   const isFieldEditable = () => {
@@ -1076,6 +1303,40 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
         <div className="flex items-center space-x-4">
           <BackButton />
           <h1 className="text-2xl font-bold">Project Report</h1>
+          {/* Auto-save status indicator */}
+          {!readOnly && (
+            <div className="flex items-center space-x-2 text-sm">
+              {autoSaveStatus === 'saving' && (
+                <div className="flex items-center space-x-1 text-blue-600">
+                  <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  <span>Saving...</span>
+                </div>
+              )}
+              {autoSaveStatus === 'saved' && (
+                <div className="flex items-center space-x-1 text-green-600">
+                  <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                  <span>Saved</span>
+                  {lastSaved && (
+                    <span className="text-gray-500">
+                      {lastSaved.toLocaleTimeString()}
+                    </span>
+                  )}
+                </div>
+              )}
+              {autoSaveStatus === 'error' && (
+                <div className="flex items-center space-x-1 text-red-600">
+                  <div className="w-2 h-2 bg-red-600 rounded-full"></div>
+                  <span>Save failed</span>
+                </div>
+              )}
+              {hasUnsavedChanges && autoSaveStatus === 'idle' && (
+                <div className="flex items-center space-x-1 text-orange-600">
+                  <div className="w-2 h-2 bg-orange-600 rounded-full animate-pulse"></div>
+                  <span>Unsaved changes</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex items-center space-x-2">
           <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
@@ -1153,12 +1414,40 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
             {readOnly ? "Back" : "Cancel"}
           </Button>
           {!readOnly && (
-            <Button onClick={() => handleSave(false)} disabled={isSaving}>
-              {isSaving ? "Saving..." : "Save Report"}
-            </Button>
+            <>
+              {autoSaveStatus === 'error' && (
+                <Button 
+                  variant="outline" 
+                  onClick={handleManualSave}
+                  disabled={isSaving}
+                  className="text-red-600 border-red-600 hover:bg-red-50"
+                >
+                  {isSaving ? "Retrying..." : "Retry Save"}
+                </Button>
+              )}
+              <Button onClick={handleManualSave} disabled={isSaving}>
+                {isSaving ? "Saving..." : "Save Report"}
+              </Button>
+            </>
           )}
         </div>
       </div>
+
+      {/* Auto-save info message */}
+      {!readOnly && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="flex items-start space-x-2">
+            <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+            <div className="text-sm text-blue-800">
+              <p className="font-medium">Auto-save enabled</p>
+              <p className="text-blue-600">
+                Your changes are automatically saved every 30 seconds or 2 seconds after you stop typing. 
+                You can also save manually using Ctrl+S (or Cmd+S on Mac).
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AlertDialog open={!!areaToDelete} onOpenChange={(open) => !open && setAreaToDelete(null)}>
         <AlertDialogContent>
