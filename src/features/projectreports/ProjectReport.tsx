@@ -918,30 +918,46 @@ export const ProjectReport: React.FC = () => {
                 <SheetTitle>Areas</SheetTitle>
               </SheetHeader>
               <div className="flex-1 overflow-y-auto mt-6 space-y-4 pr-2">
-                {areas.map((area) => (
-                  <div key={area.id} className="flex items-center justify-between">
-                    <Button
-                      variant={selectedArea?.id === area.id ? "default" : "outline"}
-                      className="flex-1 justify-start"
-                      onClick={() => {
-                        setSelectedArea(area);
-                        setIsDrawerOpen(false);
-                      }}
-                    >
-                      {area.name}
-                    </Button>
-                    {areas.length > 1 && (
+                {areas.map((area) => {
+                  const areaPhotos = Array.isArray(area.assessments.areaPhoto) ? area.assessments.areaPhoto : [];
+                  const latestPhoto = areaPhotos.length > 0 ? areaPhotos[areaPhotos.length - 1] : null;
+                  
+                  return (
+                    <div key={area.id} className="flex items-center justify-between">
                       <Button
-                        variant="ghost"
-                        size="icon"
-                        className="ml-2"
-                        onClick={() => setAreaToDelete(area)}
+                        variant={selectedArea?.id === area.id ? "default" : "outline"}
+                        className="flex-1 justify-start"
+                        onClick={() => {
+                          setSelectedArea(area);
+                          setIsDrawerOpen(false);
+                        }}
                       >
-                        <CircleX className="h-4 w-4" />
+                        <div className="flex items-center space-x-3 w-full">
+                          {latestPhoto && (
+                            <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0">
+                              <img
+                                src={latestPhoto}
+                                alt={`${area.name} thumbnail`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
+                          <span className="truncate">{area.name}</span>
+                        </div>
                       </Button>
-                    )}
-                  </div>
-                ))}
+                      {areas.length > 1 && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="ml-2"
+                          onClick={() => setAreaToDelete(area)}
+                        >
+                          <CircleX className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
               <div className="pt-4 pb-2 bg-white sticky bottom-0">
                 <Button
