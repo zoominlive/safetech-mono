@@ -38,7 +38,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   return (
     <div className={className}>
       <Select
-        value={selected.length > 0 ? selected[0].value : undefined}
+        value={selected.length > 0 ? selected[selected.length - 1].value : undefined}
         onValueChange={handleSelect}
         disabled={disabled}
       >

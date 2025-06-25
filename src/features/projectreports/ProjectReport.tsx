@@ -33,6 +33,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 interface SchemaField {
   type: string;
@@ -635,16 +636,22 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
       case "select":
         return (
           <div className="space-y-2">
-            <MultiSelect
-              options={field.options?.map((opt: string) => ({ value: opt, label: opt })) || []}
-              selected={value ? [value] : []}
-              onChange={(selected) =>
-                updateAreaAssessment(field.id, selected[0])
-              }
-              className="w-full"
-              placeholder={field.placeholder || `Select ${field.label}`}
+            <Select
+              value={value || ""}
+              onValueChange={(selected) => updateAreaAssessment(field.id, selected)}
               disabled={!isEditable}
-            />
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={field.placeholder || `Select ${field.label}`} />
+              </SelectTrigger>
+              <SelectContent>
+                {field.options?.map((opt: string) => (
+                  <SelectItem key={opt} value={opt}>
+                    {opt}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         );
       case "date":
