@@ -81,6 +81,7 @@ export interface ProjectData {
   start_date: string;
   end_date: string;
   project_number?: string;
+  report_id?: string;
 }
 
 export interface ProjectResponse {

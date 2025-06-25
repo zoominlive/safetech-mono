@@ -25,6 +25,7 @@ import UserDetails from "./features/users/UserDetails";
 import Support from "./pages/Support";
 import ProjectReports from "./pages/ProjectReports";
 import ProjectReport from "./pages/ProjectReport";
+import { ProjectReportReadOnly } from "./features/projectreports/ProjectReportReadOnly";
 
 function App() {
   const { isAuthenticated } = useAuthStore();
@@ -123,6 +124,7 @@ function App() {
             <Route index element={<ProjectReports />} />
             <Route path=":id">
               <Route index element={<ReportDetails />} />
+              <Route path="view" element={<ProjectReportReadOnly />} />
               <Route
                 path="edit"
                 element={

@@ -63,7 +63,7 @@ interface Area {
   assessments: Record<string, any>;
 }
 
-export const ProjectReport: React.FC = () => {
+export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = false }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -267,6 +267,9 @@ export const ProjectReport: React.FC = () => {
   };
 
   const isFieldEditable = () => {
+    // If readOnly is true, always return false
+    if (readOnly) return false;
+    
     if (!userRole) return false;
     if (projectStatus === "Complete") {
       return userRole === "Project Manager";
@@ -687,14 +690,16 @@ export const ProjectReport: React.FC = () => {
                       )}
                     </div>
                   </div>
-                  <Button
-                    onClick={() => {
-                      handleSave(true);
-                      setIsEditingAreaDetails(false);
-                    }}
-                  >
-                    Save Details
-                  </Button>
+                  {!readOnly && (
+                    <Button
+                      onClick={() => {
+                        handleSave(true);
+                        setIsEditingAreaDetails(false);
+                      }}
+                    >
+                      Save Details
+                    </Button>
+                  )}
                 </div>
               ) : hasAreaDetails ? (
                 <div className="space-y-4">
@@ -730,19 +735,23 @@ export const ProjectReport: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsEditingAreaDetails(true)}
-                  >
-                    Edit
-                  </Button>
+                  {!readOnly && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsEditingAreaDetails(true)}
+                    >
+                      Edit
+                    </Button>
+                  )}
                 </div>
               ) : (
-                <Button
-                  onClick={() => setIsEditingAreaDetails(true)}
-                >
-                  Add Area Details
-                </Button>
+                !readOnly && (
+                  <Button
+                    onClick={() => setIsEditingAreaDetails(true)}
+                  >
+                    Add Area Details
+                  </Button>
+                )
               )}
             </div>
           );
@@ -822,7 +831,7 @@ export const ProjectReport: React.FC = () => {
                       </div>
                     ))}
                   </div>
-                  {isFieldEditable() && (
+                  {isFieldEditable() && !readOnly && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -836,7 +845,7 @@ export const ProjectReport: React.FC = () => {
                   )}
               </div>
             ))}
-            {isFieldEditable() && (
+            {isFieldEditable() && !readOnly && (
               <Button onClick={() => {
                 const newItems = [...repeaterItems];
                 const newItem: Record<string, any> = {};
@@ -1108,7 +1117,7 @@ export const ProjectReport: React.FC = () => {
                           <span className="truncate">{area.name}</span>
                         </div>
                     </Button>
-                    {areas.length > 1 && (
+                    {areas.length > 1 && !readOnly && (
                       <Button
                         variant="ghost"
                         size="icon"
@@ -1122,16 +1131,18 @@ export const ProjectReport: React.FC = () => {
                   );
                 })}
               </div>
-              <div className="pt-4 pb-2 bg-white sticky bottom-0">
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={openAddAreaDialog}
-                >
-                  <CirclePlus className="h-4 w-4 mr-2" />
-                  Add New Area
-                </Button>
-              </div>
+              {!readOnly && (
+                <div className="pt-4 pb-2 bg-white sticky bottom-0">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={openAddAreaDialog}
+                  >
+                    <CirclePlus className="h-4 w-4 mr-2" />
+                    Add New Area
+                  </Button>
+                </div>
+              )}
             </SheetContent>
           </Sheet>
           <Button
@@ -1139,11 +1150,13 @@ export const ProjectReport: React.FC = () => {
             onClick={handleCancel}
             disabled={isSaving}
           >
-            Cancel
+            {readOnly ? "Back" : "Cancel"}
           </Button>
-          <Button onClick={() => handleSave(false)} disabled={isSaving}>
-            {isSaving ? "Saving..." : "Save Report"}
-          </Button>
+          {!readOnly && (
+            <Button onClick={() => handleSave(false)} disabled={isSaving}>
+              {isSaving ? "Saving..." : "Save Report"}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -1170,9 +1183,15 @@ export const ProjectReport: React.FC = () => {
       {/* If no areas, show Add Area button and dialog */}
       {areas.length === 0 ? (
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <Button size="lg" onClick={openAddAreaDialog}>
-            <CirclePlus className="h-5 w-5 mr-2" /> Add Area
-          </Button>
+          {!readOnly ? (
+            <Button size="lg" onClick={openAddAreaDialog}>
+              <CirclePlus className="h-5 w-5 mr-2" /> Add Area
+            </Button>
+          ) : (
+            <div className="text-center">
+              <p className="text-gray-500 mb-4">No areas found in this report.</p>
+            </div>
+          )}
           <Dialog open={isAddAreaDialogOpen} onOpenChange={setIsAddAreaDialogOpen}>
             <DialogContent className="bg-white">
               <DialogHeader>
@@ -1255,7 +1274,7 @@ export const ProjectReport: React.FC = () => {
                   disabled={!isFieldEditable()}
                   style={{ pointerEvents: isFieldEditable() ? 'auto' : 'none' }}
                 />
-                {areas.length > 1 && (
+                {areas.length > 1 && !readOnly && (
                   <button
                     type="button"
                     className="absolute top-1 right-1 text-gray-400 hover:text-red-500"
@@ -1301,7 +1320,7 @@ export const ProjectReport: React.FC = () => {
             <TabsContent key={area.id} value={area.id} className="w-full">
               {/* Accordions for Client and Project Info */}
               <div className="mb-6">
-                <Accordion type="multiple" defaultValue={[]}>
+                <Accordion type="multiple" defaultValue={readOnly ? ["client-info", "project-info"] : []}>
                   <AccordionItem value="client-info" className="bg-white rounded-md shadow-sm mb-4">
                     <AccordionTrigger className="pl-4">Client Information</AccordionTrigger>
                     <AccordionContent className="p-6">
@@ -1393,11 +1412,13 @@ export const ProjectReport: React.FC = () => {
                     })}
                   </div>
                   {/* Add Area button at the bottom */}
-                  <div className="flex justify-end pt-4">
-                    <Button variant="outline" onClick={openAddAreaDialog}>
-                      <CirclePlus className="h-4 w-4 mr-2" /> Add Area
-                    </Button>
-                  </div>
+                  {!readOnly && (
+                    <div className="flex justify-end pt-4">
+                      <Button variant="outline" onClick={openAddAreaDialog}>
+                        <CirclePlus className="h-4 w-4 mr-2" /> Add Area
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
               {/* Add Area Dialog */}

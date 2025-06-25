@@ -10,7 +10,7 @@ import {
   SelectGroup,
   SelectItem,
 } from "@/components/ui/select";
-import { Bookmark, CircleX } from "lucide-react";
+import { Bookmark, CircleX, SquarePen } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { ProjectData, projectService } from "@/services/api/projectService";
@@ -121,6 +121,7 @@ const ProjectForm: React.FC = () => {
     customer_id: "",
     start_date: "",
     end_date: "",
+    report_id: "",
   });
 
   // Form validation schema
@@ -318,6 +319,7 @@ const ProjectForm: React.FC = () => {
               customer_id: projectDetails.customer_id,
               start_date: projectDetails.start_date,
               end_date: projectDetails.end_date,
+              report_id: projectDetails.reports[0].id,
             });
           }
         }
@@ -419,7 +421,7 @@ const ProjectForm: React.FC = () => {
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-4 mb-8">
         <BackButton/>
-        <div>
+        <div className="flex-1">
           <h2 className="font-semibold text-xl text-sf-black-300">
             {id ? "Edit Project" : "Add Project"}
           </h2>
@@ -429,6 +431,14 @@ const ProjectForm: React.FC = () => {
             </p>
           )}
         </div>
+        {id && initialValues.report_id && (
+          <Button
+            className="bg-safetech-gray text-black"
+            onClick={() => navigate(`/project-reports/${initialValues?.report_id}/edit`)}
+          >
+            Edit Report <SquarePen className="ml-2 h-4 w-4" />
+          </Button>
+        )}
       </div>
       <Formik
         initialValues={initialValues}

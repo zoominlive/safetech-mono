@@ -187,7 +187,7 @@ const ProjectReportTable: React.FC<ProjectReportTableProps> = ({ searchQuery, so
         columns={columns}
         data={reports}
         hasActions={true}
-        onDetails={(report) => navigate(`/project-reports/${report.id}`)}
+        // onDetails={(report) => navigate(`/project-reports/${report.id}`)}
         onEdit={(report) => navigate(`/project-reports/${report.id}/edit`)}
         onDownload={(report) => handleDownloadPDF(report.id)}
         pagination={true}

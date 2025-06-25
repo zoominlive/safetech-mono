@@ -145,7 +145,7 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
   };
 
   const handleDetails = (project: Project) => {
-    navigate(`/projects/${project.id}`);
+    navigate(`/project-reports/${project.latestReportId}/view`);
   };
   
   const handleEdit = (project: Project) => {
@@ -195,7 +195,7 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
   // Add handler for navigating to the latest report
   const handleViewReport = (project: Project) => {
     if (project.latestReportId) {
-      navigate(`/project-reports/${project.latestReportId}`);
+      navigate(`/project-reports/${project.latestReportId}/edit`);
     } else {
       toast({
         title: "No Report",
