@@ -302,5 +302,27 @@ export const reportService = {
         message: errorMessage 
       };
     }
-  }
+  },
+
+  /**
+   * Import lab results by uploading a CSV file
+   * @param {FormData} formData - The form data containing the CSV file
+   * @returns {Promise<any>} - The API response
+   */
+  importLab: async (formData: FormData): Promise<any> => {
+    const response = await BaseClient.post('/reports/import-lab', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  /**
+   * Fetch lab reports for a given project
+   * @param {string} projectId - The project ID
+   * @returns {Promise<any>} - The lab reports data
+   */
+  getLabReports: async (projectId: string): Promise<any> => {
+    const response = await BaseClient.get(`/reports/project/${projectId}/lab-reports`);
+    return response.data;
+  },
 };

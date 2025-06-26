@@ -34,6 +34,8 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import LabImport from "@/components/LabImport";
+import { Textarea } from "@/components/ui/textarea";
 
 interface SchemaField {
   type: string;
@@ -103,6 +105,12 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
 
   // Add this state after other useState hooks
   const [dialogUploadedPhotos, setDialogUploadedPhotos] = useState<string[]>([]);
+
+  // Add state for open accordion items
+  const [openAccordionItems, setOpenAccordionItems] = useState<string[]>(readOnly ? ["client-info", "project-info"] : []);
+
+  // Add after other useState hooks
+  const [scrollTarget, setScrollTarget] = useState<string | null>(null);
 
   const alwaysDisabledFields = [
     'clientCompanyName', 'clientAddress', 'contactName', 'contactPosition', 'contactEmail', 'contactPhone',
@@ -738,7 +746,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                     {isEditable && (
                       <button
                         onClick={() => removeFile(field.id, fileUrl)}
-                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-2 right-2 z-10 p-2 bg-red-500 text-white rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-red-400"
                       >
                         <CircleX className="h-4 w-4" />
                       </button>
@@ -828,7 +836,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                                         };
                                         updateAreaAssessment(field.id, newItems);
                                       }}
-                                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                      className="absolute top-2 right-2 z-10 p-2 bg-red-500 text-white rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-red-400"
                                     >
                                       <CircleX className="h-4 w-4" />
                                     </button>
@@ -913,7 +921,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                               {isFieldEditable() && (
                                 <button
                                   onClick={() => removeFile("areaPhoto", fileUrl)}
-                                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                  className="absolute top-2 right-2 z-10 p-2 bg-red-500 text-white rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-red-400"
                                 >
                                   <CircleX className="h-4 w-4" />
                                 </button>
@@ -1038,7 +1046,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                                           };
                                           updateAreaAssessment(field.id, newItems);
                                         }}
-                                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="absolute top-2 right-2 z-10 p-2 bg-red-500 text-white rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-red-400"
                                       >
                                         <CircleX className="h-4 w-4" />
                                       </button>
@@ -1096,6 +1104,24 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
         );
         }
       }
+      case "textarea":
+        return (
+          <div className="space-y-2">
+            <Textarea
+              value={value || ""}
+              onChange={e => updateAreaAssessment(field.id, e.target.value)}
+              placeholder={field.placeholder}
+              disabled={!isEditable}
+              className="min-h-[100px]"
+            />
+          </div>
+        );
+      case "labImport":
+        return (
+          <div className="space-y-2">
+            <LabImport projectId={projectId} />
+          </div>
+        );
       default:
         return null;
     }
@@ -1300,6 +1326,20 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   // Popover open state for dropdown
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
+  // Add after other useEffect hooks
+  useEffect(() => {
+    if (!isDrawerOpen && scrollTarget) {
+      const timeout = setTimeout(() => {
+        const el = document.getElementById(scrollTarget);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+        setScrollTarget(null);
+      }, 250); // Wait for Drawer to fully close and scroll lock to be released
+      return () => clearTimeout(timeout);
+    }
+  }, [isDrawerOpen, scrollTarget]);
+
   if (isLoading) {
     return <CardSkeleton />;
   }
@@ -1350,13 +1390,36 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
             <SheetTrigger asChild>
               <Button variant="outline" className="flex items-center space-x-2">
                 <List className="h-4 w-4" />
-                <span>Areas</span>
+                <span>Table of Contents</span>
               </Button>
             </SheetTrigger>
             <SheetContent className="flex flex-col h-full">
               <SheetHeader>
-                <SheetTitle>Areas</SheetTitle>
+                <SheetTitle>Table of Contents</SheetTitle>
               </SheetHeader>
+              {/* Table of Contents Links */}
+              <div className="mt-4 space-y-2">
+                <Button variant="ghost" className="w-full justify-start" onClick={() => {
+                  setScrollTarget('client-info-section');
+                  setOpenAccordionItems((prev) => prev.includes("client-info") ? prev : [...prev, "client-info"]);
+                  setIsDrawerOpen(false);
+                }}>
+                  Client Information
+                </Button>
+                <Button variant="ghost" className="w-full justify-start" onClick={() => {
+                  setScrollTarget('project-info-section');
+                  setOpenAccordionItems((prev) => prev.includes("project-info") ? prev : [...prev, "project-info"]);
+                  setIsDrawerOpen(false);
+                }}>
+                  Project Information
+                </Button>
+                <Button variant="ghost" className="w-full justify-start" onClick={() => {
+                  setScrollTarget('lab-results-section');
+                  setIsDrawerOpen(false);
+                }}>
+                  Insert Lab Results
+                </Button>
+              </div>
               <div className="flex-1 overflow-y-auto mt-6 space-y-4 pr-2">
                 {areas.map((area) => {
                   const areaPhotos = Array.isArray(area.assessments.areaPhoto) ? area.assessments.areaPhoto : [];
@@ -1390,7 +1453,10 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                         variant="ghost"
                         size="icon"
                         className="ml-2"
-                        onClick={() => setAreaToDelete(area)}
+                        onClick={e => {
+                          e.stopPropagation();
+                          setAreaToDelete(area);
+                        }}
                       >
                         <CircleX className="h-4 w-4" />
                       </Button>
@@ -1528,7 +1594,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                             />
                             <button
                               onClick={() => setDialogUploadedPhotos(prev => prev.filter((_, i) => i !== index))}
-                              className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="absolute top-2 right-2 z-10 p-2 bg-red-500 text-white rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-red-400"
                             >
                               <CircleX className="h-4 w-4" />
                             </button>
@@ -1616,9 +1682,9 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
             <TabsContent key={area.id} value={area.id} className="w-full">
               {/* Accordions for Client and Project Info */}
               <div className="mb-6">
-                <Accordion type="multiple" defaultValue={readOnly ? ["client-info", "project-info"] : []}>
+                <Accordion type="multiple" value={openAccordionItems} onValueChange={setOpenAccordionItems}>
                   <AccordionItem value="client-info" className="bg-white rounded-md shadow-sm mb-4">
-                    <AccordionTrigger className="pl-4">Client Information</AccordionTrigger>
+                    <AccordionTrigger className="pl-4" id="client-info-section">Client Information</AccordionTrigger>
                     <AccordionContent className="p-6">
                       {/* Render client info fields (read-only) */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1632,7 +1698,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="project-info" className="bg-white rounded-md shadow-sm">
-                    <AccordionTrigger className="pl-4">Project Information</AccordionTrigger>
+                    <AccordionTrigger className="pl-4" id="project-info-section">Project Information</AccordionTrigger>
                     <AccordionContent className="p-6">
                       {/* Render project info fields (read-only) */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1649,6 +1715,18 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                         <div><Label>Technician Email</Label><div className="text-gray-500">{area.assessments.technicianEmail}</div></div>
                         <div><Label>Technician Phone</Label><div className="text-gray-500">{area.assessments.technicianPhone}</div></div>
                         <div><Label>Technician Title</Label><div className="text-gray-500">{area.assessments.technicianTitle}</div></div>
+                        <div><Label>Technician Signature</Label>
+                          {typeof area.assessments.technicianSignature === 'string' && area.assessments.technicianSignature.startsWith('http') ? (
+                            <img
+                              src={area.assessments.technicianSignature}
+                              alt="Technician Signature"
+                              className="h-12 mt-1 rounded border"
+                              style={{ maxWidth: '200px', objectFit: 'contain', background: '#fff' }}
+                            />
+                          ) : (
+                            <div className="text-gray-500">No Signature uploaded</div>
+                          )}
+                        </div>
                       </div>
                     </AccordionContent>
                   </AccordionItem>
@@ -1670,8 +1748,10 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                       // Hide client/project info fields from area form
                       if (["Client Information", "Project Information"].includes(section.title)) return null;
 
+                      // If this section contains LabImport, wrap with anchor
+                      const containsLabImport = section.fields.some(f => f.type === "labImport");
                       return (
-                        <div key={sectionIndex} className="space-y-6 border-b pb-7">
+                        <div key={sectionIndex} className="space-y-6 border-b pb-7" {...(containsLabImport ? { id: "lab-results-section" } : {})}>
                           <h4 className="font-semibold text-xl">{section.title}</h4>
                           <div className="space-y-4">
                             {section.fields.map((field, fieldIndex) => {
@@ -1758,7 +1838,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                                 />
                                 <button
                                   onClick={() => setDialogUploadedPhotos(prev => prev.filter((_, i) => i !== index))}
-                                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                  className="absolute top-2 right-2 z-10 p-2 bg-red-500 text-white rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-red-400"
                                 >
                                   <CircleX className="h-4 w-4" />
                                 </button>
