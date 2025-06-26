@@ -19,5 +19,7 @@ app.route('/get-report-details/:id').get(authenticate, controller.getReportById)
 app.route('/all').get(authenticate, controller.getAllReports);
 app.route('/:id/pdf').get(authenticate, controller.generatePDFReport);
 app.route('/:id/upload').post(authenticate, upload.array('files'), controller.uploadFiles);
+app.route('/import-lab').post(authenticate, controller.importLabReport);
+app.route('/project/:projectId/lab-reports').get(authenticate, controller.getLabReportsForProject);
 
 module.exports = app;

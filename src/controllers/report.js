@@ -14,11 +14,19 @@ const {
 } = require("../helpers/constants");
 const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
-const { sequelize, Report, Project, ReportTemplate, Customer, User } = require("../models");
+const { sequelize, Report, Project, ReportTemplate, Customer, User, LabReport, LabReportResult } = require("../models");
 const puppeteer = require('puppeteer');
 const AWS = require('aws-sdk');
 const { AWS_REGION, AWS_BUCKET, AWS_S3_SECRET_ACCESS_KEY, AWS_S3_ACCESS_KEY_ID } = require("../config/use_env_variable");
 const { Op } = require("sequelize");
+const multer = require('multer');
+const csv = require('csv-parser');
+const fs = require('fs');
+const path = require('path');
+const upload = multer({ dest: 'uploads/' });
+const dayjs = require('dayjs');
+const customParseFormat = require('dayjs/plugin/customParseFormat');
+dayjs.extend(customParseFormat);
 
 // AWS S3 configuration
 const s3 = new AWS.S3({
@@ -594,6 +602,178 @@ exports.uploadFiles = async (req, res, next) => {
       },
       message: "Files uploaded successfully"
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.importLabReport = [
+  upload.single('file'),
+  async (req, res, next) => {
+    try {
+      const { project_id } = req.body;
+      if (!req.file || !project_id) {
+        return res.status(400).json({ error: 'CSV file and project_id are required.' });
+      }
+
+      // Find the project
+      const project = await Project.findByPk(project_id);
+      if (!project) {
+        return res.status(404).json({ error: 'Project not found.' });
+      }
+
+      const results = [];
+      const filePath = path.resolve(req.file.path);
+      
+      fs.createReadStream(filePath)
+      .pipe(csv({ headers: false }))
+      .on('data', (data) => results.push(data))
+      .on('end', async () => {
+        // Parse metadata
+        const rawDateLine = results[3][0];
+        let rawDate = null;
+        if (rawDateLine) {
+          const parts = rawDateLine.split(/:(.+)/); // splits into [label, value]
+          if (parts.length > 1) {
+            rawDate = parts[1].trim();
+          }
+        }
+        let parsedDate = null;
+        if (rawDate) {
+          const d = dayjs(rawDate, 'M/D/YYYY h:mm:ss A');
+          if (d.isValid()) {
+            parsedDate = d.toDate();
+          } else {
+            return res.status(400).json({ error: 'Invalid date format in CSV: ' + rawDate });
+          }
+        }
+        const metadata = {
+          client: results[0][2],
+          attention: results[1][2],
+          work_order: results[2][0]?.split(':')[1]?.trim(),
+          reference: results[2][2],
+          report_date: parsedDate,
+          project_number: results[3][2],
+          project_id: project.id,
+        };
+
+        // Find where the parameter rows start (look for "Parameter" in the second column)
+        const paramStartIdx = results.findIndex(row => row[1] === 'Parameter');
+        const paramRows = results.slice(paramStartIdx + 2); // skip header rows
+
+        // Save metadata
+        const labReport = await LabReport.create(metadata);
+
+        // Save results
+        for (const row of paramRows) {
+          if (!row[1]) continue; // skip empty rows
+          await LabReportResult.create({
+            lab_report_id: labReport.id,
+            parameter: row[1],
+            units: row[2],
+            mrl: row[3],
+            value: row[4],
+          });
+        }
+
+        res.json({ success: true });
+
+        // Delete the file after processing
+        fs.unlink(filePath, (err) => {
+          if (err) {
+            console.error('Failed to delete uploaded CSV:', err);
+          }
+        });
+        
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+];
+
+exports.getLabReportsForProject = async (req, res, next) => {
+  try {
+    const { projectId } = req.params;
+    const { 
+      page = 1, 
+      limit = 10, 
+      search = '', 
+      dateFrom, 
+      dateTo,
+      includeResults = 'true' 
+    } = req.query;
+
+    // Validate project exists
+    const project = await Project.findByPk(projectId);
+    if (!project) {
+      return res.status(NOT_FOUND).json({
+        code: NOT_FOUND,
+        message: 'Project not found',
+        success: false
+      });
+    }
+
+    const whereCondition = {
+      project_id: projectId
+    };
+
+    // Add date range filter
+    if (dateFrom || dateTo) {
+      whereCondition.report_date = {};
+      if (dateFrom) whereCondition.report_date[Op.gte] = new Date(dateFrom);
+      if (dateTo) whereCondition.report_date[Op.lte] = new Date(dateTo);
+    }
+
+    // Add search filter
+    if (search) {
+      whereCondition[Op.or] = [
+        { client: { [Op.iLike]: `%${search}%` } },
+        { work_order: { [Op.iLike]: `%${search}%` } },
+        { reference: { [Op.iLike]: `%${search}%` } },
+        { project_number: { [Op.iLike]: `%${search}%` } }
+      ];
+    }
+
+    const includeOptions = [
+      {
+        model: Project,
+        as: 'project',
+        attributes: ['name', 'project_no', 'site_name']
+      }
+    ];
+
+    if (includeResults === 'true') {
+      includeOptions.push({
+        model: LabReportResult,
+        as: 'results',
+        attributes: ['parameter', 'units', 'mrl', 'value']
+      });
+    }
+
+    const labReports = await LabReport.findAndCountAll({
+      where: whereCondition,
+      include: includeOptions,
+      order: [['report_date', 'DESC']],
+      limit: parseInt(limit),
+      offset: (parseInt(page) - 1) * parseInt(limit)
+    });
+
+    res.status(OK).json({
+      code: OK,
+      message: RECORDS_FOUND,
+      data: {
+        labReports: labReports.rows,
+        pagination: {
+          total: labReports.count,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          totalPages: Math.ceil(labReports.count / parseInt(limit))
+        }
+      },
+      success: true
+    });
+
   } catch (err) {
     next(err);
   }
