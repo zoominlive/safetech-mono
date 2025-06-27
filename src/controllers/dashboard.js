@@ -52,7 +52,7 @@ exports.getDashboardSummary = async (req, res, next) => {
         status: { [Op.in]: ['New'] }
       },
       include: [
-        { model: Customer, as: 'company', attributes: ['first_name', 'last_name'] },
+        { model: Customer, as: 'company', attributes: ['company_name', 'first_name', 'last_name'] },
         { model: User, as: 'technician', attributes: ['first_name', 'last_name'] },
         { model: Report, as: "reports", attributes: ["id", "name"] }
       ],
@@ -65,7 +65,7 @@ exports.getDashboardSummary = async (req, res, next) => {
         status: { [Op.in]: ['In Progress'] }
       },
       include: [
-        { model: Customer, as: 'company', attributes: ['first_name', 'last_name'] },
+        { model: Customer, as: 'company', attributes: ['company_name', 'first_name', 'last_name'] },
         { model: User, as: 'technician', attributes: ['first_name', 'last_name'] },
         { model: Report, as: "reports", attributes: ["id", "name"] }
       ],
@@ -78,7 +78,7 @@ exports.getDashboardSummary = async (req, res, next) => {
         status: 'PM Review'
       },
       include: [
-        { model: Customer, as: 'company', attributes: ['first_name', 'last_name'] },
+        { model: Customer, as: 'company', attributes: ['company_name', 'first_name', 'last_name'] },
         { model: User, as: 'technician', attributes: ['first_name', 'last_name'] },
         { model: Report, as: "reports", attributes: ["id", "name"] }
       ],
@@ -191,9 +191,9 @@ exports.getDashboardSummary = async (req, res, next) => {
         inProgress: inProgress.map(p => ({
           id: p.id,
           projectName: p.name,
-          company: p.company.first_name + ' ' + p.company.last_name,
+          company: p.company.company_name,
           startDate: p.start_date,
-          technician: `${p.technician?.first_name}`,
+          technician: p.technician?.first_name + ' ' + p.technician?.last_name,
           status: p.status,
           reports: p.reports.map(r => ({
             id: r.id,
@@ -204,9 +204,9 @@ exports.getDashboardSummary = async (req, res, next) => {
         newProjects: newProjects.map(p => ({
           id: p.id,
           projectName: p.name,
-          company: p.company.first_name + ' ' + p.company.last_name,
+          company: p.company.company_name,
           startDate: p.start_date,
-          technician: `${p.technician?.first_name}`,
+          technician: p.technician?.first_name+ ' ' + p.technician?.last_name,
           status: p.status,
           reports: p.reports.map(r => ({
             id: r.id,
@@ -217,7 +217,7 @@ exports.getDashboardSummary = async (req, res, next) => {
         awaitingReview: awaitingReview.map(p => ({
           id: p.id,
           projectName: p.name,
-          company: p.company.first_name + ' ' + p.company.last_name,
+          company: p.company.company_name,
           completedDate: p.updated_at,
           reports: p.reports.map(r => ({
             id: r.id,

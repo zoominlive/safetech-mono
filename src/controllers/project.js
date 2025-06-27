@@ -85,7 +85,7 @@ exports.getAllProjects = async (req, res, next) => {
   try {   
     // Add associations for company and technician search
     const associations = [
-      { alias: "company", model: Customer, fields: ["first_name", "last_name"] },
+      { alias: "company", model: Customer, fields: ["company_name", "first_name", "last_name"] },
       { alias: "technician", model: User, fields: ["first_name", "last_name"] },
     ];
     const filters = useFilter(req.query, Project, associations);
@@ -137,7 +137,7 @@ exports.getAllProjects = async (req, res, next) => {
       offset: filters.page ? (filters.page - 1) * filters.limit : undefined,
     };
     options.include = [
-      { model: Customer, as: "company", attributes: ["id", "first_name", "last_name"], required: true },
+      { model: Customer, as: "company", attributes: ["id", "company_name", "first_name", "last_name"], required: true },
       { model: User, as: "technician", attributes: ["id", "first_name", "last_name"], required: true },
       { model: User, as: "pm", attributes: ["id", "first_name", "last_name"] },
       { model: Location, as: "location", attributes: ["id", "name"] },
@@ -160,7 +160,7 @@ exports.getProjectById = async (req, res, next) => {
     const { id } = req.params;
     const project = await Project.findByPk(id, {
       include: [
-        { model: Customer, as: "company", attributes: ["id", "first_name", "last_name"] },
+        { model: Customer, as: "company", attributes: ["id", "company_name", "first_name", "last_name"] },
         { model: User, as: "technician", attributes: ["id", "first_name", "last_name"] },
         { model: User, as: "pm", attributes: ["id", "first_name", "last_name"] },
         { model: Location, as: "location", attributes: ["id", "name"] },
