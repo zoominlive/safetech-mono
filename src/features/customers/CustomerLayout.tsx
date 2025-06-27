@@ -35,6 +35,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/store";
 import { formatDate } from "@/lib/utils";
+import { LocationData } from "@/types/customer";
+import { SearchInput } from "@/components/SearchInput";
 
 const columns: Column<Project>[] = [
   {
@@ -65,7 +67,20 @@ function CustomerLayout() {
   const { user } = useAuthStore();
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-  const [customerData, setCustomerData] = useState({
+  const [customerData, setCustomerData] = useState<{
+    customerName: string;
+    companyName: string;
+    status: string;
+    email: string;
+    phoneNumber: string;
+    address_line_1: string;
+    address_line_2: string;
+    city: string;
+    province: string;
+    postal_code: string;
+    locations: LocationData[];
+    projects: (Project & { companyName: string })[];
+  }>({
     customerName: "",
     companyName: "",
     status: "",
@@ -76,11 +91,14 @@ function CustomerLayout() {
     city: "",
     province: "",
     postal_code: "",
-    projects: [] as (Project & { companyName: string })[],
+    locations: [],
+    projects: [],
   });
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [status, setStatus] = useState<boolean>(id ? customerData.status === "active" : true);
+  const [projectSearch, setProjectSearch] = useState("");
+  const [filteredProjects, setFilteredProjects] = useState<(Project & { companyName: string })[]>([]);
 
   // Fetch customer details when id changes
   useEffect(() => {
@@ -100,6 +118,24 @@ function CustomerLayout() {
       }
     }
   }, [customerData.status, id]);
+
+  useEffect(() => {
+    // Filter projects whenever customerData.projects or projectSearch changes
+    if (!projectSearch) {
+      setFilteredProjects(customerData.projects);
+    } else {
+      const lower = projectSearch.toLowerCase();
+      setFilteredProjects(
+        customerData.projects.filter(
+          (p) =>
+            p.projectName?.toLowerCase().includes(lower) ||
+            p.company?.toLowerCase().includes(lower) ||
+            p.project_no?.toLowerCase().includes(lower) ||
+            p.status?.toLowerCase().includes(lower)
+        )
+      );
+    }
+  }, [customerData.projects, projectSearch]);
 
   const fetchCustomerDetails = async () => {
     if (!id) return;
@@ -133,6 +169,7 @@ function CustomerLayout() {
           province: response.data.province || "",
           postal_code: response.data.postal_code || "",
           projects: projectsWithCompany,  
+          locations: response.data.locations || []
         });
       } else {
         toast({
@@ -283,6 +320,7 @@ function CustomerLayout() {
             city={customerData.city}
             province={customerData.province}
             postal_code={customerData.postal_code}
+            locations={customerData.locations}
           />
         ) : (
           <CreateCustomerForm status={status} onStatusChange={setStatus} />
@@ -290,10 +328,17 @@ function CustomerLayout() {
       </div>
       {id && (
         <>
+          <div className="mb-4 flex">
+            <SearchInput
+              placeholder="Search project"
+              onSearch={setProjectSearch}
+              className="max-w-md"
+            />
+          </div>
           <Table
             title="Projects"
             columns={columns}
-            data={customerData.projects}
+            data={filteredProjects}
             hasActions={true}
             onDetails={handleDetails}
             onEdit={handleEdit}

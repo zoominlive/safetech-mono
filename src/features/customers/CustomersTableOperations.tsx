@@ -32,7 +32,7 @@ function CustomersTableOperations({
   return (
     <div className="flex flex-col md:flex-row w-full md:h-16 gap-6">
       <SearchInput
-        placeholder="Search customer name, email..."
+        placeholder="Search customer"
         onSearch={onSearch}
       />
       <Select value={sortValue} onValueChange={handleSortChange}>

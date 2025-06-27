@@ -203,7 +203,6 @@ function DashboardLayout() {
       header: "Status",
       accessorKey: "status",
       cell: (project) => <StatusBadge status={project.status} />,
-      className: "text-right", // right justify the column
     },
   ];
 

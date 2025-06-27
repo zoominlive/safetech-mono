@@ -2,6 +2,7 @@ export type Project = {
   id: string;
   projectName: string;
   company: string;
+  project_no: string;
   startDate: string;
   endDate?: string;
   technician: string;

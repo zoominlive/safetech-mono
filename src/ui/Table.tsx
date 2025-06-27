@@ -131,7 +131,15 @@ function Table<T>({
           <TableBody>
             {data.length > 0 ? (
               data.map((row, rowIndex) => (
-                <TableRow key={rowIndex} className="bg-white">
+                <TableRow 
+                  key={rowIndex} 
+                  className={cn("bg-white", onDetails && !isReportsTemplateTable && "cursor-pointer hover:bg-gray-100")}
+                  onClick={onDetails && !isReportsTemplateTable ? (e => {
+                    // Prevent row click if a button or its child is clicked
+                    if ((e.target as HTMLElement).closest('button')) return;
+                    onDetails(row);
+                  }) : undefined}
+                >
                   {columns.map((column, colIndex) => (
                     <TableCell key={colIndex} className={column.className}>
                       {column.cell
@@ -213,7 +221,7 @@ function Table<T>({
                   colSpan={columns.length + (hasActions ? 1 : 0)}
                   className="text-center py-8"
                 >
-                  No data available
+                  No Projects In Review
                 </TableCell>
               </TableRow>
             )}

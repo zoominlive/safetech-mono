@@ -35,6 +35,7 @@ interface User {
 
 interface Customer {
   id: string;
+  company_name: string;
   first_name: string;
   last_name: string;
 }
@@ -87,6 +88,7 @@ const ProjectForm: React.FC = () => {
     name: "",
     company: {
       id: "",
+      company_name: "",
       first_name: "",
       last_name: "",
     },
@@ -145,7 +147,7 @@ const ProjectForm: React.FC = () => {
     const res = await customerService.getAllCustomers(query, undefined, undefined, 10, 1);
     let options:SelectOption[] = [];
     if (res.success) {
-      options = res.data.rows.map((c: any) => ({ value: c.id, label: c.first_name + " " + c.last_name }));
+      options = res.data.rows.map((c: any) => ({ value: c.id, label: c.company_name}));
     }
     // If in edit mode and selectedId is not in options, fetch and append
     if (selectedId && !options.some((opt) => opt.value === selectedId)) {
@@ -153,7 +155,7 @@ const ProjectForm: React.FC = () => {
       const singleRes: { success: boolean; data: Customer } = await customerService.getCustomerById(selectedId);
       if (singleRes.success) {
         const c: Customer = singleRes.data;
-        options.push({ value: c.id, label: c.first_name + " " + c.last_name });
+        options.push({ value: c.id, label: c.company_name});
       }
       } catch (e: unknown) {
       // ignore error
@@ -239,6 +241,7 @@ const ProjectForm: React.FC = () => {
         if (customersResponse.success) {
           setCustomers(customersResponse.data.rows.map(customer => ({
             id: customer.id, 
+            company_name: customer.first_name,
             first_name: customer.first_name,
             last_name: customer.last_name
           })));
@@ -285,6 +288,7 @@ const ProjectForm: React.FC = () => {
               name: projectDetails.name,
               company: {
                 id: projectDetails.company.id,
+                company_name: projectDetails.company.company_name,
                 first_name: projectDetails.company.first_name,
                 last_name: projectDetails.company.last_name,
               },
