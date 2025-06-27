@@ -26,6 +26,7 @@ const path = require('path');
 const upload = multer({ dest: 'uploads/' });
 const dayjs = require('dayjs');
 const customParseFormat = require('dayjs/plugin/customParseFormat');
+const { sendEmail } = require("../utils/email");
 dayjs.extend(customParseFormat);
 
 // AWS S3 configuration
@@ -774,6 +775,57 @@ exports.getLabReportsForProject = async (req, res, next) => {
       success: true
     });
 
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.sendReportToCustomer = async (req, res, next) => {
+  try {
+    const { user } = req;
+    if (!user || user.role !== USER_ROLE.PROJECT_MANAGER) {
+      const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
+      return ErrorHandler(ApiError, req, res, next);
+    }
+    const { reportId } = req.params;
+    // Fetch report with project and customer
+    const report = await Report.findByPk(reportId, {
+      include: [
+        {
+          model: Project,
+          as: 'project',
+          include: [
+            { model: Customer, as: 'company' }
+          ]
+        },
+        { model: ReportTemplate, as: 'template' },
+      ],
+    });
+    if (!report) {
+      return res.status(NOT_FOUND).json({ code: NOT_FOUND, message: NO_RECORD_FOUND, success: false });
+    }
+    const customer = report.project?.company;
+    if (!customer || !customer.email) {
+      return res.status(BAD_REQUEST).json({ code: BAD_REQUEST, message: 'Customer email not found', success: false });
+    }
+    // Generate PDF (reuse generatePDFReport logic)
+    const puppeteer = require('puppeteer');
+    const htmlContent = `<!DOCTYPE html><html><head><meta charset=\"UTF-8\" /><title>Report PDF</title></head><body><h1>${report.name}</h1><p>Project: ${report.project?.name || "N/A"}</p></body></html>`; // Simplified for now
+    const browser = await puppeteer.launch({ headless: true });
+    const page = await browser.newPage();
+    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+    await browser.close();
+    // Send email directly using sendMail from utils/email.js
+    await sendEmail({
+      to: customer.email,
+      subject: `Your Safetech Report: ${report.name}`,
+      attachments: [{ filename: `report-${report.id}.pdf`, content: pdfBuffer }],
+      html: '<p>Please find your report attached.</p>',
+      template_name: undefined,
+      template_data: undefined,
+    });
+    res.status(OK).json({ success: true, message: 'Report sent to customer.' });
   } catch (err) {
     next(err);
   }

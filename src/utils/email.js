@@ -66,21 +66,24 @@ const sendMail = async ({ to, subject, html, attachments = [] }) => {
  * @param {string} templateInfo.subject - Email subject
  * @param {Array} [templateInfo.attachments] - Optional attachments
  */
-exports.sendEmail = async ({ template_name, template_data, to, subject, attachments }) => {
+exports.sendEmail = async ({ template_name, template_data, to, subject, attachments, html }) => {
   try {
-    const templatePath = path.join(__dirname, '../templates', template_name);
-    const templateSource = fs.readFileSync(templatePath, 'utf-8');
-    const template = handlebars.compile(templateSource);
-
-    const htmlToSend = template(template_data);
-
+    let htmlToSend;
+    if (!template_name) {
+      // If no template, use provided html directly
+      htmlToSend = html || '';
+    } else {
+      const templatePath = path.join(__dirname, '../templates', template_name);
+      const templateSource = fs.readFileSync(templatePath, 'utf-8');
+      const template = handlebars.compile(templateSource);
+      htmlToSend = template(template_data);
+    }
     await sendMail({
       to,
       subject,
       html: htmlToSend,
       attachments,
     });
-
     // Return immediately
     return {
       res: 1,

@@ -21,5 +21,6 @@ app.route('/:id/pdf').get(authenticate, controller.generatePDFReport);
 app.route('/:id/upload').post(authenticate, upload.array('files'), controller.uploadFiles);
 app.route('/import-lab').post(authenticate, controller.importLabReport);
 app.route('/project/:projectId/lab-reports').get(authenticate, controller.getLabReportsForProject);
+app.route('/:reportId/send-to-customer').post(authenticate, controller.sendReportToCustomer);
 
 module.exports = app;
