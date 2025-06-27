@@ -68,9 +68,28 @@ exports.createProject = async (req, res, next) => {
       { transaction }
     );
 
+    // Find the report template to get its name
+    const reportTemplate = await ReportTemplate.findByPk(projectCreated.report_template_id, { transaction });
+
+    // Create a blank report for this project
+    const blankReport = await Report.create(
+      {
+        project_id: projectCreated.id,
+        report_template_id: projectCreated.report_template_id,
+        name: reportTemplate ? reportTemplate.name : '',
+        assessment_due_to: "",
+        date_of_loss: null,
+        date_of_assessment: null,
+        answers: {},
+        photos: [],
+        status: true
+      },
+      { transaction }
+    );
+
     await transaction.commit();
     return res.status(CREATED).json({
-      data: projectCreated,
+      data: { project: projectCreated, report: blankReport },
       code: CREATED,
       message: RECORD_CREATED,
       success: true,
@@ -93,6 +112,10 @@ exports.getAllProjects = async (req, res, next) => {
       ...filters.filter,
       ...filters.search,
     };
+    // If user is a technician, only show their projects
+    if (req.user && req.user.role === USER_ROLE.TECHNICIAN) {
+      whereCondition.technician_id = req.user.id;
+    }
     // Filter by status (now supports multiple statuses)
     if (req.query.statusFilter && req.query.statusFilter !== "all") {
       let statusArray = req.query.statusFilter;
