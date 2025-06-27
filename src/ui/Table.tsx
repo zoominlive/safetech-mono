@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, SquarePen, Trash, Download, FileChartLine } from "lucide-react";
+import { Eye, SquarePen, Trash, Download, FileChartLine, Send } from "lucide-react";
 import { useAuthStore } from "@/store";
 import { Switch } from "@/components/ui/switch";
 
@@ -43,6 +43,8 @@ interface TableProps<T> {
   isReportsTable?: boolean;
   isReportsTemplateTable?: boolean;
   onToggleStatus?: (id: string, currentStatus: boolean) => void;
+  // Add new prop for sending to customer
+  onSendToCustomer?: (row: T) => void;
 }
 
 export const StatusBadge = ({ status }: { status: string }) => {
@@ -98,6 +100,7 @@ function Table<T>({
   isReportsTable = false,
   isReportsTemplateTable = false,
   onToggleStatus,
+  onSendToCustomer,
 }: TableProps<T>) {
   // Calculate pagination values
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -160,7 +163,7 @@ function Table<T>({
                             <Eye className="h-4 w-4" />
                           </Button>
                         )}
-                        {onEdit && (user?.role !== 'Technician' || isReportsTable) && !isReportsTemplateTable && (
+                        {onEdit && (isReportsTable) && !isReportsTemplateTable && (
                           <Button 
                             variant="outline" 
                             size="sm" 
@@ -187,8 +190,24 @@ function Table<T>({
                             size="sm" 
                             onClick={() => onDownload(row)}
                             className="px-2 py-1 h-8"
+                            disabled={typeof (row as any).status === 'string' && ((row as any).status.toLowerCase() === 'in progress' || (row as any).status.toLowerCase() === 'new' )}
                           >
                             <Download className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {onSendToCustomer && user?.role?.toLowerCase() === 'project manager' && isReportsTable && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onSendToCustomer(row)}
+                            className="px-2 py-1 h-8"
+                            disabled={
+                              typeof (row as any).status === 'string' &&
+                              ["in progress", "new"].includes((row as any).status.toLowerCase())
+                            }
+                            title="Send report to customer"
+                          >
+                            <Send className="h-4 w-4" />
                           </Button>
                         )}
                         {onDelete && user?.role !== 'Technician' && !isReportsTemplateTable && (

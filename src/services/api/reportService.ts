@@ -325,4 +325,10 @@ export const reportService = {
     const response = await BaseClient.get(`/reports/project/${projectId}/lab-reports`);
     return response.data;
   },
+
+  // Send report to customer
+  sendReportToCustomer: async (reportId: string): Promise<{ success: boolean; message?: string }> => {
+    const response: AxiosResponse<{ success: boolean; message?: string }> = await BaseClient.post(`/reports/${reportId}/send-to-customer`);
+    return response.data;
+  },
 };

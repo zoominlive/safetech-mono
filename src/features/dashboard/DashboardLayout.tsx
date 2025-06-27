@@ -7,6 +7,8 @@ import { TableSkeleton } from "@/components/ui/skeletons/TableSkeleton";
 import { StatsSkeleton } from "@/components/ui/skeletons/StatsSkeleton";
 import { formatDate } from "@/lib/utils";
 import { useNavigate } from "react-router";
+import { reportService } from "@/services/api/reportService";
+import { toast } from "@/components/ui/use-toast";
 
 interface DashboardResponse {
   code: number;
@@ -179,6 +181,42 @@ function DashboardLayout() {
     }
   };
 
+  const handleDownloadPDF = async (id: string) => {
+    try {
+      const pdfBlob = await reportService.generateReportPDF(id);
+      
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(pdfBlob);
+      
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `report-${id}.pdf`;
+      
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the URL
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Success",
+        description: "Report PDF downloaded successfully",
+      });
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      toast({
+        title: "Error",
+        description: "Failed to download report PDF",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSendToCustomer = async () => {}
+
   const inProgressColumns: Column<InProgressProject>[] = [
     {
       header: "Project Name",
@@ -244,6 +282,10 @@ function DashboardLayout() {
               title="New" 
               hasActions={true}
               onDetails={handleProjectDetails}
+              isReportsTable={true}
+              onEdit={(report) => navigate(`/project-reports/${report.latestReportId}/edit`)}
+              onDownload={(report) => report.latestReportId && handleDownloadPDF(report.latestReportId)}
+              onSendToCustomer={() => handleSendToCustomer()}
             />
           </div>
           <div className="overflow-x-auto">
@@ -253,6 +295,10 @@ function DashboardLayout() {
               title="In Progress" 
               hasActions={true}
               onDetails={handleProjectDetails}
+              isReportsTable={true}
+              onEdit={(report) => navigate(`/project-reports/${report.latestReportId}/edit`)}
+              onDownload={(report) => report.latestReportId && handleDownloadPDF(report.latestReportId)}
+              onSendToCustomer={() => handleSendToCustomer()}
             />
           </div>
           <div className="overflow-x-auto">

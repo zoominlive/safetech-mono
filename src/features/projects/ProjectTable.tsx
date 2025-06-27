@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { formatDate } from "@/lib/utils";
+import { reportService } from "@/services/api/reportService";
 
 interface Project {
   id: string;
@@ -205,6 +206,74 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
     }
   };
 
+  const handleDownloadPDF = async (id: string) => {
+    try {
+      const pdfBlob = await reportService.generateReportPDF(id);
+      
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(pdfBlob);
+      
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `report-${id}.pdf`;
+      
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the URL
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Success",
+        description: "Report PDF downloaded successfully",
+      });
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      toast({
+        title: "Error",
+        description: "Failed to download report PDF",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handler to send report to customer
+  const handleSendToCustomer = async (project: Project) => {
+    if (!project.latestReportId) {
+      toast({
+        title: "No Report",
+        description: "No report available to send.",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      const response = await reportService.sendReportToCustomer(project.latestReportId);
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Report sent to customer successfully.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: response.message || "Failed to send report to customer.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error sending report to customer:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send report to customer.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading && projects.length === 0) {
     return <TableSkeleton columns={5} rows={5} hasActions={true} />;
   }
@@ -230,6 +299,9 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
           totalCount={totalCount}
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
+          isReportsTable={true}
+          onDownload={(report) => report.latestReportId && handleDownloadPDF(report.latestReportId)}
+          onSendToCustomer={handleSendToCustomer}
         />
       </div>
       
