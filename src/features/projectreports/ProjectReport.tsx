@@ -1,4 +1,4 @@
-import { CirclePlus, CircleX, Upload, List, ChevronDown } from "lucide-react";
+import { CirclePlus, CircleX, Upload, List, ChevronDown, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -495,10 +495,10 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   const handleCancel = () => {
     if (hasUnsavedChanges && !readOnly) {
       if (window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
-        navigate("/project-reports");
+        navigate("/projects");
       }
     } else {
-      navigate("/project-reports");
+      navigate("/projects");
     }
   };
 
@@ -507,7 +507,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     if (readOnly) return false;
     
     if (!userRole) return false;
-    if (projectStatus === "Complete") {
+    if (projectStatus === "Completed") {
       return userRole === "Project Manager";
     }
     return userRole === "Technician" || userRole === "Project Manager" || userRole === "Admin";
@@ -1326,6 +1326,146 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   // Popover open state for dropdown
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
+  // Workflow functions for status transitions
+  const handleSubmitToPMReview = async () => {
+    if (!id || !projectId) return;
+    
+    try {
+      setIsSaving(true);
+      
+      // First save the current report
+      await handleManualSave();
+      
+      // Submit to PM review
+      const submitResponse = await reportService.submitToPMReview(id);
+      if (submitResponse.success) {
+        // Update project status to "pm review"
+        const statusResponse = await reportService.updateProjectStatus(projectId, "PM Review");
+        if (statusResponse.success) {
+          toast({
+            title: "Success",
+            description: "Report submitted to PM review successfully",
+          });
+          // Navigate back to project reports list
+          navigate("/projects");
+        } else {
+          throw new Error(statusResponse.message || "Failed to update project status");
+        }
+      } else {
+        throw new Error(submitResponse.message || "Failed to submit to PM review");
+      }
+    } catch (error) {
+      console.error("Error submitting to PM review:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit report to PM review",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleApproveAndComplete = async () => {
+    if (!id || !projectId) return;
+    
+    try {
+      setIsSaving(true);
+      
+      // Approve and complete the report
+      const approveResponse = await reportService.approveAndCompleteReport(id);
+      if (approveResponse.success) {
+        // Update project status to "completed"
+        const statusResponse = await reportService.updateProjectStatus(projectId, "Complete");
+        if (statusResponse.success) {
+          toast({
+            title: "Success",
+            description: "Report approved and project completed successfully",
+          });
+          // Navigate back to project reports list
+          navigate("/projects");
+        } else {
+          throw new Error(statusResponse.message || "Failed to update project status");
+        }
+      } else {
+        throw new Error(approveResponse.message || "Failed to approve report");
+      }
+    } catch (error) {
+      console.error("Error approving report:", error);
+      toast({
+        title: "Error",
+        description: "Failed to approve and complete report",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleRequestChanges = async () => {
+    if (!id || !projectId) return;
+    
+    try {
+      setIsSaving(true);
+      
+      // Request changes for the report
+      const requestResponse = await reportService.requestReportChanges(id);
+      if (requestResponse.success) {
+        // Update project status back to "in progress"
+        const statusResponse = await reportService.updateProjectStatus(projectId, "In Progress");
+        if (statusResponse.success) {
+          toast({
+            title: "Success",
+            description: "Changes requested successfully. Report sent back to technician.",
+          });
+          // Navigate back to project reports list
+          navigate("/projects");
+        } else {
+          throw new Error(statusResponse.message || "Failed to update project status");
+        }
+      } else {
+        throw new Error(requestResponse.message || "Failed to request changes");
+      }
+    } catch (error) {
+      console.error("Error requesting changes:", error);
+      toast({
+        title: "Error",
+        description: "Failed to request changes",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSendToCustomer = async () => {
+    if (!id) return;
+    
+    try {
+      setIsSaving(true);
+      
+      // Send report to customer
+      const sendResponse = await reportService.sendReportToCustomer(id);
+      if (sendResponse.success) {
+        toast({
+          title: "Success",
+          description: "Report sent to customer successfully",
+        });
+      } else {
+        throw new Error(sendResponse.message || "Failed to send report to customer");
+      }
+    } catch (error) {
+      console.error("Error sending to customer:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send report to customer",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Add after other useEffect hooks
   useEffect(() => {
     if (!isDrawerOpen && scrollTarget) {
@@ -1499,8 +1639,97 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                 </Button>
               )}
               <Button onClick={handleManualSave} disabled={isSaving}>
-                {isSaving ? "Saving..." : "Save Report"}
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Report"
+                )}
               </Button>
+              
+              {/* Workflow buttons based on user role and project status */}
+              {userRole === "Technician" && projectStatus === "In Progress" && (
+                <Button 
+                  onClick={handleSubmitToPMReview} 
+                  disabled={isSaving}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit to PM Review"
+                  )}
+                </Button>
+              )}
+              
+              {userRole === "Project Manager" && projectStatus === "PM Review" && (
+                <>
+                  <Button 
+                    onClick={handleApproveAndComplete} 
+                    disabled={isSaving}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Approving...
+                      </>
+                    ) : (
+                      "Approve & Complete"
+                    )}
+                  </Button>
+                  <Button 
+                    onClick={handleRequestChanges} 
+                    disabled={isSaving}
+                    className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Requesting...
+                      </>
+                    ) : (
+                      "Request Changes"
+                    )}
+                  </Button>
+                  <Button 
+                    onClick={handleSendToCustomer} 
+                    disabled={isSaving}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      "Send to Customer"
+                    )}
+                  </Button>
+                </>
+              )}
+              
+              {userRole === "Project Manager" && projectStatus === "Completed" && (
+                <Button 
+                  onClick={handleSendToCustomer} 
+                  disabled={isSaving}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    "Send to Customer"
+                  )}
+                </Button>
+              )}
             </>
           )}
         </div>

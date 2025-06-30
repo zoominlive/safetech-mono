@@ -104,6 +104,8 @@ function DashboardLayout() {
   const [awaitingReviewProjects, setAwaitingReviewProjects] = useState<AwaitingReviewProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloadingReportId, setDownloadingReportId] = useState<string | null>(null);
+  const [sendingToCustomerId, setSendingToCustomerId] = useState<string | null>(null);
 
   const token = useAuthStore.getState().token;
 
@@ -184,6 +186,7 @@ function DashboardLayout() {
 
   const handleDownloadPDF = async (id: string) => {
     try {
+      setDownloadingReportId(id);
       const pdfBlob = await reportService.generateReportPDF(id);
       
       // Create a URL for the blob
@@ -213,10 +216,46 @@ function DashboardLayout() {
         description: "Failed to download report PDF",
         variant: "destructive",
       });
+    } finally {
+      setDownloadingReportId(null);
     }
   };
 
-  const handleSendToCustomer = async () => {}
+  const handleSendToCustomer = async (project: InProgressProject | AwaitingReviewProject) => {
+    if (!project.latestReportId) {
+      toast({
+        title: "No Report",
+        description: "No report available to send.",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      setSendingToCustomerId(project.latestReportId);
+      const response = await reportService.sendReportToCustomer(project.latestReportId);
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Report sent to customer successfully.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: response.message || "Failed to send report to customer.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error sending report to customer:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send report to customer.",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingToCustomerId(null);
+    }
+  };
 
   const inProgressColumns: Column<InProgressProject>[] = [
     {
@@ -344,7 +383,9 @@ function DashboardLayout() {
               isReportsTable={true}
               onEdit={(report) => navigate(`/project-reports/${report.latestReportId}/edit`)}
               onDownload={(report) => report.latestReportId && handleDownloadPDF(report.latestReportId)}
-              onSendToCustomer={() => handleSendToCustomer()}
+              onSendToCustomer={(project) => handleSendToCustomer(project)}
+              downloadingReportId={downloadingReportId}
+              sendingToCustomerId={sendingToCustomerId}
             />
           </div>
           <div className="overflow-x-auto">
@@ -357,7 +398,9 @@ function DashboardLayout() {
               isReportsTable={true}
               onEdit={(report) => navigate(`/project-reports/${report.latestReportId}/edit`)}
               onDownload={(report) => report.latestReportId && handleDownloadPDF(report.latestReportId)}
-              onSendToCustomer={() => handleSendToCustomer()}
+              onSendToCustomer={(project) => handleSendToCustomer(project)}
+              downloadingReportId={downloadingReportId}
+              sendingToCustomerId={sendingToCustomerId}
             />
           </div>
           <div className="overflow-x-auto">
@@ -367,6 +410,7 @@ function DashboardLayout() {
               title="Awaiting PM Review" 
               hasActions={true}
               onDetails={handleProjectDetails}
+              downloadingReportId={downloadingReportId}
             />
           </div>
         </>

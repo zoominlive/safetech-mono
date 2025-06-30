@@ -74,6 +74,8 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
   const [error, setError] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [downloadingReportId, setDownloadingReportId] = useState<string | null>(null);
+  const [sendingToCustomerId, setSendingToCustomerId] = useState<string | null>(null);
   const token = useAuthStore.getState().token;
 
    // Pagination state
@@ -208,6 +210,7 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
 
   const handleDownloadPDF = async (id: string) => {
     try {
+      setDownloadingReportId(id);
       const pdfBlob = await reportService.generateReportPDF(id);
       
       // Create a URL for the blob
@@ -237,6 +240,8 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
         description: "Failed to download report PDF",
         variant: "destructive",
       });
+    } finally {
+      setDownloadingReportId(null);
     }
   };
 
@@ -251,6 +256,7 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
       return;
     }
     try {
+      setSendingToCustomerId(project.latestReportId);
       const response = await reportService.sendReportToCustomer(project.latestReportId);
       if (response.success) {
         toast({
@@ -271,6 +277,8 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
         description: "Failed to send report to customer.",
         variant: "destructive",
       });
+    } finally {
+      setSendingToCustomerId(null);
     }
   };
 
@@ -302,6 +310,8 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
           isReportsTable={true}
           onDownload={(report) => report.latestReportId && handleDownloadPDF(report.latestReportId)}
           onSendToCustomer={handleSendToCustomer}
+          downloadingReportId={downloadingReportId}
+          sendingToCustomerId={sendingToCustomerId}
         />
       </div>
       

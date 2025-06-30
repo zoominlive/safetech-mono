@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, SquarePen, Trash, Download, FileChartLine, Send } from "lucide-react";
+import { Eye, SquarePen, Trash, Download, FileChartLine, Send, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store";
 import { Switch } from "@/components/ui/switch";
 
@@ -46,6 +46,10 @@ interface TableProps<T> {
   onToggleStatus?: (id: string, currentStatus: boolean) => void;
   // Add new prop for sending to customer
   onSendToCustomer?: (row: T) => void;
+  // Add prop for downloading report ID
+  downloadingReportId?: string | null;
+  // Add prop for sending to customer ID
+  sendingToCustomerId?: string | null;
 }
 
 export const StatusBadge = ({ status }: { status: string }) => {
@@ -55,6 +59,8 @@ export const StatusBadge = ({ status }: { status: string }) => {
         return "bg-green-100 text-green-800";
       case "in progress":
         return "bg-orange-100 text-orange-800";
+      case "pm review":
+        return "bg-purple-100 text-purple-800";
       case "completed":
         return "bg-blue-100 text-blue-800";
       case "on hold":
@@ -103,6 +109,8 @@ function Table<T>({
   isReportsTemplateTable = false,
   onToggleStatus,
   onSendToCustomer,
+  downloadingReportId,
+  sendingToCustomerId,
 }: TableProps<T>) {
   // Calculate pagination values
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -202,9 +210,19 @@ function Table<T>({
                             size="sm" 
                             onClick={() => onDownload(row)}
                             className="px-2 py-1 h-8"
-                            disabled={typeof (row as any).status === 'string' && ((row as any).status.toLowerCase() === 'in progress' || (row as any).status.toLowerCase() === 'new' )}
+                            disabled={
+                              // Not currently downloading this report AND
+                              downloadingReportId !== (row as any).latestReportId && 
+                              // Status is 'in progress' or 'new'
+                              typeof (row as any).status === 'string' && 
+                              ["in progress", "new"].includes((row as any).status.toLowerCase())
+                            }
                           >
-                            <Download className="h-4 w-4" />
+                            {downloadingReportId === (row as any).latestReportId ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Download className="h-4 w-4" />
+                            )}
                           </Button>
                         )}
                         {onSendToCustomer && user?.role?.toLowerCase() === 'project manager' && isReportsTable && (
@@ -215,11 +233,16 @@ function Table<T>({
                             className="px-2 py-1 h-8"
                             disabled={
                               typeof (row as any).status === 'string' &&
-                              ["in progress", "new"].includes((row as any).status.toLowerCase())
+                              ["in progress", "new"].includes((row as any).status.toLowerCase()) ||
+                              sendingToCustomerId === (row as any).latestReportId
                             }
                             title="Send report to customer"
                           >
-                            <Send className="h-4 w-4" />
+                            {sendingToCustomerId === (row as any).latestReportId ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Send className="h-4 w-4" />
+                            )}
                           </Button>
                         )}
                         {onDelete && user?.role !== 'Technician' && !isReportsTemplateTable && (

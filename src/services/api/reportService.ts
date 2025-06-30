@@ -331,4 +331,28 @@ export const reportService = {
     const response: AxiosResponse<{ success: boolean; message?: string }> = await BaseClient.post(`/reports/${reportId}/send-to-customer`);
     return response.data;
   },
+
+  // Submit report to PM review
+  submitToPMReview: async (reportId: string): Promise<{ success: boolean; message?: string }> => {
+    const response: AxiosResponse<{ success: boolean; message?: string }> = await BaseClient.post(`/reports/${reportId}/submit-to-pm`);
+    return response.data;
+  },
+
+  // Update project status
+  updateProjectStatus: async (projectId: string, status: string): Promise<{ success: boolean; message?: string }> => {
+    const response: AxiosResponse<{ success: boolean; message?: string }> = await BaseClient.patch(`/projects/${projectId}/status`, { status });
+    return response.data;
+  },
+
+  // Approve and complete report
+  approveAndCompleteReport: async (reportId: string): Promise<{ success: boolean; message?: string }> => {
+    const response: AxiosResponse<{ success: boolean; message?: string }> = await BaseClient.post(`/reports/${reportId}/approve-and-complete`);
+    return response.data;
+  },
+
+  // Request changes for report
+  requestReportChanges: async (reportId: string, feedback?: string): Promise<{ success: boolean; message?: string }> => {
+    const response: AxiosResponse<{ success: boolean; message?: string }> = await BaseClient.post(`/reports/${reportId}/request-changes`, { feedback });
+    return response.data;
+  },
 };
