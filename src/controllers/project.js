@@ -339,3 +339,70 @@ exports.setProjectStatusComplete = async (projectId) => {
     { where: { id: projectId } }
   );
 };
+
+// Update project status
+exports.updateProjectStatus = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const { projectId } = req.params;
+    const { status } = req.body;
+
+    // Validate status
+    const validStatuses = ['New', 'In Progress', 'PM Review', 'Complete'];
+    if (!validStatuses.includes(status)) {
+      return res.status(BAD_REQUEST).json({ 
+        code: BAD_REQUEST, 
+        message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`, 
+        success: false 
+      });
+    }
+
+    // Find the project
+    const project = await Project.findByPk(projectId);
+    if (!project) {
+      return res.status(NOT_FOUND).json({ 
+        code: NOT_FOUND, 
+        message: NO_RECORD_FOUND, 
+        success: false 
+      });
+    }
+
+    // Check permissions based on role and status transition
+    if (user.role === USER_ROLE.TECHNICIAN) {
+      // Technicians can only update to "In Progress" for their own projects
+      if (project.technician_id !== user.id) {
+        const ApiError = new APIError(NOT_ACCESS, "You can only update status for your assigned projects", BAD_REQUEST);
+        return ErrorHandler(ApiError, req, res, next);
+      }
+      // if (status !== 'In Progress') {
+      //   const ApiError = new APIError(NOT_ACCESS, "Technicians can only set status to 'In Progress'", BAD_REQUEST);
+      //   return ErrorHandler(ApiError, req, res, next);
+      // }
+    } else if (user.role === USER_ROLE.PROJECT_MANAGER) {
+      // PMs can update status for their assigned projects
+      if (project.pm_id !== user.id) {
+        const ApiError = new APIError(NOT_ACCESS, "You can only update status for your assigned projects", BAD_REQUEST);
+        return ErrorHandler(ApiError, req, res, next);
+      }
+    } else if (user.role === USER_ROLE.ADMIN) {
+      // Admins can update any project status
+      // No additional checks needed
+    } else {
+      const ApiError = new APIError(NOT_ACCESS, "Insufficient permissions to update project status", BAD_REQUEST);
+      return ErrorHandler(ApiError, req, res, next);
+    }
+
+    // Update the project status
+    await Project.update(
+      { status: status },
+      { where: { id: projectId } }
+    );
+
+    res.status(OK).json({ 
+      success: true, 
+      message: `Project status updated to ${status} successfully` 
+    });
+  } catch (err) {
+    next(err);
+  }
+};

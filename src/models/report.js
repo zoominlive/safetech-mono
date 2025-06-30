@@ -41,6 +41,10 @@ module.exports = (sequelize, DataTypes) => {
     status: {
       type: DataTypes.BOOLEAN
     },
+    pm_feedback: {
+      allowNull: true,
+      type: DataTypes.TEXT
+    },
     created_at: {
       allowNull: false,
       type: DataTypes.DATE,

@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{reportName}} - Designated Substances Survey Report</title>
+    <style>
+        @page {
+            margin: 120px 50px 100px 50px;
+            size: A4;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Times New Roman', serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: -100px;
+            left: 0;
+            right: 0;
+            height: 100px;
+            border-bottom: 2px solid #003366;
+            background: #fff;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+        
+        .logo {
+            max-height: 60px;
+        }
+        
+        .header-text {
+            text-align: center;
+            font-weight: bold;
+            color: #003366;
+            font-size: 14px;
+        }
+        
+        .header-right {
+            text-align: right;
+            font-size: 10px;
+        }
+        
+        /* Footer */
+        footer {
+            position: fixed;
+            bottom: -80px;
+            left: 0;
+            right: 0;
+            height: 50px;
+            border-top: 1px solid #ccc;
+            font-size: 10px;
+            text-align: center;
+            padding-top: 10px;
+        }
+        
+        .pagenum:before {
+            content: counter(page);
+        }
+        
+        /* Cover Page */
+        .cover-page {
+            text-align: center;
+            padding-top: 200px;
+            page-break-after: always;
+        }
+        
+        .cover-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #003366;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        
+        .cover-subtitle {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 40px;
+        }
+        
+        .cover-project {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 60px;
+        }
+        
+        .cover-details {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .cover-company {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 100px;
+        }
+        
+        .cover-date {
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        
+        /* Sections */
+        .section {
+            page-break-before: always;
+            margin-top: 20px;
+        }
+        
+        .section:first-of-type {
+            page-break-before: avoid;
+        }
+        
+        h1 {
+            font-size: 18px;
+            font-weight: bold;
+            color: #003366;
+            border-bottom: 2px solid #003366;
+            padding-bottom: 5px;
+            margin: 30px 0 20px 0;
+        }
+        
+        h2 {
+            font-size: 16px;
+            font-weight: bold;
+            color: #003366;
+            margin: 25px 0 15px 0;
+        }
+        
+        h3 {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin: 20px 0 10px 0;
+        }
+        
+        /* Table of Contents */
+        .toc {
+            page-break-before: always;
+        }
+        
+        .toc h1 {
+            text-align: center;
+            border-bottom: none;
+            margin-bottom: 30px;
+        }
+        
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .toc li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .toc li:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 4px;
+            width: 15px;
+            border-bottom: 1px dotted #999;
+        }
+        
+        .toc .section-number {
+            font-weight: bold;
+            color: #003366;
+        }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 11px;
+        }
+        
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        
+        th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            color: #003366;
+        }
+        
+        .table-header {
+            background-color: #003366;
+            color: white;
+            font-weight: bold;
+        }
+        
+        /* Executive Summary */
+        .executive-summary {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-left: 4px solid #003366;
+            margin: 20px 0;
+        }
+        
+        /* Assessment Details */
+        .assessment-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .detail-item {
+            margin-bottom: 15px;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #003366;
+        }
+        
+        /* Photos */
+        .photo-section {
+            margin: 20px 0;
+        }
+        
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .photo-item {
+            text-align: center;
+        }
+        
+        .photo-item img {
+            max-width: 100%;
+            max-height: 300px;
+            border: 1px solid #ccc;
+            page-break-inside: avoid;
+        }
+        
+        .photo-caption {
+            font-size: 10px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        /* Findings and Recommendations */
+        .findings-section {
+            margin: 20px 0;
+        }
+        
+        .finding-item {
+            margin-bottom: 15px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .finding-item:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #003366;
+            font-weight: bold;
+        }
+        
+        /* Methodology */
+        .methodology {
+            background-color: #f9f9f9;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        /* Appendices */
+        .appendix {
+            margin: 20px 0;
+        }
+        
+        .appendix h3 {
+            color: #003366;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+        
+        /* Area-specific sections */
+        .area-findings {
+            margin: 20px 0;
+            page-break-inside: avoid;
+        }
+        
+        .area-findings h4 {
+            color: #003366;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 15px 0 10px 0;
+            padding: 8px;
+            background-color: #f5f5f5;
+            border-left: 4px solid #003366;
+        }
+        
+        .area-findings table {
+            margin: 10px 0;
+        }
+        
+        /* Page breaks */
+        .page-break {
+            page-break-before: always;
+        }
+        
+        .avoid-break {
+            page-break-inside: avoid;
+        }
+        
+        /* Utilities */
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .bold {
+            font-weight: bold;
+        }
+        
+        .italic {
+            font-style: italic;
+        }
+        
+        .underline {
+            text-decoration: underline;
+        }
+        
+        .highlight {
+            background-color: #ffffcc;
+            padding: 2px 4px;
+        }
+        
+        /* Responsive adjustments for PDF */
+        @media print {
+            .photo-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="header-left">
+                <img src="{{logoUrl}}" alt="Safetech Logo" class="logo">
+            </div>
+            <div class="header-text">
+                SAFETECH ENVIRONMENTAL LTD.<br>
+                DESIGNATED SUBSTANCES SURVEY REPORT
+            </div>
+            <div class="header-right">
+                Report No: {{reportNumber}}<br>
+                Date: {{reportDate}}
+            </div>
+        </div>
+    </header>
+
+    <!-- Footer -->
+    <footer>
+        <div>Page <span class="pagenum"></span></div>
+        <div style="font-size: 8px; color: #999;">
+            Safetech Environmental Ltd. | Confidential Assessment Report
+        </div>
+    </footer>
+
+    <!-- Cover Page -->
+    <div class="cover-page">
+        <div class="cover-title">DESIGNATED SUBSTANCES SURVEY REPORT</div>
+        <div class="cover-subtitle">Environmental Assessment</div>
+        
+        <div class="cover-project">{{projectName}}</div>
+        
+        <div class="cover-details">
+            <div><strong>Client:</strong> {{clientName}}</div>
+            <div><strong>Location:</strong> {{projectLocation}}</div>
+            <div><strong>Assessment Date:</strong> {{assessmentDate}}</div>
+            <div><strong>Report Date:</strong> {{reportDate}}</div>
+        </div>
+        
+        <div class="cover-company">
+            SAFETECH ENVIRONMENTAL LTD.<br>
+            Environmental Consultants
+        </div>
+        
+        <div class="cover-date">
+            {{reportDate}}
+        </div>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="section toc">
+        <h1>TABLE OF CONTENTS</h1>
+        <ul>
+            <li><span class="section-number">1.0</span> EXECUTIVE SUMMARY</li>
+            <li><span class="section-number">2.0</span> PROJECT OVERVIEW</li>
+            <li><span class="section-number">3.0</span> ASSESSMENT METHODOLOGY</li>
+            <li><span class="section-number">4.0</span> FINDINGS AND RESULTS</li>
+            <li><span class="section-number">5.0</span> RECOMMENDATIONS</li>
+            <li><span class="section-number">6.0</span> PHOTOGRAPHIC DOCUMENTATION</li>
+            <li><span class="section-number">7.0</span> APPENDICES</li>
+        </ul>
+    </div>
+
+    <!-- Executive Summary -->
+    <div class="section">
+        <h1>1.0 EXECUTIVE SUMMARY</h1>
+        
+        <div class="executive-summary">
+            <p><strong>Safetech Environmental Ltd.</strong> was commissioned to conduct a comprehensive designated substances and hazardous materials assessment at <strong>{{projectLocation}}</strong> in relation to the proposed <strong>{{projectName}}</strong>.</p>
+            
+            <p>The objective of this assessment was to identify, locate, and quantify designated substances and other hazardous materials that may be disturbed during construction activities, ensuring appropriate control measures can be implemented to protect workers and the environment.</p>
+        </div>
+        
+        <h3>Key Findings:</h3>
+        <div class="findings-section">
+            {{#each keyFindings}}
+            <div class="finding-item">{{this}}</div>
+            {{/each}}
+        </div>
+        
+        <h3>Recommendations:</h3>
+        <div class="findings-section">
+            {{#each recommendations}}
+            <div class="finding-item">{{this}}</div>
+            {{/each}}
+        </div>
+    </div>
+
+    <!-- Project Overview -->
+    <div class="section">
+        <h1>2.0 PROJECT OVERVIEW</h1>
+        
+        <div class="assessment-details">
+            <div class="detail-item">
+                <span class="detail-label">Project Name:</span><br>
+                {{projectName}}
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Client:</span><br>
+                {{clientName}}
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Project Location:</span><br>
+                {{projectLocation}}
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Assessment Date:</span><br>
+                {{assessmentDate}}
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Report Date:</span><br>
+                {{reportDate}}
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Assessment Due To:</span><br>
+                {{assessmentDueTo}}
+            </div>
+            {{#if dateOfLoss}}
+            <div class="detail-item">
+                <span class="detail-label">Date of Loss:</span><br>
+                {{dateOfLoss}}
+            </div>
+            {{/if}}
+        </div>
+        
+        <h3>Project Description:</h3>
+        <p>{{projectDescription}}</p>
+        
+        <h3>Areas Assessed:</h3>
+        <p>{{areasAssessed}}</p>
+        
+        {{#if areaDetails}}
+        <h3>Assessment Areas:</h3>
+        <table>
+            <thead>
+                <tr class="table-header">
+                    <th>Area Name</th>
+                    <th>Description</th>
+                    <th>Square Feet</th>
+                    <th>Specific Location</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each areaDetails}}
+                <tr>
+                    <td><strong>{{this.name}}</strong></td>
+                    <td>{{this.areaDescription}}</td>
+                    <td>{{this.areaSquareFeet}}</td>
+                    <td>{{this.specificLocation}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        {{/if}}
+    </div>
+
+    <!-- Assessment Methodology -->
+    <div class="section">
+        <h1>3.0 ASSESSMENT METHODOLOGY</h1>
+        
+        <div class="methodology">
+            <h3>Assessment Approach:</h3>
+            <p>The assessment was conducted in accordance with applicable regulations and industry best practices, including:</p>
+            <ul>
+                <li>Visual inspection of accessible areas</li>
+                <li>Review of building plans and historical documentation</li>
+                <li>Sampling and laboratory analysis where required</li>
+                <li>Documentation of findings with photographic evidence</li>
+                <li>Area-specific assessment of designated substances</li>
+            </ul>
+        </div>
+        
+        <h3>Areas Assessed:</h3>
+        <p>{{areasAssessed}}</p>
+        
+        <h3>Assessment Scope:</h3>
+        <p>The assessment included evaluation of the following materials and conditions:</p>
+        <ul>
+            <li>Asbestos-containing materials (ACM)</li>
+            <li>Lead-containing materials</li>
+            <li>Silica-containing materials</li>
+            <li>Mercury-containing equipment</li>
+            <li>PCB-containing equipment</li>
+            <li>Mold growth and water damage</li>
+            <li>Pest infestation and droppings</li>
+            <li>Other hazardous materials</li>
+        </ul>
+    </div>
+
+    <!-- Findings and Results -->
+    <div class="section">
+        <h1>4.0 FINDINGS AND RESULTS</h1>
+        
+        <h3>Assessment Responses:</h3>
+        <table>
+            <thead>
+                <tr class="table-header">
+                    <th>Assessment Item</th>
+                    <th>Response</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each assessmentResponses}}
+                <tr>
+                    <td><strong>{{this.question}}</strong></td>
+                    <td>{{this.response}}</td>
+                    <td>{{this.notes}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        
+        {{#if areaDetails}}
+        <h3>Area-Specific Findings:</h3>
+        {{#each areaDetails}}
+        <div class="area-findings">
+            <h4>{{this.name}}</h4>
+            <table>
+                <thead>
+                    <tr class="table-header">
+                        <th>Material/Equipment</th>
+                        <th>Status</th>
+                        <th>Location/Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Asbestos Assessment</td>
+                        <td>{{this.isAsbestosAssessed}}</td>
+                        <td>Various locations throughout area</td>
+                    </tr>
+                    <tr>
+                        <td>Lead Assessment</td>
+                        <td>{{this.isLeadAssessed}}</td>
+                        <td>Paint and other lead-containing materials</td>
+                    </tr>
+                    <tr>
+                        <td>Silica Observed</td>
+                        <td>{{this.silicaObserved}}</td>
+                        <td>{{#if this.silicaForms}}{{#each this.silicaForms}}{{this.label}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}N/A{{/if}}</td>
+                    </tr>
+                    <tr>
+                        <td>Mercury Observed</td>
+                        <td>{{this.mercuryObserved}}</td>
+                        <td>Lighting and electrical equipment</td>
+                    </tr>
+                    <tr>
+                        <td>PCB Observed</td>
+                        <td>{{this.pcbObserved}}</td>
+                        <td>Electrical equipment and ballasts</td>
+                    </tr>
+                    <tr>
+                        <td>Mold Growth</td>
+                        <td>{{this.moldGrowth}}</td>
+                        <td>{{#if this.mouldContaminationDetails}}{{#each this.mouldContaminationDetails}}{{this.mouldLocation}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}N/A{{/if}}</td>
+                    </tr>
+                    <tr>
+                        <td>Water Staining</td>
+                        <td>{{this.waterStaining}}</td>
+                        <td>Various locations</td>
+                    </tr>
+                    <tr>
+                        <td>Pest Infestation</td>
+                        <td>{{this.pestInfestationObserved}}</td>
+                        <td>{{this.infestationTypeSelect}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {{/each}}
+        {{/if}}
+        
+        {{#if labResults}}
+        <h3>Laboratory Analysis Results:</h3>
+        <table>
+            <thead>
+                <tr class="table-header">
+                    <th>Parameter</th>
+                    <th>Units</th>
+                    <th>MRL</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each labResults}}
+                <tr>
+                    <td>{{this.parameter}}</td>
+                    <td>{{this.units}}</td>
+                    <td>{{this.mrl}}</td>
+                    <td>{{this.value}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        {{/if}}
+    </div>
+
+    <!-- Recommendations -->
+    <div class="section">
+        <h1>5.0 RECOMMENDATIONS</h1>
+        
+        <h3>Control Measures:</h3>
+        <div class="findings-section">
+            {{#each controlMeasures}}
+            <div class="finding-item">{{this}}</div>
+            {{/each}}
+        </div>
+        
+        <h3>Work Procedures:</h3>
+        <div class="findings-section">
+            {{#each workProcedures}}
+            <div class="finding-item">{{this}}</div>
+            {{/each}}
+        </div>
+        
+        <h3>Monitoring Requirements:</h3>
+        <div class="findings-section">
+            {{#each monitoringRequirements}}
+            <div class="finding-item">{{this}}</div>
+            {{/each}}
+        </div>
+    </div>
+
+    <!-- Photographic Documentation -->
+    <div class="section">
+        <h1>6.0 PHOTOGRAPHIC DOCUMENTATION</h1>
+        
+        {{#if photos}}
+        <div class="photo-section">
+            <div class="photo-grid">
+                {{#each photos}}
+                <div class="photo-item">
+                    <img src="{{this.url}}" alt="{{this.caption}}">
+                    <div class="photo-caption">{{this.caption}}</div>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+        {{else}}
+        <p>No photographs were taken during this assessment.</p>
+        {{/if}}
+    </div>
+
+    <!-- Appendices -->
+    <div class="section">
+        <h1>7.0 APPENDICES</h1>
+        
+        <div class="appendix">
+            <h3>Appendix A: Assessment Checklist</h3>
+            <table>
+                <thead>
+                    <tr class="table-header">
+                        <th>Item</th>
+                        <th>Status</th>
+                        <th>Comments</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each assessmentChecklist}}
+                    <tr>
+                        <td>{{this.item}}</td>
+                        <td>{{this.status}}</td>
+                        <td>{{this.comments}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+        
+        {{#if areaDetails}}
+        <div class="appendix">
+            <h3>Appendix B: Area Details</h3>
+            {{#each areaDetails}}
+            <h4>{{this.name}}</h4>
+            <table>
+                <thead>
+                    <tr class="table-header">
+                        <th>Detail</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Area Description</td>
+                        <td>{{this.areaDescription}}</td>
+                    </tr>
+                    <tr>
+                        <td>Square Feet</td>
+                        <td>{{this.areaSquareFeet}}</td>
+                    </tr>
+                    <tr>
+                        <td>Specific Location</td>
+                        <td>{{this.specificLocation}}</td>
+                    </tr>
+                    <tr>
+                        <td>Contact Name</td>
+                        <td>{{this.contactName}}</td>
+                    </tr>
+                    <tr>
+                        <td>Contact Email</td>
+                        <td>{{this.contactEmail}}</td>
+                    </tr>
+                    <tr>
+                        <td>Contact Phone</td>
+                        <td>{{this.contactPhone}}</td>
+                    </tr>
+                    <tr>
+                        <td>Project Manager</td>
+                        <td>{{this.pmName}}</td>
+                    </tr>
+                    <tr>
+                        <td>Technician</td>
+                        <td>{{this.technicianName}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            {{/each}}
+        </div>
+        {{/if}}
+        
+        {{#if additionalAppendices}}
+        {{#each additionalAppendices}}
+        <div class="appendix">
+            <h3>{{this.title}}</h3>
+            {{{this.content}}}
+        </div>
+        {{/each}}
+        {{/if}}
+    </div>
+</body>
+</html> 

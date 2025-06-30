@@ -8,4 +8,7 @@ app.route('/delete/:id').delete(authenticate, controller.deleteProject);
 app.route('/get-project-details/:id').get(authenticate, controller.getProjectById);
 app.route('/all').get(authenticate, controller.getAllProjects);
 
+// Project status transition flow route
+app.route('/:projectId/status').patch(authenticate, controller.updateProjectStatus);
+
 module.exports = app;

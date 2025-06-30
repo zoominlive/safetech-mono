@@ -26,7 +26,8 @@ const path = require('path');
 const upload = multer({ dest: 'uploads/' });
 const dayjs = require('dayjs');
 const customParseFormat = require('dayjs/plugin/customParseFormat');
-const { sendEmail } = require("../utils/email");
+const { sendEmail, uploadFileToS3 } = require("../utils/email");
+const { renderTemplate, prepareReportData } = require("../utils/templateRenderer");
 dayjs.extend(customParseFormat);
 
 // AWS S3 configuration
@@ -348,7 +349,13 @@ exports.generatePDFReport = async (req, res, next) => {
 
     const report = await Report.findByPk(id, {
       include: [
-        { model: Project, as: "project", attributes: ["name"] },
+        { 
+          model: Project, 
+          as: "project", 
+          include: [
+            { model: Customer, as: 'company' }
+          ]
+        },
         { model: ReportTemplate, as: "template" },
       ],
     });
@@ -357,191 +364,27 @@ exports.generatePDFReport = async (req, res, next) => {
       return res.status(404).json({ message: "Report not found" });
     }
 
-    // Prepare the HTML content
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8" />
-          <title>Report PDF</title>
-          <style>
-            @page {
-              margin: 120px 50px 100px 50px;
-            }
-            body {
-              font-family: Arial, sans-serif;
-              font-size: 12px;
-              margin: 0;
-              padding: 0;
-            }
-            header {
-              position: fixed;
-              top: -100px;
-              left: 0;
-              right: 0;
-              height: 100px;
-              text-align: center;
-              border-bottom: 1px solid #ccc;
-            }
-            footer {
-              position: fixed;
-              bottom: -80px;
-              left: 0;
-              right: 0;
-              height: 50px;
-              font-size: 10px;
-              text-align: center;
-              border-top: 1px solid #ccc;
-            }
-            .pagenum:before {
-              content: counter(page);
-            }
-            h1, h2, h3 {
-              color: #222;
-              margin: 30px 0 10px;
-            }
-            .section {
-              page-break-before: always;
-              margin-top: 100px;
-            }
-            .cover {
-              text-align: center;
-              padding-top: 200px;
-              font-size: 24px;
-              font-weight: bold;
-            }
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              margin: 10px 0;
-            }
-            td, th {
-              border: 1px solid #ccc;
-              padding: 8px;
-            }
-            .photos img {
-              max-width: 300px;
-              margin: 10px 0;
-              page-break-inside: avoid;
-            }
-            .toc ul {
-              list-style: none;
-              padding-left: 0;
-            }
-            .toc li {
-              margin-bottom: 5px;
-            }
-          </style>
-        </head>
-        <body>
-          <header>
-            <img src="https://safetech-dev-images.s3.ca-central-1.amazonaws.com/profiles/image.png" height="60" />
-            <div>Safetech Environmental Ltd. | Confidential Assessment Report</div>
-          </header>
+    // Prepare data for template
+    const templateData = prepareReportData(
+      report, 
+      report.project, 
+      report.project?.company
+    );
 
-          <footer>
-            Page <span class="pagenum"></span>
-          </footer>
+    // Render HTML using template
+    const htmlContent = renderTemplate('report-pdf', templateData);
 
-          <div class="cover">
-            <div>Assessment Report</div>
-            <div>${report.name}</div>
-            <div>Prepared for: ${report.answers?.clientName || "N/A"}</div>
-          </div>
-
-          <div class="section toc">
-            <h2>Table of Contents</h2>
-            <ul>
-              <li>1. Executive Summary</li>
-              <li>2. Project & Assessment Details</li>
-              <li>3. Responses Summary</li>
-              <li>4. Additional Photos</li>
-            </ul>
-          </div>
-
-          <div class="section">
-            <h2>1. Executive Summary</h2>
-            <p>Safetech Environmental Limited (Safetech) was commissioned by <strong>${report.answers?.clientName || "N/A"}</strong> to conduct a designated substances and hazardous materials assessment in <strong>${report.answers?.projectLocationAddress || "N/A"}</strong>.</p>
-            <p>The objective of the assessment was to determine the presence, location, condition and quantities of designated substances and other hazardous materials that have the potential to be disturbed as part of planned construction activities (<strong>${report.project?.name || "N/A"}</strong>) so that appropriate control measures can be implemented to protect workers during the work.</p>
-            <p>A summary of the assessment results and general recommendations based on our findings are provided in the following sections. This should be considered a summary only. Please refer to Section 2.0 and Section 3.0 of the report for full details.</p>
-          </div>
-
-          <div class="section">
-            <h2>2. Project & Assessment Details</h2>
-            <p><strong>Project:</strong> ${report.project?.name || "N/A"}</p>
-            <p><strong>Assessment Due To:</strong> ${report.assessment_due_to || "N/A"}</p>
-            <p><strong>Date of Loss:</strong> ${report.date_of_loss || "N/A"}</p>
-            <p><strong>Date of Assessment:</strong> ${report.date_of_assessment || "N/A"}</p>
-          </div>
-
-          <div class="section">
-            <h2>3. Responses Summary</h2>
-            <table>
-              <tbody>
-                ${Object.entries(report.answers || {})
-                  .map(([key, value]) => {
-                    let photoHtml = '';
-                    // Check if this field has associated photos
-                    const isPhotoField = key === 'sprayedFireproofingPhoto' || key === 'mechanicalPipeInsulationStraightsPhoto' || key === 'sprayedInsulationPhoto';
-                    if (isPhotoField) {
-                      if (Array.isArray(value) && value.length > 0) {
-                        photoHtml = value.map(photo => `<img src="${photo}" alt="${key}" style="max-width: 300px; margin: 10px 0;" />`).join('');
-                      }
-                      // Only show images for photo fields
-                      return `<tr><td>${key}</td><td>${photoHtml}</td></tr>`;
-                    }
-
-                    if (Array.isArray(value)) {
-                      return `<tr>
-                        <td>${key}</td>
-                        <td>
-                          ${value.map((v) => typeof v === "object" ? v.label || JSON.stringify(v) : v).join(", ")}
-                        </td>
-                      </tr>`;
-                    } else if (typeof value === "object" && value !== null) {
-                      return `<tr>
-                        <td>${key}</td>
-                        <td>
-                          ${value.label || JSON.stringify(value)}
-                        </td>
-                      </tr>`;
-                    } else {
-                      return `<tr>
-                        <td>${key}</td>
-                        <td>
-                          ${value}
-                        </td>
-                      </tr>`;
-                    }
-                  })
-                  .join("")}
-              </tbody>
-            </table>
-          </div>
-
-          <div class="section">
-            <h2>4. Additional Photos</h2>
-            ${
-              report.photos?.length
-                ? report.photos
-                    .filter(photo => !photo.includes('sprayedFireproofingPhoto') && 
-                                   !photo.includes('mechanicalPipeInsulationStraightsPhoto') && 
-                                   !photo.includes('sprayedInsulationPhoto'))
-                    .map(
-                      (photo) =>
-                        `<img src="${photo}" alt="Photo" style="max-width: 300px; margin: 10px 0;" />`
-                    )
-                    .join("")
-                : "<p>No additional photos uploaded</p>"
-            }
-          </div>
-        </body>
-      </html>
-    `;
-
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({ 
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
     const page = await browser.newPage();
+    
+    // Set content and wait for images to load
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+    
+    // Wait a bit more for any external resources using setTimeout
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     const pdfBuffer = await page.pdf({
       format: "A4",
@@ -808,24 +651,232 @@ exports.sendReportToCustomer = async (req, res, next) => {
     if (!customer || !customer.email) {
       return res.status(BAD_REQUEST).json({ code: BAD_REQUEST, message: 'Customer email not found', success: false });
     }
-    // Generate PDF (reuse generatePDFReport logic)
-    const puppeteer = require('puppeteer');
-    const htmlContent = `<!DOCTYPE html><html><head><meta charset=\"UTF-8\" /><title>Report PDF</title></head><body><h1>${report.name}</h1><p>Project: ${report.project?.name || "N/A"}</p></body></html>`; // Simplified for now
-    const browser = await puppeteer.launch({ headless: true });
+    
+    // Prepare data for template
+    const templateData = prepareReportData(
+      report, 
+      report.project, 
+      customer
+    );
+
+    // Render HTML using template
+    const htmlContent = renderTemplate('report-pdf', templateData);
+    
+    // Generate PDF using the same template
+    const browser = await puppeteer.launch({ 
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
-    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    const pdfBuffer = await page.pdf({ 
+      format: "A4", 
+      printBackground: true,
+      margin: { top: "120px", bottom: "100px", left: "50px", right: "50px" }
+    });
     await browser.close();
-    // Send email directly using sendMail from utils/email.js
+    
+    // Upload PDF to S3
+    const pdfFilename = `report-${report.id}.pdf`;
+    const pdfUrl = await uploadFileToS3(pdfBuffer, pdfFilename, 'application/pdf', 'reports', report.id.toString());
+    
+    // Send email with the S3 URL instead of attachment
     await sendEmail({
       to: customer.email,
       subject: `Your Safetech Report: ${report.name}`,
-      attachments: [{ filename: `report-${report.id}.pdf`, content: pdfBuffer }],
-      html: '<p>Please find your report attached.</p>',
+      html: `
+        <p>Dear ${customer.name},</p>
+        <p>Please find your designated substances survey report for the project: <strong>${report.project?.name || 'N/A'}</strong>.</p>
+        <p>This report contains a comprehensive assessment of designated substances and hazardous materials that may be present at your project location.</p>
+        <p><strong>Download your report:</strong> <a href="${pdfUrl}" target="_blank">${pdfFilename}</a></p>
+        <p>If you have any questions about this report, please don't hesitate to contact us.</p>
+        <p>Best regards,<br>Safetech Environmental Ltd.</p>
+      `,
       template_name: undefined,
       template_data: undefined,
     });
     res.status(OK).json({ success: true, message: 'Report sent to customer.' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Submit report to PM review
+exports.submitToPMReview = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const { reportId } = req.params;
+
+    // Only technicians can submit reports to PM review
+    if (user.role !== USER_ROLE.TECHNICIAN) {
+      const ApiError = new APIError(NOT_ACCESS, "Only technicians can submit reports to PM review", BAD_REQUEST);
+      return ErrorHandler(ApiError, req, res, next);
+    }
+
+    // Find the report with project details
+    const report = await Report.findByPk(reportId, {
+      include: [
+        { model: Project, as: 'project' }
+      ]
+    });
+
+    if (!report) {
+      return res.status(NOT_FOUND).json({ 
+        code: NOT_FOUND, 
+        message: NO_RECORD_FOUND, 
+        success: false 
+      });
+    }
+
+    // Check if report belongs to the technician
+    if (report.project.technician_id !== user.id) {
+      const ApiError = new APIError(NOT_ACCESS, "You can only submit your own reports", BAD_REQUEST);
+      return ErrorHandler(ApiError, req, res, next);
+    }
+
+    // Check if report has content (answers)
+    if (!report.answers || Object.keys(report.answers).length === 0) {
+      return res.status(BAD_REQUEST).json({ 
+        code: BAD_REQUEST, 
+        message: "Report must have content before submitting to PM review", 
+        success: false 
+      });
+    }
+
+    // Update project status to "PM Review"
+    await Project.update(
+      { status: "PM Review" },
+      { where: { id: report.project_id } }
+    );
+
+    res.status(OK).json({ 
+      success: true, 
+      message: "Report submitted to PM review successfully" 
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Approve and complete report
+exports.approveAndCompleteReport = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const { reportId } = req.params;
+
+    // Only project managers can approve and complete reports
+    if (user.role !== USER_ROLE.PROJECT_MANAGER) {
+      const ApiError = new APIError(NOT_ACCESS, "Only project managers can approve and complete reports", BAD_REQUEST);
+      return ErrorHandler(ApiError, req, res, next);
+    }
+
+    // Find the report with project details
+    const report = await Report.findByPk(reportId, {
+      include: [
+        { model: Project, as: 'project' }
+      ]
+    });
+
+    if (!report) {
+      return res.status(NOT_FOUND).json({ 
+        code: NOT_FOUND, 
+        message: NO_RECORD_FOUND, 
+        success: false 
+      });
+    }
+
+    // Check if project is assigned to the PM
+    if (report.project.pm_id !== user.id) {
+      const ApiError = new APIError(NOT_ACCESS, "You can only approve reports for your assigned projects", BAD_REQUEST);
+      return ErrorHandler(ApiError, req, res, next);
+    }
+
+    // Check if project is in PM Review status
+    if (report.project.status !== "PM Review") {
+      return res.status(BAD_REQUEST).json({ 
+        code: BAD_REQUEST, 
+        message: "Project must be in PM Review status to be approved", 
+        success: false 
+      });
+    }
+
+    // Update project status to "Complete"
+    await Project.update(
+      { status: "Complete" },
+      { where: { id: report.project_id } }
+    );
+
+    res.status(OK).json({ 
+      success: true, 
+      message: "Report approved and project completed successfully" 
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Request changes for report
+exports.requestReportChanges = async (req, res, next) => {
+  try {
+    const { user } = req;
+    const { reportId } = req.params;
+    const { feedback } = req.body;
+
+    // Only project managers can request changes
+    if (user.role !== USER_ROLE.PROJECT_MANAGER) {
+      const ApiError = new APIError(NOT_ACCESS, "Only project managers can request report changes", BAD_REQUEST);
+      return ErrorHandler(ApiError, req, res, next);
+    }
+
+    // Find the report with project details
+    const report = await Report.findByPk(reportId, {
+      include: [
+        { model: Project, as: 'project' }
+      ]
+    });
+
+    if (!report) {
+      return res.status(NOT_FOUND).json({ 
+        code: NOT_FOUND, 
+        message: NO_RECORD_FOUND, 
+        success: false 
+      });
+    }
+
+    // Check if project is assigned to the PM
+    if (report.project.pm_id !== user.id) {
+      const ApiError = new APIError(NOT_ACCESS, "You can only request changes for your assigned projects", BAD_REQUEST);
+      return ErrorHandler(ApiError, req, res, next);
+    }
+
+    // Check if project is in PM Review status
+    if (report.project.status !== "PM Review") {
+      return res.status(BAD_REQUEST).json({ 
+        code: BAD_REQUEST, 
+        message: "Project must be in PM Review status to request changes", 
+        success: false 
+      });
+    }
+
+    // Update project status back to "In Progress"
+    await Project.update(
+      { status: "In Progress" },
+      { where: { id: report.project_id } }
+    );
+
+    // Store feedback in report if provided
+    if (feedback) {
+      await Report.update(
+        { pm_feedback: feedback },
+        { where: { id: reportId } }
+      );
+    }
+
+    res.status(OK).json({ 
+      success: true, 
+      message: "Changes requested successfully. Project status updated to In Progress." 
+    });
   } catch (err) {
     next(err);
   }

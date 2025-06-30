@@ -23,4 +23,9 @@ app.route('/import-lab').post(authenticate, controller.importLabReport);
 app.route('/project/:projectId/lab-reports').get(authenticate, controller.getLabReportsForProject);
 app.route('/:reportId/send-to-customer').post(authenticate, controller.sendReportToCustomer);
 
+// Project status transition flow routes
+app.route('/:reportId/submit-to-pm').post(authenticate, controller.submitToPMReview);
+app.route('/:reportId/approve-and-complete').post(authenticate, controller.approveAndCompleteReport);
+app.route('/:reportId/request-changes').post(authenticate, controller.requestReportChanges);
+
 module.exports = app;
