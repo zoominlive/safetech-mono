@@ -9,6 +9,7 @@ import { formatDate } from "@/lib/utils";
 import { useNavigate } from "react-router";
 import { reportService } from "@/services/api/reportService";
 import { toast } from "@/components/ui/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface DashboardResponse {
   code: number;
@@ -221,10 +222,32 @@ function DashboardLayout() {
     {
       header: "Project Name",
       accessorKey: "projectName",
+      width: "min-w-[120px] max-w-[160px] sm:min-w-[220px] sm:max-w-[220px]",
+      cell: (project) => (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="truncate block">{project.projectName}</span>
+            </TooltipTrigger>
+            <TooltipContent>{project.projectName}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ),
     },
     {
       header: "Company",
       accessorKey: "company",
+      width: "min-w-[80px] max-w-[120px] sm:min-w-[120px] sm:max-w-[160px]",
+      cell: (project) => (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="truncate block">{project.company}</span>
+            </TooltipTrigger>
+            <TooltipContent>{project.company}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ),
     },
     {
       header: "Start Date",
@@ -232,15 +255,28 @@ function DashboardLayout() {
       cell: (project) => {
         return formatDate(project.startDate);
       },
+      width: "min-w-[90px] max-w-[110px] sm:min-w-[120px] sm:max-w-[140px]",
     },
     {
       header: "Technician",
       accessorKey: "technician",
+      width: "min-w-[90px] max-w-[120px] sm:min-w-[140px] sm:max-w-[160px]",
+      cell: (project) => (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="truncate block">{project.technician}</span>
+            </TooltipTrigger>
+            <TooltipContent>{project.technician}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ),
     },
     {
       header: "Status",
       accessorKey: "status",
       cell: (project) => <StatusBadge status={project.status} />,
+      width: "min-w-[70px] max-w-[90px] sm:min-w-[100px] sm:max-w-[120px]",
     },
   ];
 
@@ -248,10 +284,32 @@ function DashboardLayout() {
     {
       header: "Project Name",
       accessorKey: "projectName",
+      width: "min-w-[120px] max-w-[160px] sm:min-w-[220px] sm:max-w-[220px]",
+      cell: (project) => (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="truncate block">{project.projectName}</span>
+            </TooltipTrigger>
+            <TooltipContent>{project.projectName}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ),
     },
     {
       header: "Company",
       accessorKey: "company",
+      width: "min-w-[80px] max-w-[120px] sm:min-w-[120px] sm:max-w-[160px]",
+      cell: (project) => (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="truncate block">{project.company}</span>
+            </TooltipTrigger>
+            <TooltipContent>{project.company}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ),
     },
     {
       header: "Completed Date",
@@ -259,6 +317,7 @@ function DashboardLayout() {
       cell: (project) => {
         return formatDate(project.completedDate);
       },
+      width: "min-w-[90px] max-w-[110px] sm:min-w-[120px] sm:max-w-[140px]",
     },
   ];
 

@@ -19,6 +19,7 @@ export interface Column<T> {
   accessorKey: keyof T;
   cell?: (item: T) => React.ReactNode;
   className?: string;
+  width?: string;
 }
 
 interface TableProps<T> {
@@ -71,7 +72,8 @@ export const StatusBadge = ({ status }: { status: string }) => {
     <Badge
       variant="outline"
       className={cn(
-        "font-medium rounded px-3 py-1 border-0 capitalize w-24 h-7 font-inter",
+        "font-medium rounded border-0 capitalize font-inter",
+        "w-auto h-auto px-2 py-0.5 text-xs sm:w-24 sm:h-7 sm:px-3 sm:py-1 sm:text-base",
         getStatusColor(status)
       )}
     >
@@ -111,23 +113,25 @@ function Table<T>({
   return (
     <>
       {title && <h2 className="font-semibold text-xl mb-7">{title}</h2>}
-      <div className={cn("w-full overflow-auto rounded-md border", className)}>
-        <ShadcnTable>
+      <div className={cn("w-full overflow-x-auto rounded-md border", className)}>
+        <ShadcnTable className="min-w-full table-fixed">
           <TableHeader>
             <TableRow className="bg-safetech-gray hover:bg-safetech-gray">
               {columns.map((column, index) => (
                 <TableHead
                   key={index}
                   className={cn(
-                    "font-medium text-muted-foreground",
-                    column.className
+                    "font-medium text-muted-foreground truncate overflow-hidden whitespace-nowrap",
+                    column.className,
+                    column.width
                   )}
+                  style={column.width ? undefined : {}}
                 >
                   {column.header}
                 </TableHead>
               ))}
               {hasActions && (
-                <TableHead className="font-bold text-lg text-center">Actions</TableHead>
+                <TableHead className="font-bold text-lg text-center min-w-[60px] max-w-[80px] sm:min-w-[120px] sm:max-w-[140px]">Actions</TableHead>
               )}
             </TableRow>
           </TableHeader>
@@ -144,15 +148,23 @@ function Table<T>({
                   }) : undefined}
                 >
                   {columns.map((column, colIndex) => (
-                    <TableCell key={colIndex} className={column.className}>
+                    <TableCell 
+                      key={colIndex} 
+                      className={cn(
+                        column.className,
+                        column.width,
+                        "truncate overflow-hidden whitespace-nowrap max-w-[220px]"
+                      )}
+                      style={column.width ? undefined : {}}
+                    >
                       {column.cell
                         ? column.cell(row)
                         : (row[column.accessorKey] as React.ReactNode)}
                     </TableCell>
                   ))}
                   {hasActions && (
-                    <TableCell className="text-center">
-                      <div className="flex justify-center items-center space-x-2">
+                    <TableCell className="text-center min-w-[60px] max-w-[80px] sm:min-w-[120px] sm:max-w-[140px]">
+                      <div className="flex justify-center items-center flex-wrap gap-1 sm:space-x-2 sm:flex-nowrap">
                         {onDetails && !isReportsTemplateTable && (
                           <Button 
                             variant="outline" 
