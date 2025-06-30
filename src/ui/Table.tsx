@@ -13,6 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Eye, SquarePen, Trash, Download, FileChartLine, Send, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store";
 import { Switch } from "@/components/ui/switch";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { MoreVertical } from "lucide-react";
+import React from "react";
 
 export interface Column<T> {
   header: string;
@@ -88,6 +91,299 @@ export const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
+// Add ActionType type for actions
+interface ActionType {
+  key: string;
+  button: React.ReactElement;
+  menu: React.ReactElement;
+}
+
+function ActionsCell({ row, ...props }: any) {
+  const {
+    onDetails,
+    onEdit,
+    onDelete,
+    onDownload,
+    onViewReport,
+    isReportsTable,
+    isReportsTemplateTable,
+    onToggleStatus,
+    onSendToCustomer,
+    downloadingReportId,
+    sendingToCustomerId,
+    user,
+  } = props;
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.matchMedia('(max-width: 767px)').matches);
+    }
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Build actions array for easier logic
+  const actionsRaw: (ActionType | null)[] = [
+    onDetails && !isReportsTemplateTable ? {
+      key: 'view',
+      button: (
+        <Button
+          key="view"
+          variant="outline"
+          size="sm"
+          onClick={() => onDetails(row)}
+          className="px-2 py-1 h-8"
+        >
+          <Eye className="h-4 w-4" />
+        </Button>
+      ),
+      menu: (
+        <Button
+          key="view-menu"
+          variant="ghost"
+          size="sm"
+          onClick={() => onDetails(row)}
+          className="justify-start w-full"
+        >
+          <Eye className="h-4 w-4 mr-2" /> View
+        </Button>
+      )
+    } : null,
+    onEdit && isReportsTable && !isReportsTemplateTable ? {
+      key: 'edit',
+      button: (
+        <Button
+          key="edit"
+          variant="outline"
+          size="sm"
+          onClick={() => onEdit(row)}
+          className="px-2 py-1 h-8"
+        >
+          <SquarePen className="h-4 w-4" />
+        </Button>
+      ),
+      menu: (
+        <Button
+          key="edit-menu"
+          variant="ghost"
+          size="sm"
+          onClick={() => onEdit(row)}
+          className="justify-start w-full"
+        >
+          <SquarePen className="h-4 w-4 mr-2" /> Edit
+        </Button>
+      )
+    } : null,
+    onViewReport ? {
+      key: 'viewReport',
+      button: (
+        <Button
+          key="viewReport"
+          variant="outline"
+          size="sm"
+          onClick={() => onViewReport(row)}
+          className="px-2 py-1 h-8"
+          title="View Latest Report"
+        >
+          <FileChartLine className="h-4 w-4" />
+        </Button>
+      ),
+      menu: (
+        <Button
+          key="viewReport-menu"
+          variant="ghost"
+          size="sm"
+          onClick={() => onViewReport(row)}
+          className="justify-start w-full"
+          title="View Latest Report"
+        >
+          <FileChartLine className="h-4 w-4 mr-2" /> View Report
+        </Button>
+      )
+    } : null,
+    onDownload && isReportsTable ? {
+      key: 'download',
+      button: (
+        <Button
+          key="download"
+          variant="outline"
+          size="sm"
+          onClick={() => onDownload(row)}
+          className="px-2 py-1 h-8"
+          disabled={
+            downloadingReportId !== (row as any).latestReportId &&
+            typeof (row as any).status === 'string' &&
+            ["in progress", "new"].includes((row as any).status.toLowerCase())
+          }
+        >
+          {downloadingReportId === (row as any).latestReportId ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Download className="h-4 w-4" />
+          )}
+        </Button>
+      ),
+      menu: (
+        <Button
+          key="download-menu"
+          variant="ghost"
+          size="sm"
+          onClick={() => onDownload(row)}
+          className="justify-start w-full"
+          disabled={
+            downloadingReportId !== (row as any).latestReportId &&
+            typeof (row as any).status === 'string' &&
+            ["in progress", "new"].includes((row as any).status.toLowerCase())
+          }
+        >
+          {downloadingReportId === (row as any).latestReportId ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          ) : (
+            <Download className="h-4 w-4 mr-2" />
+          )}
+          Download
+        </Button>
+      )
+    } : null,
+    onSendToCustomer && user?.role?.toLowerCase() === 'project manager' && isReportsTable ? {
+      key: 'send',
+      button: (
+        <Button
+          key="send"
+          variant="outline"
+          size="sm"
+          onClick={() => onSendToCustomer(row)}
+          className="px-2 py-1 h-8"
+          disabled={
+            typeof (row as any).status === 'string' &&
+            ["in progress", "new"].includes((row as any).status.toLowerCase()) ||
+            sendingToCustomerId === (row as any).latestReportId
+          }
+          title="Send report to customer"
+        >
+          {sendingToCustomerId === (row as any).latestReportId ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4" />
+          )}
+        </Button>
+      ),
+      menu: (
+        <Button
+          key="send-menu"
+          variant="ghost"
+          size="sm"
+          onClick={() => onSendToCustomer(row)}
+          className="justify-start w-full"
+          disabled={
+            typeof (row as any).status === 'string' &&
+            ["in progress", "new"].includes((row as any).status.toLowerCase()) ||
+            sendingToCustomerId === (row as any).latestReportId
+          }
+          title="Send report to customer"
+        >
+          {sendingToCustomerId === (row as any).latestReportId ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          ) : (
+            <Send className="h-4 w-4 mr-2" />
+          )}
+          Send to Customer
+        </Button>
+      )
+    } : null,
+    onDelete && user?.role !== 'Technician' && !isReportsTemplateTable ? {
+      key: 'delete',
+      button: (
+        <Button
+          key="delete"
+          variant="outline"
+          size="sm"
+          onClick={() => onDelete(row)}
+          className="px-2 py-1 h-8 text-red-500 hover:text-red-700"
+        >
+          <Trash className="h-4 w-4" />
+        </Button>
+      ),
+      menu: (
+        <Button
+          key="delete-menu"
+          variant="ghost"
+          size="sm"
+          onClick={() => onDelete(row)}
+          className="justify-start w-full text-red-500 hover:text-red-700"
+        >
+          <Trash className="h-4 w-4 mr-2" /> Delete
+        </Button>
+      )
+    } : null,
+    isReportsTemplateTable && onToggleStatus ? {
+      key: 'toggle',
+      button: (
+        <div key="toggle" className="flex flex-col items-center">
+          <Switch
+            checked={(row as any).status}
+            onCheckedChange={() => onToggleStatus((row as any).id, (row as any).status)}
+            className="bg-sf-black-300 data-[state=unchecked]:bg-sf-black-300"
+          />
+        </div>
+      ),
+      menu: (
+        <div key="toggle-menu" className="flex flex-col items-start w-full px-2 py-1">
+          <span className="text-xs mb-1">Active</span>
+          <Switch
+            checked={(row as any).status}
+            onCheckedChange={() => onToggleStatus((row as any).id, (row as any).status)}
+            className="bg-sf-black-300 data-[state=unchecked]:bg-sf-black-300"
+          />
+        </div>
+      )
+    } : null,
+  ].filter((a): a is NonNullable<ActionType> => a != null);
+  const actions: ActionType[] = actionsRaw.filter((a): a is ActionType => a != null);
+
+  // Mobile: always kebab
+  if (isMobile) {
+    return (
+      <div className="flex justify-center items-center gap-1 overflow-hidden">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="px-2 py-1 h-8"><MoreVertical className="h-4 w-4" /></Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-44 p-2 flex flex-col gap-1">
+            {actions.map(a => a.menu)}
+          </PopoverContent>
+        </Popover>
+      </div>
+    );
+  }
+
+  // Tablet and up: if more than 3 actions, show first 2 as buttons, rest in kebab
+  if (actions.length > 3) {
+    return (
+      <div className="flex justify-center items-center gap-1 overflow-hidden">
+        {actions.slice(0, 2).map(a => a.button)}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="px-2 py-1 h-8"><MoreVertical className="h-4 w-4" /></Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-44 p-2 flex flex-col gap-1">
+            {actions.slice(2).map(a => a.menu)}
+          </PopoverContent>
+        </Popover>
+      </div>
+    );
+  }
+
+  // Tablet and up: 3 or fewer actions, show all as buttons
+  return (
+    <div className="flex justify-center items-center gap-1 overflow-hidden">
+      {actions.map(a => a.button)}
+    </div>
+  );
+}
+
 function Table<T>({
   columns,
   data,
@@ -139,7 +435,7 @@ function Table<T>({
                 </TableHead>
               ))}
               {hasActions && (
-                <TableHead className="font-bold text-lg text-center min-w-[60px] max-w-[80px] sm:min-w-[120px] sm:max-w-[140px]">Actions</TableHead>
+                <TableHead className="font-bold text-lg text-center min-w-[180px] max-w-[220px] sm:min-w-[220px] sm:max-w-[260px]">Actions</TableHead>
               )}
             </TableRow>
           </TableHeader>
@@ -171,100 +467,22 @@ function Table<T>({
                     </TableCell>
                   ))}
                   {hasActions && (
-                    <TableCell className="text-center min-w-[60px] max-w-[80px] sm:min-w-[120px] sm:max-w-[140px]">
-                      <div className="flex justify-center items-center flex-wrap gap-1 sm:space-x-2 sm:flex-nowrap">
-                        {onDetails && !isReportsTemplateTable && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => onDetails(row)}
-                            className="px-2 py-1 h-8"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {onEdit && (isReportsTable) && !isReportsTemplateTable && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => onEdit(row)}
-                            className="px-2 py-1 h-8"
-                          >
-                            <SquarePen className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {onViewReport && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => onViewReport(row)}
-                            className="px-2 py-1 h-8"
-                            title="View Latest Report"
-                          >
-                            <FileChartLine className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {onDownload && isReportsTable && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => onDownload(row)}
-                            className="px-2 py-1 h-8"
-                            disabled={
-                              // Not currently downloading this report AND
-                              downloadingReportId !== (row as any).latestReportId && 
-                              // Status is 'in progress' or 'new'
-                              typeof (row as any).status === 'string' && 
-                              ["in progress", "new"].includes((row as any).status.toLowerCase())
-                            }
-                          >
-                            {downloadingReportId === (row as any).latestReportId ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Download className="h-4 w-4" />
-                            )}
-                          </Button>
-                        )}
-                        {onSendToCustomer && user?.role?.toLowerCase() === 'project manager' && isReportsTable && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => onSendToCustomer(row)}
-                            className="px-2 py-1 h-8"
-                            disabled={
-                              typeof (row as any).status === 'string' &&
-                              ["in progress", "new"].includes((row as any).status.toLowerCase()) ||
-                              sendingToCustomerId === (row as any).latestReportId
-                            }
-                            title="Send report to customer"
-                          >
-                            {sendingToCustomerId === (row as any).latestReportId ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Send className="h-4 w-4" />
-                            )}
-                          </Button>
-                        )}
-                        {onDelete && user?.role !== 'Technician' && !isReportsTemplateTable && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => onDelete(row)}
-                            className="px-2 py-1 h-8 text-red-500 hover:text-red-700"
-                          >
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {isReportsTemplateTable && onToggleStatus && (
-                          <div className="flex flex-col items-center">
-                            <Switch
-                              checked={(row as any).status}
-                              onCheckedChange={() => onToggleStatus((row as any).id, (row as any).status)}
-                              className="bg-sf-black-300 data-[state=unchecked]:bg-sf-black-300"
-                            />
-                          </div>
-                        )}
-                      </div>
+                    <TableCell className="text-center min-w-[120px] max-w-[160px] sm:min-w-[160px] sm:max-w-[200px]">
+                      <ActionsCell
+                        row={row}
+                        onDetails={onDetails}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        onDownload={onDownload}
+                        onViewReport={onViewReport}
+                        isReportsTable={isReportsTable}
+                        isReportsTemplateTable={isReportsTemplateTable}
+                        onToggleStatus={onToggleStatus}
+                        onSendToCustomer={onSendToCustomer}
+                        downloadingReportId={downloadingReportId}
+                        sendingToCustomerId={sendingToCustomerId}
+                        user={user}
+                      />
                     </TableCell>
                   )}
                 </TableRow>
