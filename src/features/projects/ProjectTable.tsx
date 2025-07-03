@@ -77,7 +77,7 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
   const [downloadingReportId, setDownloadingReportId] = useState<string | null>(null);
   const [sendingToCustomerId, setSendingToCustomerId] = useState<string | null>(null);
   const token = useAuthStore.getState().token;
-
+  const user = useAuthStore.getState().user;
    // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -299,7 +299,7 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
           hasActions={true}
           onDetails={handleDetails}
           onDelete={openDeleteDialog}
-          onEdit={handleEdit}
+          onEdit={user?.role?.toLowerCase() === 'technician' ? undefined : handleEdit}
           onViewReport={handleViewReport}
           pagination={true}
           currentPage={currentPage}

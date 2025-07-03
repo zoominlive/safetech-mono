@@ -199,7 +199,7 @@ function ActionsCell({ row, ...props }: any) {
           className="justify-start w-full"
           title="View Latest Report"
         >
-          <FileChartLine className="h-4 w-4 mr-2" /> View Report
+          <FileChartLine className="h-4 w-4 mr-2" /> Fill Report
         </Button>
       )
     } : null,
