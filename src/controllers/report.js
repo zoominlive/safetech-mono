@@ -14,7 +14,7 @@ const {
 } = require("../helpers/constants");
 const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
-const { sequelize, Report, Project, ReportTemplate, Customer, User, LabReport, LabReportResult } = require("../models");
+const { sequelize, Report, Project, ReportTemplate, Customer, User, LabReport, LabReportResult, Location } = require("../models");
 const puppeteer = require('puppeteer');
 const AWS = require('aws-sdk');
 const { AWS_REGION, AWS_BUCKET, AWS_S3_SECRET_ACCESS_KEY, AWS_S3_ACCESS_KEY_ID } = require("../config/use_env_variable");
@@ -27,7 +27,7 @@ const upload = multer({ dest: 'uploads/' });
 const dayjs = require('dayjs');
 const customParseFormat = require('dayjs/plugin/customParseFormat');
 const { sendEmail, uploadFileToS3 } = require("../utils/email");
-const { renderTemplate, prepareReportData } = require("../utils/templateRenderer");
+const { renderTemplate, prepareReportData, getHeaderTemplate, getFooterTemplate } = require("../utils/templateRenderer");
 dayjs.extend(customParseFormat);
 
 // AWS S3 configuration
@@ -346,6 +346,7 @@ exports.deleteReport = async (req, res, next) => {
 exports.generatePDFReport = async (req, res, next) => {
   try {
     const { id } = req.params;
+    console.log('Generating PDF for report ID:', id);
 
     const report = await Report.findByPk(id, {
       include: [
@@ -353,7 +354,10 @@ exports.generatePDFReport = async (req, res, next) => {
           model: Project, 
           as: "project", 
           include: [
-            { model: Customer, as: 'company' }
+            { model: Customer, as: 'company' },
+            { model: User, as: 'technician' },
+            { model: User, as: 'pm' },
+            { model: Location, as: 'location' }
           ]
         },
         { model: ReportTemplate, as: "template" },
@@ -363,7 +367,7 @@ exports.generatePDFReport = async (req, res, next) => {
     if (!report) {
       return res.status(404).json({ message: "Report not found" });
     }
-
+    console.log("report=>", report);
     // Prepare data for template
     const templateData = prepareReportData(
       report, 
@@ -373,6 +377,7 @@ exports.generatePDFReport = async (req, res, next) => {
 
     // Render HTML using template
     const htmlContent = renderTemplate('report-pdf', templateData);
+    console.log('HTML content generated, length:', htmlContent.length);
 
     const browser = await puppeteer.launch({ 
       headless: true,
@@ -382,16 +387,25 @@ exports.generatePDFReport = async (req, res, next) => {
     
     // Set content and wait for images to load
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+    console.log('Page content set, waiting for resources...');
     
     // Wait a bit more for any external resources using setTimeout
     await new Promise(resolve => setTimeout(resolve, 2000));
 
+    console.log('Generating header template...');
+    const headerTemplate = getHeaderTemplate('coloredsafetech.png');
+    console.log('Header template generated, length:', headerTemplate.length);
+    console.log("templateData=>", templateData);
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
-      margin: { top: "120px", bottom: "100px", left: "50px", right: "50px" },
+      displayHeaderFooter: true,
+      margin: { top: "100px", bottom: "80px", left: "50px", right: "50px" },
+      headerTemplate: headerTemplate,
+      footerTemplate: getFooterTemplate(templateData)
     });
 
+    console.log('PDF generated, buffer size:', pdfBuffer.length);
     await browser.close();
 
     res.set({
@@ -670,11 +684,21 @@ exports.sendReportToCustomer = async (req, res, next) => {
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
     await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    console.log('Generating header template for email PDF...');
+    const headerTemplate = getHeaderTemplate('coloredsafetech.png');
+    console.log('Email header template generated, length:', headerTemplate.length);
+    
     const pdfBuffer = await page.pdf({ 
       format: "A4", 
       printBackground: true,
-      margin: { top: "120px", bottom: "100px", left: "50px", right: "50px" }
+      displayHeaderFooter: true,
+      margin: { top: "120px", bottom: "100px", left: "50px", right: "50px" },
+      headerTemplate: headerTemplate,
+      footerTemplate: getFooterTemplate(templateData)
     });
+    
+    console.log('Email PDF generated, buffer size:', pdfBuffer.length);
     await browser.close();
     
     // Upload PDF to S3
