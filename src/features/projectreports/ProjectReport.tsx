@@ -1,4 +1,4 @@
-import { CirclePlus, CircleX, Upload, List, ChevronDown, Loader2 } from "lucide-react";
+import { CirclePlus, CircleX, Upload, List, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -29,10 +29,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import LabImport from "@/components/LabImport";
 import { Textarea } from "@/components/ui/textarea";
@@ -1430,14 +1428,6 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
       setUploadingFiles(prev => ({ ...prev, [`${repeaterFieldId}-${itemIndex}`]: false }));
     }
   };
-
-  // For tab overflow
-  const MAX_VISIBLE_TABS = 5;
-  const visibleTabs = areas.slice(0, MAX_VISIBLE_TABS);
-  const overflowTabs = areas.slice(MAX_VISIBLE_TABS);
-
-  // Popover open state for dropdown
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   // Workflow functions for status transitions
   const handleSubmitToPMReview = async () => {
