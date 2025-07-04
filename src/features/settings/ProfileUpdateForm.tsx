@@ -12,6 +12,7 @@ import { Loader2, Save, Upload } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ImagePreviewModal } from "@/components/ImagePreviewModal";
+import SignaturePad from "@/components/SignaturePad";
 
 const ProfileUpdateForm = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,6 +21,7 @@ const ProfileUpdateForm = () => {
   const [showImageModal, setShowImageModal] = useState(false);
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
   const [uploadingSignature, setUploadingSignature] = useState(false);
+  const [signaturePadData, setSignaturePadData] = useState<string | null>(null);
   const { user, updateUserProfile } = useAuthStore();
 
   // Handle image file selection
@@ -135,18 +137,57 @@ const ProfileUpdateForm = () => {
     }
   };
 
-  // Handle technician signature file selection
-  const handleSignatureChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSignaturePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-      // Upload the signature
-      handleSignatureUpload(file);
+  // Handle technician signature upload (modified for base64)
+  const handleSignatureUpload = async (dataUrl: string) => {
+    if (!user?.id) {
+      toast({
+        title: "Upload failed",
+        description: "User ID not found",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      setUploadingSignature(true);
+      // Convert base64 to Blob and append to FormData
+      const formData = new FormData();
+      // Remove the prefix from base64 string
+      const base64 = dataUrl.split(",")[1];
+      const byteString = atob(base64);
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([ab], { type: "image/png" });
+      formData.append("technicianSignature", blob, "signature.png");
+      const response: any = await userService.uploadTechnicianSignature(user.id, formData);
+      if (response.success) {
+        updateUserProfile({
+          ...user,
+          technician_signature: response?.data.data.technician_signature
+        });
+        toast({
+          title: "Success",
+          description: "Signature updated successfully",
+        });
+        setSignaturePreview(dataUrl);
+      } else {
+        toast({
+          title: "Upload failed",
+          description: response.message || "Failed to upload technician signature",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Upload failed",
+        description: error?.data?.message || "An error occurred during upload",
+        variant: "destructive",
+      });
+      setSignaturePreview(null);
+    } finally {
+      setUploadingSignature(false);
     }
   };
 
@@ -190,49 +231,6 @@ const ProfileUpdateForm = () => {
         description: error?.data?.message || "An error occurred while removing the technician signature",
         variant: "destructive",
       });
-    } finally {
-      setUploadingSignature(false);
-    }
-  };
-
-  // Handle technician signature upload
-  const handleSignatureUpload = async (file: File) => {
-    if (!user?.id) {
-      toast({
-        title: "Upload failed",
-        description: "User ID not found",
-        variant: "destructive",
-      });
-      return;
-    }
-    try {
-      setUploadingSignature(true);
-      const formData = new FormData();
-      formData.append("technicianSignature", file);
-      const response: any = await userService.uploadTechnicianSignature(user.id, formData);
-      if (response.success) {
-        updateUserProfile({
-          ...user,
-          technician_signature: response?.data.data.technician_signature
-        });
-        toast({
-          title: "Success",
-          description: "Signature updated successfully",
-        });
-      } else {
-        toast({
-          title: "Upload failed",
-          description: response.message || "Failed to upload technician signature",
-          variant: "destructive",
-        });
-      }
-    } catch (error: any) {
-      toast({
-        title: "Upload failed",
-        description: error?.data?.message || "An error occurred during upload",
-        variant: "destructive",
-      });
-      setSignaturePreview(null);
     } finally {
       setUploadingSignature(false);
     }
@@ -358,34 +356,40 @@ const ProfileUpdateForm = () => {
             <AvatarFallback>S</AvatarFallback>
           </Avatar>
           <div>
-            <Label htmlFor="technician-signature" className="cursor-pointer">
-              <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
-                <Upload size={18} />
-                <span>{uploadingSignature ? "Uploading..." : "Change signature"}</span>
-              </div>
-            </Label>
-            <input
-              id="technician-signature"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleSignatureChange}
+            <SignaturePad
+              width={300}
+              height={100}
+              onChange={(dataUrl) => {
+                setSignaturePadData(dataUrl);
+              }}
               disabled={uploadingSignature}
+              initialImage={signaturePreview || user?.technician_signature || undefined}
             />
-            <p className="text-sm text-gray-500 mt-2">
-              JPG, PNG or GIF. Max size 2MB.
-            </p>
-            {(user?.technician_signature || signaturePreview) && (
+            <div className="flex gap-2 mt-2">
               <Button
                 type="button"
-                variant="destructive"
+                variant="default"
                 className="mt-2"
-                onClick={() => handleRemoveSignature()}
-                disabled={uploadingSignature}
+                onClick={() => signaturePadData && handleSignatureUpload(signaturePadData)}
+                disabled={uploadingSignature || !signaturePadData}
               >
-                Remove Signature
+                {uploadingSignature ? "Uploading..." : "Save Signature"}
               </Button>
-            )}
+              {(user?.technician_signature || signaturePreview) && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="mt-2"
+                  onClick={() => handleRemoveSignature()}
+                  disabled={uploadingSignature}
+                >
+                  Remove Signature
+                </Button>
+              )}
+            </div>
+            <p className="text-sm text-gray-500 mt-2">
+              Draw your signature above. Click "Save Signature" to upload.
+            </p>
           </div>
         </div>
       </div>

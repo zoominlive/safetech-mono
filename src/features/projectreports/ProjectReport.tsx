@@ -63,6 +63,7 @@ interface SchemaSection {
 interface Area {
   id: string;
   name: string;
+  areaNumber: number;
   assessments: Record<string, any>;
 }
 
@@ -111,6 +112,12 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
 
   // Add after other useState hooks
   const [scrollTarget, setScrollTarget] = useState<string | null>(null);
+
+  // Add after other useState hooks
+  const [nextAreaNumber, setNextAreaNumber] = useState(1);
+
+  // Add after other useState hooks
+  const [isSubmitToPMReviewDialogOpen, setIsSubmitToPMReviewDialogOpen] = useState(false);
 
   const alwaysDisabledFields = [
     'clientCompanyName', 'clientAddress', 'contactName', 'contactPosition', 'contactEmail', 'contactPhone',
@@ -331,6 +338,34 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     }
   }, [id]);
 
+  // Hoist setYesNoDefaultsToNo helper to component scope for reuse
+  function setYesNoDefaultsToNo(sections: SchemaSection[], area: Area) {
+    function walkFields(fields: SchemaField[], parentObj: Record<string, any>) {
+      fields.forEach(field => {
+        // Handle repeaters
+        if (field.type === 'repeater' && Array.isArray(parentObj[field.id])) {
+          parentObj[field.id].forEach((item: any) => {
+            if (field.fields) walkFields(field.fields, item);
+          });
+        } else if (field.type === 'conditional' && field.fields) {
+          walkFields(field.fields, parentObj);
+        } else if (
+          (field.type === 'radio' || field.type === 'select') &&
+          Array.isArray(field.options) &&
+          field.options.length === 2 &&
+          ((field.options[0] === 'Yes' && field.options[1] === 'No') || (field.options[0] === 'No' && field.options[1] === 'Yes'))
+        ) {
+          if (parentObj[field.id] === undefined || parentObj[field.id] === null || parentObj[field.id] === "") {
+            parentObj[field.id] = 'No';
+          }
+        }
+      });
+    }
+    sections.forEach(section => {
+      walkFields(section.fields, area.assessments);
+    });
+  }
+
   const fetchReportData = async () => {
     if (!id) return;
 
@@ -350,38 +385,46 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
 
         // Initialize areas from areaDetails or create a default area
         const areaDetails = Array.isArray(answers?.areaDetails) ? answers.areaDetails : [];
+        let maxAreaNumber = 0;
         const initialAreas = areaDetails.length > 0 
-          ? areaDetails.map((area: any, index: number) => ({
-              id: area.id || `area-${index}`,
-              name: area.name || `Area ${index + 1}`,
-              assessments: {
-                ...area.assessments,
-                // Prefill common fields for each area
-                clientCompanyName: company.company_name || '',
-                clientAddress: [company.address_line_1, company.address_line_2, company.city, company.province, company.postal_code].filter(Boolean).join(', '),
-                contactName: [company.first_name, company.last_name].filter(Boolean).join(' '),
-                contactPosition: company.position || '',
-                contactEmail: company.email || '',
-                contactPhone: company.phone || '',
-                projectName: project.name || '',
-                specificLocation: project.specific_location || '',
-                startDate: project.start_date ? project.start_date.split('T')[0] : '',
-                endDate: project.end_date ? project.end_date.split('T')[0] : '',
-                projectNumber: project.project_no || '',
-                projectAddress: [company.address_line_1, company.address_line_2, company.city, company.province, company.postal_code].filter(Boolean).join(', ') || '',
-                pmName: [pm.first_name, pm.last_name].filter(Boolean).join(' '),
-                pmEmail: pm.email || '',
-                pmPhone: pm.phone || '',
-                technicianName: [technician.first_name, technician.last_name].filter(Boolean).join(' '),
-                technicianEmail: technician.email || '',
-                technicianPhone: technician.phone || '',
-                technicianTitle: technician.role || '',
-                technicianSignature: technician.technician_signature || '',
+          ? areaDetails.map((area: any, index: number) => {
+              // Assign areaNumber if not present, else use existing
+              const areaNumber = area.areaNumber || index + 1;
+              if (areaNumber > maxAreaNumber) maxAreaNumber = areaNumber;
+              return {
+                id: area.id || `area-${index}`,
+                name: area.name || `Area ${areaNumber}`,
+                areaNumber,
+                assessments: {
+                  ...area.assessments,
+                  // Prefill common fields for each area
+                  clientCompanyName: company.company_name || '',
+                  clientAddress: [company.address_line_1, company.address_line_2, company.city, company.province, company.postal_code].filter(Boolean).join(', '),
+                  contactName: [company.first_name, company.last_name].filter(Boolean).join(' '),
+                  contactPosition: company.position || '',
+                  contactEmail: company.email || '',
+                  contactPhone: company.phone || '',
+                  projectName: project.name || '',
+                  specificLocation: project.specific_location || '',
+                  startDate: project.start_date ? project.start_date.split('T')[0] : '',
+                  endDate: project.end_date ? project.end_date.split('T')[0] : '',
+                  projectNumber: project.project_no || '',
+                  projectAddress: [company.address_line_1, company.address_line_2, company.city, company.province, company.postal_code].filter(Boolean).join(', ') || '',
+                  pmName: [pm.first_name, pm.last_name].filter(Boolean).join(' '),
+                  pmEmail: pm.email || '',
+                  pmPhone: pm.phone || '',
+                  technicianName: [technician.first_name, technician.last_name].filter(Boolean).join(' '),
+                  technicianEmail: technician.email || '',
+                  technicianPhone: technician.phone || '',
+                  technicianTitle: technician.role || '',
+                  technicianSignature: technician.technician_signature || '',
+                }
               }
-            }))
+            })
           : [{
               id: 'area-1',
               name: 'Area 1',
+              areaNumber: 1,
               assessments: {
                 clientCompanyName: company.company_name || '',
                 clientAddress: [company.address_line_1, company.address_line_2, company.city, company.province, company.postal_code].filter(Boolean).join(', '),
@@ -405,7 +448,8 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                 technicianSignature: technician.technician_signature || '',
               }
             }];
-
+        // Set nextAreaNumber to max + 1
+        setNextAreaNumber(maxAreaNumber > 0 ? maxAreaNumber + 1 : initialAreas.length + 1);
         setAreas(initialAreas);
         setSelectedArea(initialAreas[0]);
 
@@ -424,6 +468,9 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               ? JSON.parse(response.data.template.schema)
               : response.data.template.schema;
             setSchema(parsedSchema.sections);
+
+            // Set Yes/No defaults for all areas
+            initialAreas.forEach(area => setYesNoDefaultsToNo(parsedSchema.sections, area));
           } catch (error) {
             console.error("Error parsing schema:", error);
             toast({
@@ -507,10 +554,13 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     if (readOnly) return false;
     
     if (!userRole) return false;
+    if (userRole === "Technician") {
+      return projectStatus === "In Progress";
+    }
     if (projectStatus === "Completed") {
       return userRole === "Project Manager";
     }
-    return userRole === "Technician" || userRole === "Project Manager" || userRole === "Admin";
+    return userRole === "Project Manager" || userRole === "Admin";
   };
 
   const handleFileUpload = async (fieldId: string, files: FileList | null) => {
@@ -1196,6 +1246,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     const newArea = {
       id: `area-${areas.length + 1}-${Date.now()}`,
       name: newAreaName,
+      areaNumber: nextAreaNumber,
       assessments: {
         // Only prefill client/project info fields if needed, but reset all area-specific fields
         clientCompanyName: areas[0]?.assessments.clientCompanyName || '',
@@ -1226,8 +1277,13 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
         // Remove any other fields that may have been present in the previous area
       },
     };
+    // Set Yes/No defaults for the new area
+    if (schema && schema.length > 0) {
+      setYesNoDefaultsToNo(schema, newArea);
+    }
     setAreas([...areas, newArea]);
     setSelectedArea(newArea);
+    setNextAreaNumber(nextAreaNumber + 1);
     setIsAddAreaDialogOpen(false);
     setDialogUploadedPhotos([]); // Reset after adding
   };
@@ -1535,31 +1591,32 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
             </SheetTrigger>
             <SheetContent className="flex flex-col h-full">
               <SheetHeader>
-                <SheetTitle>Table of Contents</SheetTitle>
+                <SheetTitle className="text-2xl">Table of Contents</SheetTitle>
               </SheetHeader>
               {/* Table of Contents Links */}
               <div className="mt-4 space-y-2">
-                <Button variant="ghost" className="w-full justify-start" onClick={() => {
+                <Button variant="ghost" className="w-full justify-start text-lg" onClick={() => {
                   setScrollTarget('client-info-section');
                   setOpenAccordionItems((prev) => prev.includes("client-info") ? prev : [...prev, "client-info"]);
                   setIsDrawerOpen(false);
                 }}>
                   Client Information
                 </Button>
-                <Button variant="ghost" className="w-full justify-start" onClick={() => {
+                <Button variant="ghost" className="w-full justify-start text-lg" onClick={() => {
                   setScrollTarget('project-info-section');
                   setOpenAccordionItems((prev) => prev.includes("project-info") ? prev : [...prev, "project-info"]);
                   setIsDrawerOpen(false);
                 }}>
                   Project Information
                 </Button>
-                <Button variant="ghost" className="w-full justify-start" onClick={() => {
+                <Button variant="ghost" className="w-full justify-start text-lg" onClick={() => {
                   setScrollTarget('lab-results-section');
                   setIsDrawerOpen(false);
                 }}>
                   Insert Lab Results
                 </Button>
               </div>
+              <div className="border-t border-gray-300" />
               <div className="flex-1 overflow-y-auto mt-6 space-y-4 pr-2">
                 {areas.map((area) => {
                   const areaPhotos = Array.isArray(area.assessments.areaPhoto) ? area.assessments.areaPhoto : [];
@@ -1569,7 +1626,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                   <div key={area.id} className="flex items-center justify-between">
                     <Button
                       variant={selectedArea?.id === area.id ? "default" : "outline"}
-                      className="flex-1 justify-start"
+                      className="flex-1 justify-start text-lg"
                       onClick={() => {
                         setSelectedArea(area);
                         setIsDrawerOpen(false);
@@ -1585,7 +1642,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                               />
                             </div>
                           )}
-                          <span className="truncate">{area.name}</span>
+                          <span className="truncate">{area.areaNumber}. {area.name}</span>
                         </div>
                     </Button>
                     {areas.length > 1 && !readOnly && (
@@ -1651,20 +1708,44 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               
               {/* Workflow buttons based on user role and project status */}
               {userRole === "Technician" && projectStatus === "In Progress" && (
-                <Button 
-                  onClick={handleSubmitToPMReview} 
-                  disabled={isSaving}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Submitting...
-                    </>
-                  ) : (
-                    "Submit to PM Review"
-                  )}
-                </Button>
+                <>
+                  <Button 
+                    onClick={() => setIsSubmitToPMReviewDialogOpen(true)} 
+                    disabled={isSaving}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit to PM Review"
+                    )}
+                  </Button>
+                  <AlertDialog open={isSubmitToPMReviewDialogOpen} onOpenChange={setIsSubmitToPMReviewDialogOpen}>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Submit to PM Review</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to submit this report to PM Review? You will not be able to make further changes unless changes are requested by the Project Manager.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => {
+                            setIsSubmitToPMReviewDialogOpen(false);
+                            handleSubmitToPMReview();
+                          }}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          Submit
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
               )}
               
               {userRole === "Project Manager" && projectStatus === "PM Review" && (
@@ -1858,7 +1939,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               >
                 <input
                   className="bg-transparent border-none outline-none font-semibold w-full text-center"
-                  value={area.name}
+                  value={`${area.areaNumber}. ${area.name}`}
                   onChange={e => updateAreaName(area.id, e.target.value)}
                   onClick={e => e.stopPropagation()}
                   onFocus={e => e.stopPropagation()}
@@ -1895,11 +1976,11 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                         className={`w-full text-left px-4 py-2 hover:bg-gray-100 ${selectedArea?.id === area.id ? 'bg-gray-200 font-semibold' : ''}`}
                         onClick={() => {
                           setSelectedArea(area);
-                          toast({ title: 'Area selected', description: `Area "${area.name}" is now active` });
+                          toast({ title: 'Area selected', description: `Area "Area ${area.areaNumber}. ${area.name}" is now active` });
                           setIsPopoverOpen(false);
                         }}
                       >
-                        {area.name}
+                        Area {area.areaNumber}. {area.name}
                       </button>
                     ))}
                   </div>
@@ -1961,6 +2042,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                   </AccordionItem>
                 </Accordion>
               </div>
+              <div className="mb-6 border-t border-gray-300" />
               {/* Area-specific questions */}
               <Card>
                 <CardContent className="p-6 space-y-6">
