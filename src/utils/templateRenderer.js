@@ -529,9 +529,11 @@ const formatAssessmentResponses = (areaData) => {
  * @param {object} report - Report object from database
  * @param {object} project - Project object from database
  * @param {object} customer - Customer object from database
+ * @param {object} options - Optional parameters for report generation
+ * @param {boolean} options.useCurrentDate - Whether to use current date for reportDate (default: true)
  * @returns {object} - Formatted data for template
  */
-const prepareReportData = (report, project, customer) => {
+const prepareReportData = (report, project, customer, options = {}) => {
   const now = new Date();
   
   // Format dates
@@ -748,18 +750,22 @@ const prepareReportData = (report, project, customer) => {
   ];
 
   console.log("primaryArea.projectName=>", primaryArea.projectName);
+  
+  // Determine report date based on options
+  const reportDate = options.useCurrentDate === false ? 'To Be Determined' : formatDate(now);
+  
   return {
     // Basic report information
     reportName: report.name || 'Comprehensive Designated Substances and Hazardous Materials Assessment Report',
     reportNumber: `RPT-${report.id.toString().padStart(6, '0')}`,
-    reportDate: formatDate(now),
+    reportDate: reportDate,
     
     // Project information
     projectName: project?.name || 'N/A',
     projectNumber: project?.project_no || 'N/A',
     projectContactName: project?.site_contact_name || 'N/A',
     projectContactTitle: project?.site_contact_title || 'N/A',
-    projectLocation: project.location.address_line_1 + ' ' + project.location.address_line_2 + ' ' + project.location.city + ' ' + project.location.province + ' ' + project.location.postal_code || 'N/A',
+    projectLocation: project?.location?.address_line_1 + ' ' + project?.location?.address_line_2 + ' ' + project?.location?.city + ' ' + project?.location?.province + ' ' + project?.location?.postal_code || 'N/A',
     projectDescription: project?.description || 'Comprehensive environmental assessment and designated substances survey project',
     
     // Client information

@@ -372,7 +372,8 @@ exports.generatePDFReport = async (req, res, next) => {
     const templateData = prepareReportData(
       report, 
       report.project, 
-      report.project?.company
+      report.project?.company,
+      { useCurrentDate: false }
     );
 
     // Render HTML using template
@@ -652,7 +653,10 @@ exports.sendReportToCustomer = async (req, res, next) => {
           model: Project,
           as: 'project',
           include: [
-            { model: Customer, as: 'company' }
+            { model: Customer, as: 'company' },
+            { model: User, as: 'pm' },
+            { model: User, as: 'technician' },
+            { model: Location, as: 'location' }
           ]
         },
         { model: ReportTemplate, as: 'template' },
@@ -670,7 +674,8 @@ exports.sendReportToCustomer = async (req, res, next) => {
     const templateData = prepareReportData(
       report, 
       report.project, 
-      customer
+      customer,
+      { useCurrentDate: true }
     );
 
     // Render HTML using template
