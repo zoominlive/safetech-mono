@@ -119,6 +119,9 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   // Add after other useState hooks
   const [isSubmitToPMReviewDialogOpen, setIsSubmitToPMReviewDialogOpen] = useState(false);
 
+  // Add at the top of the component, after useState hooks
+  const [imagePreview, setImagePreview] = useState<{ url: string; open: boolean }>({ url: '', open: false });
+
   const alwaysDisabledFields = [
     'clientCompanyName', 'clientAddress', 'contactName', 'contactPosition', 'contactEmail', 'contactPhone',
     'projectName', 'specificLocation', 'projectNumber', 'projectAddress', 'startDate', 'endDate', 'pmName', 'pmEmail', 'pmPhone',
@@ -874,7 +877,8 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                                   <img
                                     src={fileUrl}
                                     alt={`Uploaded file ${photoIndex + 1}`}
-                                    className="w-full h-32 object-cover rounded-lg"
+                                    className="w-full h-32 object-cover rounded-lg cursor-pointer"
+                                    onClick={() => setImagePreview({ url: fileUrl, open: true })}
                                   />
                                   {isFieldEditable() && (
                                     <button
@@ -895,6 +899,32 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                               ))}
                             </div>
                           )}
+                        </div>
+                      ) : nestedField.type === "select" ? (
+                        <div className="space-y-2">
+                          <Select
+                            value={item[nestedField.id] || ""}
+                            onValueChange={(selected) => {
+                              const newItems = [...repeaterItems];
+                              newItems[index] = {
+                                ...newItems[index],
+                                [nestedField.id]: selected,
+                              };
+                              updateAreaAssessment(field.id, newItems);
+                            }}
+                            disabled={!isFieldEditable()}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder={nestedField.placeholder || `Select ${nestedField.label}`} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {nestedField.options?.map((opt: string) => (
+                                <SelectItem key={opt} value={opt}>
+                                  {opt}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       ) : (
                         <Input
@@ -1084,7 +1114,8 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                                     <img
                                       src={fileUrl}
                                       alt={`Uploaded file ${photoIndex + 1}`}
-                                      className="w-full h-32 object-cover rounded-lg"
+                                      className="w-full h-32 object-cover rounded-lg cursor-pointer"
+                                      onClick={() => setImagePreview({ url: fileUrl, open: true })}
                                     />
                                     {isFieldEditable() && (
                                       <button
@@ -1105,6 +1136,32 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                                 ))}
                               </div>
                             )}
+                          </div>
+                        ) : nestedField.type === "select" ? (
+                          <div className="space-y-2">
+                            <Select
+                              value={item[nestedField.id] || ""}
+                              onValueChange={(selected) => {
+                                const newItems = [...repeaterItems];
+                                newItems[index] = {
+                                  ...newItems[index],
+                                  [nestedField.id]: selected,
+                                };
+                                updateAreaAssessment(field.id, newItems);
+                              }}
+                              disabled={!isFieldEditable()}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder={nestedField.placeholder || `Select ${nestedField.label}`} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {nestedField.options?.map((opt: string) => (
+                                  <SelectItem key={opt} value={opt}>
+                                    {opt}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
                         ) : (
                           <Input
@@ -2107,6 +2164,13 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
             </DialogContent>
           </Dialog>
         </div>
+      )}
+      {imagePreview.open && (
+        <Dialog open={imagePreview.open} onOpenChange={open => setImagePreview({ ...imagePreview, open })}>
+          <DialogContent className="flex flex-col items-center">
+            <img src={imagePreview.url} alt="Preview" className="max-w-full max-h-[80vh] rounded-lg" />
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
