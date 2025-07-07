@@ -548,7 +548,7 @@
 
     <!-- Executive Summary -->
     <div class="section">
-        <h1>1.0 EXECUTIVE SUMMARY</h1>
+        <h1>EXECUTIVE SUMMARY</h1>
         
         <div class="executive-summary">
             <p><strong>Safetech Environmental Limited (Safetech)</strong> was commissioned by <strong>{{clientName}}</strong> to conduct a designated substances and hazardous materials assessment in <strong>{{projectLocation}}</strong>.</p>
@@ -559,7 +559,7 @@
         </div>
         
         <!-- Table 1: Summary of Hazardous Materials and Designated Substances -->
-        <h3 style="margin-top: 30px;">Table 1: Summary of Hazardous Materials and Designated Substances</h3>
+        <h2 style="margin-top: 30px;">Table 1: Summary of Hazardous Materials and Designated Substances</h2>
         <table class="summary-table">
             <thead>
                 <tr>
@@ -578,912 +578,381 @@
                 {{/each}}
             </tbody>
         </table>
-        <br>
-        <p>
-            This assessment satisfies the Owner’s requirements under Section 30 of the Ontario
-            Occupational Health and Safety Act (OHSA), Revised Statutes of Ontario 1990, as
-            amended.
-        </p><br>
-        <div style="font-size: 12pt; font-weight: bold; margin-bottom: 5px;">
-            Safetech Environmental Limited
-        </div>
-        <div style="margin-bottom: 5px;">
-            <img src="{{technicianSignature}}" alt="Technician Signature" style="width: 100px;" />
-        </div>
-        <div style="font-size: 12pt; margin-bottom: 15px; font-weight: bold;">
-            {{technicianName}}<br>
-            {{technicianTitle}}
-            Occupational Health and Safety Technician
-        </div>
-
-        <h3>Assessment Scope:</h3>
-        <p>The assessment included a comprehensive evaluation of the following materials and conditions:</p>
-        <ul>
-            <li>Asbestos-containing materials (ACM) in building components</li>
-            <li>Lead-containing materials including paint and other coatings</li>
-            <li>Silica-containing materials in concrete, masonry, and other construction materials</li>
-            <li>Mercury-containing equipment including lighting fixtures and electrical components</li>
-            <li>PCB-containing equipment including electrical transformers and ballasts</li>
-            <li>Mold growth and water damage assessment</li>
-            <li>Pest infestation and associated health hazards</li>
-            <li>Other potentially hazardous materials and conditions</li>
-        </ul>
-        
-        <h3>Assessment Approach:</h3>
-        <p>The assessment was conducted using a systematic approach that included visual inspection of all accessible areas, review of building plans and historical documentation, and collection of representative samples for laboratory analysis where required. The assessment team consisted of qualified environmental professionals with extensive experience in designated substances assessment and regulatory compliance.</p>
-        
-        <p>All findings were documented with detailed photographic evidence and comprehensive written descriptions. The assessment included evaluation of material condition, potential for disturbance during construction activities, and assessment of exposure risks to workers and building occupants.</p>
-        
-        <h3>Key Findings:</h3>
-        <div class="findings-section">
-            {{#each keyFindings}}
-            <div class="finding-item">{{this}}</div>
-            {{/each}}
-        </div>
-        
-        <h3>Critical Recommendations:</h3>
-        <div class="findings-section">
-            {{#each recommendations}}
-            <div class="finding-item">{{this}}</div>
-            {{/each}}
-        </div>
-        
-        <h3>Risk Assessment:</h3>
-        <p>Based on the findings of this assessment, the overall risk level for worker exposure to designated substances during construction activities has been evaluated. Appropriate control measures and work procedures have been recommended to mitigate identified risks and ensure compliance with applicable regulations.</p>
-        
-        <h3>Regulatory Compliance:</h3>
-        <p>This assessment ensures compliance with all applicable regulations including the Ontario Occupational Health and Safety Act, Regulation 278/05 for asbestos, and other relevant environmental and occupational health standards. The findings and recommendations provided in this report are designed to protect worker health and safety while ensuring environmental protection during construction activities.</p>
     </div>
 
-    <!-- Project Overview -->
+    <!-- INTRO -->
     <div class="section">
-        <h1>2.0 PROJECT OVERVIEW</h1>
-        
-        <div class="assessment-details">
-            <div class="detail-item">
-                <span class="detail-label">Project Name:</span><br>
-                {{projectName}}
+        <!-- Inserted Section: Designated Substances and Hazardous Materials Assessment Details -->
+        <div style="margin-top: 30px; margin-bottom: 30px; font-family: Arial, sans-serif; font-size: 12pt;">
+            <div style="margin-bottom: 16px;">
+                {{reportDate}}<br><br>
+                {{clientName}}<br>
+                {{customerHeadOfficeAddress}}<br>
+                <!-- Add more address lines if needed -->
+                <br>
+                <span style="font-weight: bold;">Attention:</span> {{projectContactName}}, {{projectContactTitle}}<br>
             </div>
-            <div class="detail-item">
-                <span class="detail-label">Client:</span><br>
-                {{clientName}}
+            <div style="margin-bottom: 10px;">
+                <span style="font-weight: bold;">RE:&nbsp;</span>
+                <span style="font-weight: bold;">
+                    Designated Substances and Hazardous Materials Assessment<br>
+                    {{projectType}}<br>
+                    {{projectName}}<br>
+                    {{projectLocation}}
+                </span>
+                <div style="border-bottom: 2px solid #000; margin-top: 6px; width: 100%;"></div>
             </div>
-            <div class="detail-item">
-                <span class="detail-label">Project Location:</span><br>
-                {{projectLocation}}
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Assessment Date:</span><br>
-                {{assessmentDate}}
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Report Date:</span><br>
-                {{reportDate}}
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Assessment Due To:</span><br>
-                {{assessmentDueTo}}
-            </div>
-            {{#if dateOfLoss}}
-            <div class="detail-item">
-                <span class="detail-label">Date of Loss:</span><br>
-                {{dateOfLoss}}
-            </div>
-            {{/if}}
+            <!-- Section 1.0 INTRODUCTION and subsections -->
+            <div style="margin-top: 32px; font-weight: bold;">1.0 INTRODUCTION</div>
+            <div style="font-weight: bold;">1.1 Background and Objectives</div>
+            <p>Safetech Environmental Limited (Safetech) was commissioned by <strong>{{clientName}}</strong> to conduct a designated substances and hazardous materials assessment within <strong>Project Area Placeholder</strong> of <strong>Building Name Placeholder</strong> located at <strong>{{projectLocation}}</strong>. The objective of the assessment was to determine the presence, location, condition and quantities of designated substances and other hazardous materials in the project areas that have the potential to be disturbed as part of planned <strong>{{projectName}}</strong> so that appropriate control measures can be implemented to protect workers during the work.</p>
+            <p>This assessment satisfies the Owner's requirements under Section 30 of the Ontario Occupational Health and Safety Act (OHSA), Revised Statutes of Ontario 1990, as amended. Section 30(1) requires a building owner to determine if there are any designated substances present at a project site prior to construction or demolition activities. Sections 30(2), (3) and (4) require the Owner and constructors for a project to provide the findings in this report as part of the tendering information for any tendered project or to prospective contractors (and subcontractors) of a project before entering into a binding contract.</p>
+            <p>This report documents findings of our on-site inspection that was conducted on <strong>{{assessmentDate}}</strong> and provides conclusions and recommendations based on our findings and knowledge of the planned <strong>{{projectName}}</strong> project.</p>
+            <div style="font-weight: bold;">1.2 Scope of Work</div>
+            <p>In accordance with our fee proposal document, our scope of work included the following activities:</p>
+            <ul>
+                <li>A review of existing documents, including renovation documents and drawings, floor plans and existing environmental assessment reports, etc., where available;</li>
+                <li>A visual assessment of accessible area(s) in the project areas to identify the presence, location, condition and quantities of designated substances and other hazardous materials;</li>
+                <li>Collection, analysis and interpretation of representative bulk samples of suspect asbestos-containing building materials for the determination of asbestos content and material classification;</li>
+                <li>Collection, analysis and interpretation of representative paint chip samples for the determination of lead content; <!-- Static, as paintChipSamplesAnalyzed is not in prepareReportData --></li>
+                <li>Preparation of a report to document findings and provide recommendations regarding control measures and/or special handling procedures for designated substances or specific hazardous materials that may be disturbed as part of planned <strong>{{projectName}}</strong> activities.</li>
+            </ul>
+            <p>Documents reviewed to aid in the assessment included the following:</p>
+            <ul>
+                <li>Document 1 Placeholder</li>
+                <li>Document 2 Placeholder</li>
+            </ul>
+            <p>This assessment only identified designated substances and hazardous materials that were deemed to be part of the building or somehow otherwise incorporated into the building structure and its finishes. The following items were not included in our scope of work:</p>
+            <ul style="list-style-type: none;">
+                <li><span style="color: #c00;">&#10006;</span> Assessing occupant items such as stored products, furnishings, items and materials used or produced as part of a manufacturing process;</li>
+                <li><span style="color: #c00;">&#10006;</span> Investigating underground materials or equipment (vessels, drums, underground storage tanks, duct-banks, pipes, or cables);</li>
+                <li><span style="color: #c00;">&#10006;</span> Assessing enclosed wall or ceiling cavities; and</li>
+                <li><span style="color: #c00;">&#10006;</span> Assessing risers, pipe chases or elevator shafts.</li>
+            </ul>
+            <div style="font-weight: bold;">1.3 Description of Area(s) Assessed</div>
+            <p>The area(s) investigated included all accessible locations of the subject building. The extent of the area investigated is indicated on the floor plan(s) provided in Appendix B. Please note, the following areas were not accessible during the assessment:</p>
+            <ul>
+                <li>Area Not Accessible 1 Placeholder</li>
+                <li>Area Not Accessible 2 Placeholder</li>
+            </ul>
+            <!-- End Inserted Section -->
+            <br>  
         </div>
-        
-        <h3>Project Description:</h3>
-        <p>{{projectDescription}}</p>
-        
-        <p>The project involves comprehensive assessment of designated substances and hazardous materials that may be encountered during construction, renovation, or demolition activities. This assessment is essential for ensuring worker safety, environmental protection, and regulatory compliance throughout the project lifecycle.</p>
-        
-        <h3>Project Objectives:</h3>
-        <p>The primary objectives of this designated substances survey include:</p>
-        <ul>
-            <li>Identification and documentation of all designated substances present in the building</li>
-            <li>Assessment of material condition and potential for disturbance during construction activities</li>
-            <li>Evaluation of exposure risks to workers and building occupants</li>
-            <li>Development of appropriate control measures and work procedures</li>
-            <li>Ensuring compliance with all applicable regulations and standards</li>
-            <li>Providing guidance for safe construction and renovation activities</li>
-        </ul>
-        
-        <h3>Areas Assessed:</h3>
-        <p>{{areasAssessed}}</p>
-        
-        <p>The assessment covered all accessible areas of the building including interior spaces, mechanical rooms, electrical rooms, storage areas, and exterior building components. Special attention was given to areas where construction activities are planned and where historical building materials are likely to be present.</p>
-        
-        {{#if areaDetails}}
-        <h3>Assessment Areas:</h3>
-        <table>
-            <thead>
-                <tr class="table-header">
-                    <th>Area Name</th>
-                    <th>Description</th>
-                    <th>Square Feet</th>
-                    <th>Specific Location</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#each areaDetails}}
-                <tr>
-                    <td><strong>{{this.name}}</strong></td>
-                    <td>{{this.areaDescription}}</td>
-                    <td>{{this.areaSquareFeet}}</td>
-                    <td>{{this.specificLocation}}</td>
-                </tr>
-                {{/each}}
-            </tbody>
-        </table>
-        {{/if}}
-        
-        <h3>Regulatory Framework:</h3>
-        <p>This assessment was conducted in accordance with the following regulatory requirements:</p>
-        <ul>
-            <li><strong>Ontario Occupational Health and Safety Act (OHSA)</strong> - General duty to protect workers</li>
-            <li><strong>Regulation 278/05</strong> - Designated Substance - Asbestos on Construction Projects and in Buildings and Repair Operations</li>
-            <li><strong>Regulation 490/09</strong> - Designated Substances</li>
-            <li><strong>Ontario Environmental Protection Act</strong> - Environmental protection requirements</li>
-            <li><strong>Canadian Environmental Protection Act (CEPA)</strong> - Federal environmental regulations</li>
-        </ul>
-        
-        <h3>Building Information:</h3>
-        <p>The building under assessment is a commercial/industrial facility that has undergone various renovations and modifications over its service life. The building contains typical construction materials and building systems that may contain designated substances. The assessment was conducted to identify all potential sources of exposure to designated substances during planned construction activities.</p>
-        
-        <p>Historical information about the building was reviewed to understand the construction methods, materials used, and previous renovation activities. This information was used to guide the assessment and identify areas where designated substances are most likely to be present.</p>
     </div>
 
-    <!-- Assessment Methodology -->
+    <!-- RESULTS -->
     <div class="section">
-        <h1>3.0 ASSESSMENT METHODOLOGY</h1>
-        
-        <div class="methodology">
-            <h3>Assessment Approach:</h3>
-            <p>The assessment was conducted using a systematic approach following industry best practices and regulatory requirements:</p>
-            <ol>
-                <li><strong>Pre-Assessment Planning:</strong> Review of project scope, building plans, and historical documentation</li>
-                <li><strong>Visual Inspection:</strong> Comprehensive visual examination of all accessible areas</li>
-                <li><strong>Material Sampling:</strong> Collection of representative samples for laboratory analysis where required</li>
-                <li><strong>Documentation:</strong> Detailed documentation of findings with photographic evidence</li>
-                <li><strong>Risk Assessment:</strong> Evaluation of potential exposure risks during construction activities</li>
-            </ol>
-        </div>
-        
-        <h3>Assessment Techniques:</h3>
-        <p>The following assessment techniques were employed during this survey:</p>
-        <ul>
-            <li><strong>Visual Assessment:</strong> Systematic examination of building components and materials</li>
-            <li><strong>Historical Review:</strong> Analysis of building age, construction methods, and renovation history</li>
-            <li><strong>Material Sampling:</strong> Collection of bulk samples for laboratory analysis</li>
-            <li><strong>Air Monitoring:</strong> Background air sampling where appropriate</li>
-            <li><strong>Documentation:</strong> Comprehensive photographic and written documentation</li>
-        </ul>
-        
-        <h3>Assessment Standards and Guidelines:</h3>
-        <p>This assessment was conducted in accordance with the following standards and guidelines:</p>
-        <ul>
-            <li>Ontario Regulation 278/05 - Designated Substance - Asbestos on Construction Projects and in Buildings and Repair Operations</li>
-            <li>Ontario Regulation 490/09 - Designated Substances</li>
-            <li>Canadian Standards Association (CSA) Z797-09 - Code of Practice for Access Scaffold</li>
-            <li>Workplace Safety and Insurance Board (WSIB) Guidelines for Asbestos Management</li>
-            <li>Ministry of Labour Guidelines for Designated Substances</li>
-            <li>Industry best practices for environmental assessment and hazardous materials management</li>
-        </ul>
-        
-        <h3>Areas Assessed:</h3>
-        <p>{{areasAssessed}}</p>
-        
-        <p>The assessment included systematic examination of all building areas including but not limited to:</p>
-        <ul>
-            <li>Interior spaces and rooms</li>
-            <li>Mechanical and electrical rooms</li>
-            <li>Storage and utility areas</li>
-            <li>Ceiling and wall cavities</li>
-            <li>Building exterior and roofing systems</li>
-            <li>Underground and crawl spaces</li>
-        </ul>
-        
-        <h3>Assessment Scope:</h3>
-        <p>The assessment included evaluation of the following materials and conditions:</p>
-        <ul>
-            <li><strong>Asbestos-containing materials (ACM):</strong> Insulation, fireproofing, floor tiles, ceiling tiles, pipe insulation, and other building materials</li>
-            <li><strong>Lead-containing materials:</strong> Paint, coatings, solder, and other lead-based materials</li>
-            <li><strong>Silica-containing materials:</strong> Concrete, masonry, stone, and other silica-containing construction materials</li>
-            <li><strong>Mercury-containing equipment:</strong> Lighting fixtures, electrical switches, thermostats, and other equipment</li>
-            <li><strong>PCB-containing equipment:</strong> Electrical transformers, capacitors, and ballasts</li>
-            <li><strong>Mold growth:</strong> Assessment of water damage and microbial growth</li>
-            <li><strong>Pest infestation:</strong> Evaluation of pest presence and associated health hazards</li>
-            <li><strong>Other hazardous materials:</strong> Identification of other potentially hazardous substances</li>
-        </ul>
-        
-        <h3>Sampling and Analysis:</h3>
-        <p>Where appropriate, representative samples were collected for laboratory analysis to confirm the presence and concentration of designated substances. Sampling was conducted following established protocols and chain of custody procedures to ensure sample integrity and analytical accuracy.</p>
-        
-        <p>Laboratory analysis was performed by accredited laboratories using approved analytical methods. Results were interpreted in accordance with applicable regulations and guidelines to determine the significance of findings and appropriate control measures.</p>
-        
-        <h3>Quality Assurance:</h3>
-        <p>This assessment was conducted by qualified environmental professionals with appropriate training and experience in designated substances assessment. All findings have been reviewed and verified to ensure accuracy and completeness.</p>
-        
-        <p>Quality assurance measures included:</p>
-        <ul>
-            <li>Review of assessment procedures and protocols</li>
-            <li>Verification of sampling and analytical methods</li>
-            <li>Cross-checking of findings and documentation</li>
-            <li>Peer review of assessment results and recommendations</li>
-            <li>Compliance verification with regulatory requirements</li>
-        </ul>
-        
-        <h3>Limitations:</h3>
-        <p>The assessment was limited to areas that were accessible at the time of inspection. Some areas may not have been accessible due to building conditions, safety considerations, or other constraints. The assessment results are based on conditions observed during the inspection period and may not reflect conditions that may develop or change over time.</p>
-        
-        <p>Areas that were not accessible during the assessment should be evaluated prior to any construction activities to ensure comprehensive identification of all designated substances and hazardous materials.</p>
-    </div>
-
-    <!-- Findings and Results -->
-    <div class="section">
-        <h1>4.0 FINDINGS AND RESULTS</h1>
-        
-        <h3>Assessment Responses:</h3>
-        <table>
-            <thead>
-                <tr class="table-header">
-                    <th>Assessment Item</th>
-                    <th>Response</th>
-                    <th>Notes</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#each assessmentResponses}}
-                <tr>
-                    <td><strong>{{this.question}}</strong></td>
-                    <td>{{this.response}}</td>
-                    <td>{{this.notes}}</td>
-                </tr>
-                {{/each}}
-            </tbody>
-        </table>
-        
-        <h3>General Assessment Summary:</h3>
-        <p>The comprehensive assessment of the building revealed various designated substances and hazardous materials that may be encountered during construction activities. The findings are summarized below by material type and location within the building.</p>
-        
-        <p>All identified materials have been evaluated for their condition, potential for disturbance during construction activities, and associated exposure risks. The assessment included evaluation of both friable and non-friable materials, with special attention to materials that may be disturbed during planned construction activities.</p>
-        
-        {{#if areaDetails}}
-        <h3>Area-Specific Findings:</h3>
-        {{#each areaDetails}}
-        <div class="area-findings">
-            <h4>{{this.name}}</h4>
+        <!-- Inserted Section: Designated Substances and Hazardous Materials Assessment Details -->
+        <div style="margin-top: 30px; margin-bottom: 30px; font-family: Arial, sans-serif; font-size: 12pt;">
+            <div style="font-weight: bold;">2.0 RESULTS</div>
+            <p>Results of our visual assessment and bulk sample analytical findings are summarized in the sections below.</p>
+            <!-- Section 2.1 Designated Substances -->
+            <div style="font-weight: bold;">2.1 Designated Substances</div>
+            <div style="font-weight: bold;">2.1.1 Asbestos</div>
+            <p>Results of bulk sample analysis for the determination of asbestos content are summarized in the following table. Materials have been classified as "ACM", "Non-ACM", "Suspected ACM" or "Presumed Non-ACM" based on analytical results. Materials classified as Suspected ACM or Presumed Non-ACM may require further analysis (depending on site-specific conditions) to verify whether the material should be classified as ACM or Non-ACM.  Please refer to the Limitations section of this report (Section 4.0) for additional details. The Laboratory Certificate of Analysis is included in Appendix C.</p>
+            <h2 style="margin-top: 30px;">Table 2: Bulk Sample Analytical Results for Determination of Asbestos Content</h2>
             <table>
                 <thead>
-                    <tr class="table-header">
-                        <th>Material/Equipment</th>
-                        <th>Status</th>
-                        <th>Location/Details</th>
+                    <tr>
+                        <th>Sample No.</th>
+                        <th>Material Description</th>
+                        <th>Sample Location</th>
+                        <th>Asbestos Content</th>
+                        <th>Material Classification</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {{#each asbestosSamples}}
                     <tr>
-                        <td>Asbestos Assessment</td>
-                        <td>{{this.isAsbestosAssessed}}</td>
-                        <td>Various locations throughout area</td>
-                    </tr>
-                    <tr>
-                        <td>Lead Assessment</td>
-                        <td>{{this.isLeadAssessed}}</td>
-                        <td>Paint and other lead-containing materials</td>
-                    </tr>
-                    <tr>
-                        <td>Silica Observed</td>
-                        <td>{{this.silicaObserved}}</td>
-                        <td>{{#if this.silicaForms}}{{#each this.silicaForms}}{{this.label}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}N/A{{/if}}</td>
-                    </tr>
-                    <tr>
-                        <td>Mercury Observed</td>
-                        <td>{{this.mercuryObserved}}</td>
-                        <td>Lighting and electrical equipment</td>
-                    </tr>
-                    <tr>
-                        <td>PCB Observed</td>
-                        <td>{{this.pcbObserved}}</td>
-                        <td>Electrical equipment and ballasts</td>
-                    </tr>
-                    <tr>
-                        <td>Mold Growth</td>
-                        <td>{{this.moldGrowth}}</td>
-                        <td>{{#if this.mouldContaminationDetails}}{{#each this.mouldContaminationDetails}}{{this.mouldLocation}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}N/A{{/if}}</td>
-                    </tr>
-                    <tr>
-                        <td>Water Staining</td>
-                        <td>{{this.waterStaining}}</td>
-                        <td>Various locations</td>
-                    </tr>
-                    <tr>
-                        <td>Pest Infestation</td>
-                        <td>{{this.pestInfestationObserved}}</td>
-                        <td>{{this.infestationTypeSelect}}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        {{/each}}
-        {{/if}}
-        
-        {{#if labResults}}
-        <h3>Laboratory Analysis Results:</h3>
-        <table>
-            <thead>
-                <tr class="table-header">
-                    <th>Parameter</th>
-                    <th>Units</th>
-                    <th>MRL</th>
-                    <th>Result</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#each labResults}}
-                <tr>
-                    <td>{{this.parameter}}</td>
-                    <td>{{this.units}}</td>
-                    <td>{{this.mrl}}</td>
-                    <td>{{this.value}}</td>
-                </tr>
-                {{/each}}
-            </tbody>
-        </table>
-        {{/if}}
-        
-        <h3>Risk Assessment Summary:</h3>
-        <p>Based on the findings of this assessment, the following risk factors have been identified:</p>
-        <ul>
-            <li><strong>Low Risk:</strong> Areas where no designated substances were identified or where materials are in good condition and unlikely to be disturbed</li>
-            <li><strong>Medium Risk:</strong> Areas where designated substances are present but in good condition, requiring standard control measures during work activities</li>
-            <li><strong>High Risk:</strong> Areas where designated substances are present in poor condition or where significant disturbance is anticipated during construction activities</li>
-        </ul>
-        
-        <h3>Material Condition Assessment:</h3>
-        <p>The condition of identified materials has been evaluated using standard industry criteria:</p>
-        <ul>
-            <li><strong>Good Condition:</strong> Materials are intact, undamaged, and unlikely to release fibers or particles under normal conditions</li>
-            <li><strong>Fair Condition:</strong> Materials show minor damage or wear but are generally intact</li>
-            <li><strong>Poor Condition:</strong> Materials are significantly damaged, deteriorated, or friable and may release fibers or particles</li>
-        </ul>
-        
-        <h3>Exposure Assessment:</h3>
-        <p>The potential for exposure to designated substances during construction activities has been evaluated based on the following factors:</p>
-        <ul>
-            <li>Type and condition of materials present</li>
-            <li>Nature and extent of planned construction activities</li>
-            <li>Work methods and procedures to be employed</li>
-            <li>Environmental conditions and ventilation</li>
-            <li>Duration and frequency of work activities</li>
-            <li>Number of workers potentially exposed</li>
-        </ul>
-        
-        <h3>Health Effects and Exposure Limits:</h3>
-        <p>Exposure to designated substances can have various health effects depending on the substance, concentration, duration of exposure, and individual susceptibility. The following exposure limits and health effects are relevant to the materials identified in this assessment:</p>
-        
-        <h4>Asbestos:</h4>
-        <p>Asbestos exposure can cause serious health effects including asbestosis, lung cancer, and mesothelioma. The Ontario exposure limit for asbestos is 0.1 fibers per cubic centimeter (f/cc) as an 8-hour time-weighted average. All work with asbestos-containing materials must be conducted in accordance with Regulation 278/05 requirements.</p>
-        
-        <h4>Lead:</h4>
-        <p>Lead exposure can affect the nervous system, kidneys, and other organs. The Ontario exposure limit for lead is 0.05 milligrams per cubic meter (mg/m³) as an 8-hour time-weighted average. Lead-safe work practices must be implemented during renovation activities involving lead-containing materials.</p>
-        
-        <h4>Silica:</h4>
-        <p>Crystalline silica exposure can cause silicosis, lung cancer, and other respiratory diseases. The Ontario exposure limit for respirable crystalline silica is 0.025 mg/m³ as an 8-hour time-weighted average. Appropriate dust control measures must be implemented during activities that may generate silica dust.</p>
-        
-        <h4>Mercury:</h4>
-        <p>Mercury exposure can affect the nervous system, kidneys, and other organs. The Ontario exposure limit for mercury is 0.025 mg/m³ as an 8-hour time-weighted average. Special handling procedures are required for mercury-containing equipment.</p>
-        
-        <h3>Environmental Considerations:</h3>
-        <p>In addition to worker health and safety, the assessment considered potential environmental impacts of designated substances. Proper disposal procedures must be followed for all hazardous materials to prevent environmental contamination and ensure compliance with environmental regulations.</p>
-        
-        <p>Waste management procedures must be established for all designated substances and hazardous materials identified in this assessment. Disposal must be conducted at approved facilities in accordance with applicable regulations.</p>
-    </div>
-
-    <!-- Recommendations -->
-    <div class="section">
-        <h1>5.0 RECOMMENDATIONS</h1>
-        
-        <h3>General Recommendations:</h3>
-        <p>Based on the findings of this assessment, the following general recommendations are provided to ensure worker safety, environmental protection, and regulatory compliance during construction activities:</p>
-        
-        <h3>Control Measures:</h3>
-        <div class="findings-section">
-            {{#each controlMeasures}}
-            <div class="finding-item">{{this}}</div>
-            {{/each}}
-        </div>
-        
-        <h3>Work Procedures:</h3>
-        <div class="findings-section">
-            {{#each workProcedures}}
-            <div class="finding-item">{{this}}</div>
-            {{/each}}
-        </div>
-        
-        <h3>Monitoring Requirements:</h3>
-        <div class="findings-section">
-            {{#each monitoringRequirements}}
-            <div class="finding-item">{{this}}</div>
-            {{/each}}
-        </div>
-        
-        <h3>Specific Recommendations by Material Type:</h3>
-        
-        <h4>Asbestos-Containing Materials:</h4>
-        <ul>
-            <li>Implement Type 1, 2, or 3 asbestos work procedures as appropriate</li>
-            <li>Ensure all workers receive appropriate asbestos awareness training</li>
-            <li>Use wet methods and HEPA filtration during removal activities</li>
-            <li>Implement proper containment and decontamination procedures</li>
-            <li>Arrange for proper disposal of asbestos waste at approved facilities</li>
-        </ul>
-        
-        <h4>Lead-Containing Materials:</h4>
-        <ul>
-            <li>Implement lead-safe work practices during renovation activities</li>
-            <li>Use appropriate personal protective equipment (PPE)</li>
-            <li>Implement proper containment and cleanup procedures</li>
-            <li>Ensure proper disposal of lead-containing waste</li>
-        </ul>
-        
-        <h4>Silica-Containing Materials:</h4>
-        <ul>
-            <li>Implement silica dust control measures during cutting and grinding activities</li>
-            <li>Use wet methods and local exhaust ventilation</li>
-            <li>Provide appropriate respiratory protection</li>
-            <li>Implement proper housekeeping procedures</li>
-        </ul>
-        
-        <h4>Mercury-Containing Equipment:</h4>
-        <ul>
-            <li>Handle mercury-containing equipment with care to prevent breakage</li>
-            <li>Implement proper disposal procedures for mercury waste</li>
-            <li>Use appropriate PPE during handling and removal</li>
-            <li>Consider replacement with mercury-free alternatives</li>
-        </ul>
-        
-        <h3>Training Requirements:</h3>
-        <p>All workers involved in construction activities must receive appropriate training on:</p>
-        <ul>
-            <li>Identification of designated substances and hazardous materials</li>
-            <li>Health effects and exposure risks</li>
-            <li>Safe work procedures and control measures</li>
-            <li>Proper use of personal protective equipment</li>
-            <li>Emergency procedures and incident response</li>
-            <li>Regulatory requirements and compliance obligations</li>
-        </ul>
-        
-        <h3>Personal Protective Equipment (PPE):</h3>
-        <p>The following personal protective equipment should be provided and used as appropriate:</p>
-        <ul>
-            <li><strong>Respiratory Protection:</strong> Appropriate respirators for the specific hazards encountered</li>
-            <li><strong>Eye Protection:</strong> Safety glasses or goggles to prevent eye contact</li>
-            <li><strong>Hand Protection:</strong> Gloves appropriate for the materials being handled</li>
-            <li><strong>Body Protection:</strong> Coveralls or protective clothing as required</li>
-            <li><strong>Foot Protection:</strong> Safety footwear appropriate for the work environment</li>
-        </ul>
-        
-        <h3>Engineering Controls:</h3>
-        <p>The following engineering controls should be implemented where appropriate:</p>
-        <ul>
-            <li>Local exhaust ventilation systems</li>
-            <li>Wet methods for dust suppression</li>
-            <li>Work area isolation and containment</li>
-            <li>Negative pressure systems for asbestos work</li>
-            <li>HEPA filtration systems</li>
-            <li>Proper ventilation and air exchange</li>
-        </ul>
-        
-        <h3>Administrative Controls:</h3>
-        <p>The following administrative controls should be implemented:</p>
-        <ul>
-            <li>Work scheduling to minimize exposure</li>
-            <li>Worker rotation to limit exposure duration</li>
-            <li>Access control to work areas</li>
-            <li>Signage and warning systems</li>
-            <li>Regular safety meetings and toolbox talks</li>
-            <li>Documentation and record keeping</li>
-        </ul>
-        
-        <h3>Emergency Procedures:</h3>
-        <p>In the event of unexpected discovery of hazardous materials or accidental release:</p>
-        <ol>
-            <li>Immediately stop work activities in the affected area</li>
-            <li>Evacuate workers from the immediate area</li>
-            <li>Notify the project supervisor and environmental consultant</li>
-            <li>Implement appropriate containment measures</li>
-            <li>Arrange for proper cleanup and disposal</li>
-            <li>Document the incident and corrective actions taken</li>
-        </ol>
-        
-        <h3>Waste Management:</h3>
-        <p>Proper waste management procedures must be established for all designated substances and hazardous materials:</p>
-        <ul>
-            <li>Segregation of different types of waste</li>
-            <li>Proper labeling and identification</li>
-            <li>Secure storage and containment</li>
-            <li>Transportation by licensed carriers</li>
-            <li>Disposal at approved facilities</li>
-            <li>Maintenance of disposal records and manifests</li>
-        </ul>
-        
-        <h3>Regulatory Compliance:</h3>
-        <p>All work activities must comply with applicable regulations including:</p>
-        <ul>
-            <li>Ontario Occupational Health and Safety Act and regulations</li>
-            <li>Environmental Protection Act requirements</li>
-            <li>Municipal bylaws and building codes</li>
-            <li>Industry best practices and standards</li>
-        </ul>
-        
-        <h3>Monitoring and Documentation:</h3>
-        <p>Regular monitoring and documentation should be conducted throughout the project:</p>
-        <ul>
-            <li>Air monitoring during work activities</li>
-            <li>Visual inspections of work areas</li>
-            <li>Documentation of control measure effectiveness</li>
-            <li>Worker health monitoring as required</li>
-            <li>Maintenance of detailed records</li>
-            <li>Regular review and update of procedures</li>
-        </ul>
-        
-        <h3>Post-Construction Activities:</h3>
-        <p>Following completion of construction activities, the following should be conducted:</p>
-        <ul>
-            <li>Final cleanup and decontamination</li>
-            <li>Post-construction air monitoring</li>
-            <li>Visual inspection of completed work</li>
-            <li>Documentation of final conditions</li>
-            <li>Update of building records and documentation</li>
-            <li>Worker health monitoring as required</li>
-        </ul>
-    </div>
-
-    <!-- Photographic Documentation -->
-    <div class="section">
-        <h1>6.0 PHOTOGRAPHIC DOCUMENTATION</h1>
-        
-        <h3>Documentation Overview:</h3>
-        <p>Comprehensive photographic documentation was conducted during the assessment to provide visual evidence of conditions observed and materials identified. Photographs were taken systematically throughout all assessment areas to document the location, condition, and extent of designated substances and hazardous materials.</p>
-        
-        <p>All photographs included in this report were taken during the assessment period and provide accurate representation of conditions observed at the time of inspection. Photographs are referenced throughout the report and serve as supporting evidence for the findings and recommendations presented.</p>
-        
-        {{#if photos}}
-        <div class="photo-section">
-            <div class="photo-grid">
-                {{#each photos}}
-                <div class="photo-item">
-                    <img src="{{this.url}}" alt="{{this.caption}}">
-                    <div class="photo-caption">{{this.caption}}</div>
-                </div>
-                {{/each}}
-            </div>
-        </div>
-        {{else}}
-        <p>No photographs were taken during this assessment.</p>
-        {{/if}}
-        
-        <h3>Photographic Documentation Standards:</h3>
-        <p>The photographic documentation was conducted following established standards and procedures:</p>
-        <ul>
-            <li>Systematic coverage of all assessment areas</li>
-            <li>Clear identification of materials and conditions</li>
-            <li>Proper lighting and focus for clarity</li>
-            <li>Scale references where appropriate</li>
-            <li>Detailed captions and descriptions</li>
-            <li>Proper storage and backup of digital files</li>
-        </ul>
-        
-        <h3>Documentation Notes:</h3>
-        <p>All photographs included in this report were taken during the assessment and provide visual documentation of the conditions observed. Photographs are referenced throughout the report and serve as supporting evidence for the findings and recommendations presented.</p>
-        
-        <p>The photographic documentation provides a permanent record of conditions observed during the assessment and can be used for future reference, training purposes, and regulatory compliance documentation.</p>
-    </div>
-
-    <!-- Appendices -->
-    <div class="section">
-        <h1>7.0 APPENDICES</h1>
-        
-        <div class="appendix">
-            <h3>Appendix A: Assessment Checklist</h3>
-            <p>The following checklist was used to ensure comprehensive assessment of all areas and materials:</p>
-            <table>
-                <thead>
-                    <tr class="table-header">
-                        <th>Item</th>
-                        <th>Status</th>
-                        <th>Comments</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{#each assessmentChecklist}}
-                    <tr>
-                        <td>{{this.item}}</td>
-                        <td>{{this.status}}</td>
-                        <td>{{this.comments}}</td>
+                        <td>{{this.sampleNo}}</td>
+                        <td>{{this.materialDescription}}</td>
+                        <td>{{this.sampleLocation}}</td>
+                        <td>{{this.asbestosContent}}</td>
+                        <td>{{this.materialClassification}}</td>
                     </tr>
                     {{/each}}
                 </tbody>
             </table>
-        </div>
-        
-        {{#if areaDetails}}
-        <div class="appendix">
-            <h3>Appendix B: Area Details</h3>
-            <p>Detailed information for each assessment area is provided below:</p>
-            {{#each areaDetails}}
-            <h4>{{this.name}}</h4>
+            <p>Materials assessed for asbestos content are summarized in the following table based on the type/use of the material.</p>
+            <!-- Table 3: Results of Assessment for Asbestos-Containing Materials -->
+            <h2 style="margin-top: 30px;">Table 3: Results of Assessment for Asbestos-Containing Materials</h2>
             <table>
                 <thead>
-                    <tr class="table-header">
-                        <th>Detail</th>
-                        <th>Value</th>
+                    <tr>
+                        <th>Material Type</th>
+                        <th>Location</th>
+                        <th>Condition</th>
+                        <th>Friability</th>
+                        <th>Estimated Quantity</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {{#each asbestosAssessment}}
                     <tr>
-                        <td>Area Description</td>
-                        <td>{{this.areaDescription}}</td>
+                        <td>{{this.materialType}}</td>
+                        <td>{{this.location}}</td>
+                        <td>{{this.condition}}</td>
+                        <td>{{this.friability}}</td>
+                        <td>{{this.estimatedQuantity}}</td>
                     </tr>
-                    <tr>
-                        <td>Square Feet</td>
-                        <td>{{this.areaSquareFeet}}</td>
-                    </tr>
-                    <tr>
-                        <td>Specific Location</td>
-                        <td>{{this.specificLocation}}</td>
-                    </tr>
-                    <tr>
-                        <td>Contact Name</td>
-                        <td>{{this.contactName}}</td>
-                    </tr>
-                    <tr>
-                        <td>Contact Email</td>
-                        <td>{{this.contactEmail}}</td>
-                    </tr>
-                    <tr>
-                        <td>Contact Phone</td>
-                        <td>{{this.contactPhone}}</td>
-                    </tr>
-                    <tr>
-                        <td>Project Manager</td>
-                        <td>{{this.pmName}}</td>
-                    </tr>
-                    <tr>
-                        <td>Technician</td>
-                        <td>{{this.technicianName}}</td>
-                    </tr>
+                    {{/each}}
                 </tbody>
             </table>
-            {{/each}}
-        </div>
-        {{/if}}
+            <!-- Additional asbestos findings and recommendations can be inserted here as needed -->
         
-        <div class="appendix">
-            <h3>Appendix C: Regulatory Framework</h3>
-            <h4>Applicable Regulations:</h4>
-            <p>The following regulations and standards are applicable to this assessment:</p>
-            <ul>
-                <li><strong>Ontario Occupational Health and Safety Act (OHSA)</strong>
-                    <ul>
-                        <li>Section 25 - Duties of employers</li>
-                        <li>Section 26 - Duties of supervisors</li>
-                        <li>Section 27 - Duties of workers</li>
-                    </ul>
-                </li>
-                <li><strong>Regulation 278/05 - Designated Substance - Asbestos on Construction Projects and in Buildings and Repair Operations</strong>
-                    <ul>
-                        <li>Section 3 - Application</li>
-                        <li>Section 4 - Asbestos survey</li>
-                        <li>Section 5 - Asbestos work report</li>
-                        <li>Section 6 - Asbestos control program</li>
-                    </ul>
-                </li>
-                <li><strong>Regulation 490/09 - Designated Substances</strong>
-                    <ul>
-                        <li>Section 2 - Application</li>
-                        <li>Section 3 - Assessment of biological and chemical agents</li>
-                        <li>Section 4 - Control program</li>
-                    </ul>
-                </li>
-                <li><strong>Ontario Environmental Protection Act</strong>
-                    <ul>
-                        <li>Part V - Waste Management</li>
-                        <li>Part VI - Spills</li>
-                    </ul>
-                </li>
-            </ul>
-            
-            <h4>Regulatory Requirements Summary:</h4>
-            <p>The following regulatory requirements must be met during construction activities:</p>
-            <ul>
-                <li>Conduct designated substances survey prior to construction activities</li>
-                <li>Implement appropriate control measures based on survey findings</li>
-                <li>Provide worker training on designated substances</li>
-                <li>Conduct air monitoring during work activities</li>
-                <li>Maintain proper documentation and records</li>
-                <li>Ensure proper disposal of hazardous materials</li>
-            </ul>
-        </div>
-        
-        <div class="appendix">
-            <h3>Appendix D: Definitions and Abbreviations</h3>
-            <p>The following terms and abbreviations are used throughout this report:</p>
+            <div style="font-weight: bold;">2.1.2 Lead</div>
+            <p>Laboratory analytical results for paints tested to determine lead content are summarized in the following table. The Laboratory Certificate of Analysis is included in Appendix D. Refer to Section 3.1.2 of this report for recommended lead abatement procedures (if any) that correspond to the type of proposed construction, renovation, or demolition work.</p>
             <table>
                 <thead>
-                    <tr class="table-header">
-                        <th>Term</th>
-                        <th>Definition</th>
+                    <tr>
+                        <th>Sample No.</th>
+                        <th>Location</th>
+                        <th>Surface</th>
+                        <th>Paint Colour</th>
+                        <th>Condition</th>
+                        <th>Lead Conc. (% by wt.)</th>
+                        <th>Material Classification</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {{#each leadSamples}}
                     <tr>
-                        <td><strong>ACM</strong></td>
-                        <td>Asbestos-Containing Material</td>
+                        <td>{{this.sampleNo}}</td>
+                        <td>{{this.location}}</td>
+                        <td>{{this.surface}}</td>
+                        <td>{{this.paintColour}}</td>
+                        <td>{{this.condition}}</td>
+                        <td>{{this.leadConcentration}}</td>
+                        <td>{{this.materialClassification}}</td>
                     </tr>
-                    <tr>
-                        <td><strong>DSS</strong></td>
-                        <td>Designated Substances Survey</td>
-                    </tr>
-                    <tr>
-                        <td><strong>HEPA</strong></td>
-                        <td>High Efficiency Particulate Air (filter)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>OHSA</strong></td>
-                        <td>Ontario Occupational Health and Safety Act</td>
-                    </tr>
-                    <tr>
-                        <td><strong>PCB</strong></td>
-                        <td>Polychlorinated Biphenyl</td>
-                    </tr>
-                    <tr>
-                        <td><strong>PPE</strong></td>
-                        <td>Personal Protective Equipment</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Friable</strong></td>
-                        <td>Material that can be crumbled, pulverized, or reduced to powder by hand pressure</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Non-friable</strong></td>
-                        <td>Material that cannot be crumbled, pulverized, or reduced to powder by hand pressure</td>
-                    </tr>
-                    <tr>
-                        <td><strong>MRL</strong></td>
-                        <td>Method Reporting Limit</td>
-                    </tr>
-                    <tr>
-                        <td><strong>TWA</strong></td>
-                        <td>Time-Weighted Average</td>
-                    </tr>
-                    <tr>
-                        <td><strong>f/cc</strong></td>
-                        <td>Fibers per cubic centimeter</td>
-                    </tr>
-                    <tr>
-                        <td><strong>mg/m³</strong></td>
-                        <td>Milligrams per cubic meter</td>
-                    </tr>
+                    {{/each}}
                 </tbody>
             </table>
-        </div>
-        
-        <div class="appendix">
-            <h3>Appendix E: Health Effects and Exposure Limits</h3>
-            <h4>Health Effects of Designated Substances:</h4>
-            <p>The following health effects are associated with exposure to designated substances:</p>
-            
-            <h4>Asbestos:</h4>
+            <p>LCP: Lead-Containing Paint (&gt;0.1% Lead Content); LLLP: Low-Level Lead Paint (0.1% Lead Content); Non-LCP: Not Lead-containing Paint</p>
+            <p>Suspect lead-containing materials observed in the subject building included the following:</p>
             <ul>
-                <li>Asbestosis - scarring of lung tissue</li>
-                <li>Lung cancer</li>
-                <li>Mesothelioma - cancer of the lining of the chest or abdomen</li>
-                <li>Pleural plaques and thickening</li>
+                {{#each suspectLeadMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
             </ul>
-            
-            <h4>Lead:</h4>
-            <ul>
-                <li>Nervous system effects</li>
-                <li>Kidney damage</li>
-                <li>Reproductive effects</li>
-                <li>Anemia</li>
-            </ul>
-            
-            <h4>Silica:</h4>
-            <ul>
-                <li>Silicosis - scarring of lung tissue</li>
-                <li>Lung cancer</li>
-                <li>Chronic obstructive pulmonary disease</li>
-                <li>Kidney disease</li>
-            </ul>
-            
-            <h4>Mercury:</h4>
-            <ul>
-                <li>Nervous system effects</li>
-                <li>Kidney damage</li>
-                <li>Reproductive effects</li>
-                <li>Developmental effects in children</li>
-            </ul>
-            
-            <h4>Exposure Limits:</h4>
+            <!-- Table 5: Results of Assessment for Lead-Containing Materials -->
             <table>
                 <thead>
-                    <tr class="table-header">
-                        <th>Substance</th>
-                        <th>Exposure Limit</th>
-                        <th>Units</th>
+                    <tr>
+                        <th>Material</th>
+                        <th>Location</th>
+                        <th>Description</th>
+                        <th>Photo</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {{#each leadMaterialAssessment}}
                     <tr>
-                        <td>Asbestos</td>
-                        <td>0.1</td>
-                        <td>f/cc (8-hour TWA)</td>
+                        <td>{{this.material}}</td>
+                        <td>{{this.location}}</td>
+                        <td>{{this.description}}</td>
+                        <td>{{#if this.photo}}<img src="{{this.photo}}" alt="Photo" style="max-width: 100px;" />{{/if}}</td>
                     </tr>
-                    <tr>
-                        <td>Lead</td>
-                        <td>0.05</td>
-                        <td>mg/m³ (8-hour TWA)</td>
-                    </tr>
-                    <tr>
-                        <td>Silica</td>
-                        <td>0.025</td>
-                        <td>mg/m³ (8-hour TWA)</td>
-                    </tr>
-                    <tr>
-                        <td>Mercury</td>
-                        <td>0.025</td>
-                        <td>mg/m³ (8-hour TWA)</td>
-                    </tr>
+                    {{/each}}
                 </tbody>
             </table>
-        </div>
         
-        <div class="appendix">
-            <h3>Appendix F: Emergency Response Procedures</h3>
-            <h4>Emergency Contact Information:</h4>
-            <p>In the event of an emergency involving designated substances:</p>
+            <div style="font-weight: bold;">2.1.3 Mercury</div>
+            {{#if mercuryPresent}}
+            <p>Mercury is present in the project areas in the form of:</p>
             <ul>
-                <li><strong>Emergency Services:</strong> 911</li>
-                <li><strong>Environmental Consultant:</strong> [Consultant Contact Information]</li>
-                <li><strong>Project Manager:</strong> [Project Manager Contact Information]</li>
-                <li><strong>Safety Coordinator:</strong> [Safety Coordinator Contact Information]</li>
+                {{#each mercurySources}}
+                <li>{{this}}</li>
+                {{/each}}
             </ul>
-            
-            <h4>Emergency Response Steps:</h4>
-            <ol>
-                <li>Immediately stop all work activities in the affected area</li>
-                <li>Evacuate all workers from the immediate area</li>
-                <li>Secure the area to prevent unauthorized access</li>
-                <li>Contact emergency services if medical attention is required</li>
-                <li>Notify the project supervisor and environmental consultant</li>
-                <li>Implement appropriate containment measures</li>
-                <li>Document the incident and all actions taken</li>
-                <li>Arrange for proper cleanup and disposal</li>
-                <li>Conduct post-incident investigation and corrective actions</li>
-            </ol>
-            
-            <h4>First Aid Procedures:</h4>
-            <p>In the event of exposure to designated substances:</p>
-            <ul>
-                <li>Remove contaminated clothing and equipment</li>
-                <li>Wash exposed skin with soap and water</li>
-                <li>Flush eyes with clean water if contaminated</li>
-                <li>Seek medical attention immediately</li>
-                <li>Provide medical personnel with information about the exposure</li>
-            </ul>
-        </div>
+            {{else}}
+            <p>No sources of mercury were observed in the project areas.</p>
+            {{/if}}
         
-        {{#if additionalAppendices}}
-        {{#each additionalAppendices}}
-        <div class="appendix">
-            <h3>{{this.title}}</h3>
-            {{{this.content}}}
+            <div style="font-weight: bold;">2.1.4 Silica</div>
+            {{#if silicaObserved}}
+            <p>A number of building materials were identified in the subject building that are suspected to contain crystalline silica. This includes the following materials:</p>
+            <ul>
+                {{#each silicaMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            {{else}}
+            <p>No silica-containing materials were identified in the project areas.</p>
+            {{/if}}
+        
+            <div style="font-weight: bold;">2.1.5 Other Designated Substances</div>
+            <p>Acrylonitrile, arsenic, benzene, coke oven emissions, ethylene oxide, isocyanates, and vinyl chloride were not included in the assessment as these substances are not expected to be a significant component of building materials or present in a form that would represent an exposure concern. Additionally, no specific information regarding their use was provided to us.</p>
+            <!-- End Section 2.1 Designated Substances -->
+        
+            <!-- Section 2.2 Other Hazardous Materials -->
+            <div style="font-weight: bold;">2.2 Other Hazardous Materials</div>
+            <div style="font-weight: bold;">2.2.1 Chemical Hazards</div>
+            <p>No visible evidence of UFFI installation (i.e. injection openings) or overspray of foam insulation at wall/ceiling joints was identified in the subject building. However, given that no destructive testing was conducted, there is a remote possibility that UFFI could be hidden within locations such as exterior wall cavities. If suspect foam insulation is identified during renovation/demolition activities work should be stopped and the area should be re-assessed to evaluate conditions and determine appropriate control measures and worker protection, if necessary.</p>
+        
+            <div style="font-weight: bold;">2.2.2 Biological Hazards</div>
+            <div style="font-weight: bold;">2.2.2.1 Mould Contamination</div>
+            {{#if mouldPresent}}
+            <p>Findings from our assessment for the presence of mould growth in subject areas of the building are provided in the following table.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Material</th>
+                        <th>Location</th>
+                        <th>Description</th>
+                        <th>Photo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each mouldAssessment}}
+                    <tr>
+                        <td>{{this.material}}</td>
+                        <td>{{this.location}}</td>
+                        <td>{{this.description}}</td>
+                        <td>{{#if this.photo}}<img src="{{this.photo}}" alt="Photo" style="max-width: 100px;" />{{/if}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+            {{else}}
+            <p>There was no visible evidence of obvious mould growth on building finishes in the subject building at the time of the assessment. In addition, there was no visible evidence of any significant water staining or discolouration to building finishes in the subject building that would suggest the potential for hidden mould growth behind these finishes.</p>
+            {{/if}}
+        
+            <div style="font-weight: bold;">2.2.2.2 Pest Infestation</div>
+            {{#if pestInfestationObserved}}
+            <p>Evidence of {{infestationType}} was observed {{infestationLocation}} which were not considered to be significant enough to result in any exposure issue for renovation/demolition workers.</p>
+            {{#if significantDroppings}}
+            <p>Areas of significant {{droppingSource}} droppings were observed on {{droppingLocation}} in the subject area.</p>
+            {{/if}}
+            <p>No other areas of significant pest infestation were observed in the subject area.</p>
+            {{else}}
+            <p>There was no visible evidence of a pest infestation in the subject area.</p>
+            {{/if}}
+        
+            <div style="font-weight: bold;">2.2.3 Environmental Hazards</div>
+            <div style="font-weight: bold;">2.2.3.1 Polychlorinated Biphenyls (PCBs)</div>
+            {{#if pcbObserved}}
+            <p>The assessment for potential PCB-containing electrical equipment is summarized in the following table. Equipment where the presence/absence of PCBs could be verified are indicated as such in the table. Equipment where the absence of PCBs could not be verified based on the information available are assumed to contain PCBs.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Location</th>
+                        <th>Electrical Equipment</th>
+                        <th>Manufacturer</th>
+                        <th>PCB Identification Information</th>
+                        <th>PCB Content</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each pcbAssessment}}
+                    <tr>
+                        <td>{{this.location}}</td>
+                        <td>{{this.equipment}}</td>
+                        <td>{{this.manufacturer}}</td>
+                        <td>{{this.pcbInfo}}</td>
+                        <td>{{this.pcbContent}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+            {{else}}
+            <p>No sources of polychlorinated biphenyls (PCBs) were observed in the subject building.</p>
+            {{/if}}
+        
+            <div style="font-weight: bold;">2.2.3.2 Ozone Depleting and Global Warming Substances</div>
+            {{#if odsObserved}}
+            <p>Equipment identified in the subject building that are suspected to contain ozone depleting substances (ODS) and/or global warming substances (GWS) are summarized in the following table.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Location</th>
+                        <th>Equipment Manufacturer and Type</th>
+                        <th>Type and Quantity of Refrigerant or Fire Extinguishing Agent</th>
+                        <th>ODS/GWS Classification</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each odsAssessment}}
+                    <tr>
+                        <td>{{this.location}}</td>
+                        <td>{{this.equipmentType}}</td>
+                        <td>{{this.refrigerantType}}</td>
+                        <td>{{this.classification}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+            {{else}}
+            <p>No fixed equipment suspected to contain ODS/GWS was observed in the subject building.</p>
+            {{/if}}
+            <!-- End Section 2.2 Other Hazardous Materials -->
         </div>
-        {{/each}}
-        {{/if}}
+    </div>    
+
+    <!-- CONCLUSIONS AND RECOMMENDATIONS -->
+    <div class="section">
+        <!-- Inserted Section: Designated Substances and Hazardous Materials Assessment Details -->
+        <div style="margin-top: 30px; margin-bottom: 30px; font-family: Arial, sans-serif; font-size: 12pt;">
+            <!-- Section 3.0 Conclusions and Recommendations -->
+            <div style="font-weight: bold;">3.0 CONCLUSIONS AND RECOMMENDATIONS</div>
+            {{#if conclusions}}
+            <div>
+                {{#each conclusions}}
+                <p>{{this}}</p>
+                {{/each}}
+            </div>
+            {{/if}}
+            {{#if recommendations}}
+            <div>
+                <h4>Recommendations</h4>
+                <ul>
+                    {{#each recommendations}}
+                    <li>{{this}}</li>
+                    {{/each}}
+                </ul>
+            </div>
+            {{/if}}
+            <!-- Section 3.1 Designated Substances -->
+            <div style="font-weight: bold; margin-top: 24px;">3.1 Designated Substances</div>
+            <p>Summary of conclusions and recommendations regarding designated substances identified in the assessment.</p>
+            <div style="font-weight: bold; margin-left: 16px;">3.1.1 Asbestos</div>
+            <p style="margin-left: 16px;">No asbestos-containing materials were identified in the areas assessed. All sampled materials were confirmed to be non-asbestos containing. Should any suspect materials be uncovered during future work, they must be tested prior to disturbance in accordance with regulatory requirements.</p>
+            <div style="font-weight: bold; margin-left: 16px;">3.1.2 Lead</div>
+            <p style="margin-left: 16px;">Lead-containing paints and coatings were identified in select areas. Any disturbance of these materials should be conducted using lead-safe work practices, including appropriate personal protective equipment and waste disposal procedures.</p>
+            <div style="font-weight: bold; margin-left: 16px;">3.1.3 Mercury</div>
+            <p style="margin-left: 16px;">Mercury-containing equipment, such as fluorescent lamps and thermostats, was observed. These items should be handled with care and recycled at approved facilities to prevent environmental contamination.</p>
+            <div style="font-weight: bold; margin-left: 16px;">3.1.4 Silica</div>
+            <p style="margin-left: 16px;">Building materials such as concrete, mortar, and drywall joint compound that may contain crystalline silica were present. Dust control measures and respiratory protection are recommended during any activities that may generate airborne silica.</p>
+            <div style="font-weight: bold; margin-left: 16px;">3.1.5 Other Designated Substances</div>
+            <p style="margin-left: 16px;">No other designated substances, such as arsenic, benzene, or isocyanates, were identified or are expected to be present in significant quantities in the building materials assessed.</p>
+            <!-- Section 3.2 Other Hazardous Materials -->
+            <div style="font-weight: bold; margin-top: 24px;">3.2 Other Hazardous Materials</div>
+            <p>Summary of conclusions and recommendations regarding other hazardous materials identified in the assessment.</p>
+            <div style="font-weight: bold; margin-left: 16px;">3.2.1 Chemical Hazards</div>
+            <p style="margin-left: 16px;">No evidence of chemical hazards, such as urea formaldehyde foam insulation (UFFI) or polychlorinated biphenyls (PCBs), was observed. If any suspect materials are encountered during future work, they should be assessed and managed in accordance with applicable regulations.</p>
+            <div style="font-weight: bold; margin-left: 16px;">3.2.2 Biological Hazards</div>
+            <p style="margin-left: 16px;">No visible mould growth or significant pest infestation was identified at the time of assessment. Should mould or pests be discovered during future activities, appropriate remediation and control measures should be implemented.</p>
+            <div style="font-weight: bold; margin-left: 16px;">3.2.3 Environmental Hazards</div>
+            <p style="margin-left: 16px;">No environmental hazards, such as ozone-depleting substances or hazardous refrigerants, were identified in the building. All equipment should be properly decommissioned and disposed of in accordance with environmental protection regulations.</p>
+            <!-- End Section 3.0 Conclusions and Recommendations -->
+        </div>
     </div>
+
+    <!-- LIMITATIONS -->
+    <div class="section">
+        <!-- Inserted Section: Designated Substances and Hazardous Materials Assessment Details -->
+        <div style="margin-top: 30px; margin-bottom: 30px; font-family: Arial, sans-serif; font-size: 12pt;">
+            <!-- Section 4.0 Limitations -->
+            <div style="font-weight: bold;">4.0 LIMITATIONS</div>
+            <p>The information and recommendations detailed in this report were carried out by trained professional and technical staff in accordance with generally accepted environmental and industrial hygiene work practices and procedures. Recommendations provided in this report have been generated in accordance with accepted industry guidelines and practices. These guidelines and practices are considered acceptable as of the date of this report.</p>
+            <p>In preparation of this report, Safetech relied on information supplied by others, including without limitation, information pertaining to the history and operation of the site, test results and reports of other consultants and testing services provided by independent laboratories. Except as expressly set out in this report, Safetech has not made any independent verification of information provided by independent entities.</p>
+            <p>The collection of samples at the location noted was consistent with the scope of work agreed-upon with the person or entity to whom this report is addressed and the information obtained concerning prior site investigations.  As conditions between samples may vary, the potential remains for the presence of unknown additional contaminants for which there were no known indicators.</p>
+            <p>The analytical method used for determination of asbestos content meets the requirements of O. Reg. 278/05.  However, small asbestos fibres may be missed by PLM due to resolution limitations of the optical microscope. Interfering binder/matrix and/or low asbestos content may also hinder positive identification by PLM. These conditions are common for vermiculite attic insulation (VAI) and non-friable organically bound (NOB) materials such as vinyl floor tiles, roofing materials, mastics and caulking and can lead to "false negative" results. Due to limitations of the analytical method we cannot confirm that low quantities of asbestos are not present in these samples using solely PLM analysis. Additional analytical procedures should be considered for such materials to rule out false negative results.</p>
+            <p>Conclusions are based on site conditions at the time of inspection and can only be extrapolated to an undefined limited area around inspected locations.  The extent of the limited area depends on building construction and conditions.  Building materials that are not detailed within this survey due to inaccessibility during the time of survey and/or are uncovered during renovation/demolition activities should be properly assessed by a qualified person prior to their disturbance.  Safetech cannot warrant against undiscovered environmental liabilities. If any information becomes available that differs from the findings in this report, we request that we be notified immediately to reassess the conclusions provided herein.</p>
+            <p>No other person or entity is entitled to use or rely upon this report without the express written consent of Safetech and the person or entity to who it is addressed. Any use that a third party makes of this report, or any reliance based on conclusions and recommendations made, are the responsibility of such third parties.  Safetech accepts no responsibility for damages suffered by third parties as a result of actions based on this report.</p>
+            <!-- End Section 4.0 Limitations -->
+        </div>
+    </div>    
+
 </body>
 </html> 
