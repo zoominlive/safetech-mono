@@ -679,21 +679,17 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Material Type</th>
-                        <th>Location</th>
-                        <th>Condition</th>
-                        <th>Friability</th>
-                        <th>Estimated Quantity</th>
+                        <th></th>
+                        <th>Location/Description</th>
+                        <th>Photo</th>
                     </tr>
                 </thead>
                 <tbody>
                     {{#each asbestosAssessment}}
                     <tr>
-                        <td>{{this.materialType}}</td>
-                        <td>{{this.location}}</td>
-                        <td>{{this.condition}}</td>
-                        <td>{{this.friability}}</td>
-                        <td>{{this.estimatedQuantity}}</td>
+                        <td>{{this.id}}</td>
+                        <td>{{this.locationAndDescription}}</td>
+                        <td>{{#if this.photo}}<img src="{{this.photo}}" alt="Photo" style="max-width: 100px;" />{{/if}}</td>
                     </tr>
                     {{/each}}
                 </tbody>
@@ -702,6 +698,7 @@
         
             <div style="font-weight: bold;">2.1.2 Lead</div>
             <p>Laboratory analytical results for paints tested to determine lead content are summarized in the following table. The Laboratory Certificate of Analysis is included in Appendix D. Refer to Section 3.1.2 of this report for recommended lead abatement procedures (if any) that correspond to the type of proposed construction, renovation, or demolition work.</p>
+            <h2 style="margin-top: 30px;">Table 4: Results of Paint Condition and Lead Content Assessment</h2>
             <table>
                 <thead>
                     <tr>
@@ -729,39 +726,18 @@
                 </tbody>
             </table>
             <p>LCP: Lead-Containing Paint (&gt;0.1% Lead Content); LLLP: Low-Level Lead Paint (0.1% Lead Content); Non-LCP: Not Lead-containing Paint</p>
-            <p>Suspect lead-containing materials observed in the subject building included the following:</p>
+            <p><strong><em>Suspect lead-containing materials</em></strong> observed in the subject building included the following:</p>
             <ul>
                 {{#each suspectLeadMaterials}}
                 <li>{{this}}</li>
                 {{/each}}
             </ul>
-            <!-- Table 5: Results of Assessment for Lead-Containing Materials -->
-            <table>
-                <thead>
-                    <tr>
-                        <th>Material</th>
-                        <th>Location</th>
-                        <th>Description</th>
-                        <th>Photo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{#each leadMaterialAssessment}}
-                    <tr>
-                        <td>{{this.material}}</td>
-                        <td>{{this.location}}</td>
-                        <td>{{this.description}}</td>
-                        <td>{{#if this.photo}}<img src="{{this.photo}}" alt="Photo" style="max-width: 100px;" />{{/if}}</td>
-                    </tr>
-                    {{/each}}
-                </tbody>
-            </table>
         
             <div style="font-weight: bold;">2.1.3 Mercury</div>
             {{#if mercuryPresent}}
-            <p>Mercury is present in the project areas in the form of:</p>
+            <p>Mercury is present in the subject building in the form of:</p>
             <ul>
-                {{#each mercurySources}}
+                {{#each mercurySourcesMaterials}}
                 <li>{{this}}</li>
                 {{/each}}
             </ul>

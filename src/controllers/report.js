@@ -369,11 +369,16 @@ exports.generatePDFReport = async (req, res, next) => {
     }
     console.log("report=>", report);
     // Prepare data for template
+    let templateSchema = null;
+    if (report.template && report.template.schema) {
+      templateSchema = typeof report.template.schema === 'string' ? JSON.parse(report.template.schema) : report.template.schema;
+    }
     const templateData = prepareReportData(
       report, 
       report.project, 
       report.project?.company,
-      { useCurrentDate: false }
+      { useCurrentDate: false },
+      templateSchema
     );
 
     // Render HTML using template

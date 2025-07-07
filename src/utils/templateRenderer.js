@@ -531,9 +531,10 @@ const formatAssessmentResponses = (areaData) => {
  * @param {object} customer - Customer object from database
  * @param {object} options - Optional parameters for report generation
  * @param {boolean} options.useCurrentDate - Whether to use current date for reportDate (default: true)
+ * @param {object} templateSchema - (Optional) The report template schema (JSON) for dynamic mapping
  * @returns {object} - Formatted data for template
  */
-const prepareReportData = (report, project, customer, options = {}) => {
+const prepareReportData = (report, project, customer, options = {}, templateSchema = null) => {
   const now = new Date();
   
   // Format dates
@@ -753,6 +754,57 @@ const prepareReportData = (report, project, customer, options = {}) => {
   
   // Determine report date based on options
   const reportDate = options.useCurrentDate === false ? 'To Be Determined' : formatDate(now);
+  // Dynamically build asbestosAssessment for Table 3 if templateSchema is provided
+  let asbestosAssessment = [];
+  if (templateSchema && templateSchema.sections) {
+    // Find a section or question group related to asbestos assessment table
+    // (e.g., by label, id, or type: 'table', or containing 'asbestos' in label)
+    const asbestosSection = templateSchema.sections.find(
+      s => s.title && /asbestos/i.test(s.title)
+    );
+    console.log("asbestosSection=>", asbestosSection);
+
+    if (asbestosSection && asbestosSection.fields) {
+      areaDetails.forEach(area => {
+        asbestosSection.fields.forEach(materialGroup => {
+          // Only process groups with subfields
+          if (Array.isArray(materialGroup.fields)) {
+            materialGroup.fields.forEach(subField => {
+              // Only process radio fields (Yes/No questions)
+              if (subField.type === "radio") {
+                const radioValue = area[subField.id];
+                // Find the corresponding details and photo fields for this radio field
+                const detailsField = materialGroup.fields.find(f =>
+                  f.type === "text" &&
+                  (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                );
+                const photoField = materialGroup.fields.find(f =>
+                  f.type === "file" &&
+                  (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                );
+                const detailsValue = detailsField ? area[detailsField.id] : "";
+                const photoValue = photoField ? area[photoField.id] : "";
+
+                if (radioValue === "Yes") {
+                  asbestosAssessment.push({
+                    id: subField.label || subField.id || "",
+                    locationAndDescription: detailsValue || "",
+                    photo: photoValue || ""
+                  });
+                } else {
+                  asbestosAssessment.push({
+                    id: subField.label || subField.id || "",
+                    locationAndDescription: "None identified in subject building.",
+                    photo: ""
+                  });
+                }
+              }
+            });
+          }
+        });
+      });
+    }
+  }
   
   return {
     // Basic report information
@@ -806,7 +858,27 @@ const prepareReportData = (report, project, customer, options = {}) => {
     labResults: [],
 
     // Summary table for hazardous materials and designated substances
-    summaryTable
+    summaryTable,
+    // Add dynamic Table 3 mapping
+    asbestosAssessment,
+
+    // Add hardcoded suspect lead materials list for template
+    suspectLeadMaterials: [
+      'paints and surface coatings (not sampled)',
+      'glazing associated with ceramic tiles',
+      'batteries associated with emergency lighting',
+      'solder in copper pipe fittings',
+      'solder in electrical components'
+    ],
+    
+    // Add hardcoded suspect mercury materials list for template
+    mercurySourcesMaterials: [
+      'vapour in fluorescent lamps',
+      'vapour in HID lamps',
+      'liquid in thermostats',
+      'thermometers associated with the boiler',
+      'thermometers associated with mechanical equipment'
+    ]
   };
 };
 
