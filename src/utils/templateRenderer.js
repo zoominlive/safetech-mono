@@ -46,20 +46,17 @@ const safeJsonParse = (jsonString) => {
 /**
  * Extract area details from answers
  * @param {object} answers - Parsed answers object
- * @returns {array} - Array of area details
+ * @returns {array} - Array of area details (with assessments merged)
  */
 const extractAreaDetails = (answers) => {
   if (!answers || !answers.areaDetails) {
     return [];
   }
-  
   return answers.areaDetails.map((area, index) => {
-    const assessments = area.assessments || {};
-    return {
-      id: area.id || `area-${index + 1}`,
-      name: area.name || `Area ${index + 1}`,
-      ...assessments
-    };
+    // Merge assessments into the area object for easier access
+    const merged = { ...area, ...(area.assessments || {}) };
+    delete merged.assessments;
+    return merged;
   });
 };
 
@@ -754,6 +751,7 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
   
   // Determine report date based on options
   const reportDate = options.useCurrentDate === false ? 'To Be Determined' : formatDate(now);
+  
   // Dynamically build asbestosAssessment for Table 3 if templateSchema is provided
   let asbestosAssessment = [];
   if (templateSchema && templateSchema.sections) {
@@ -804,6 +802,321 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
         });
       });
     }
+  }
+  
+  // Dynamically build leadAssessment for Table 3 if templateSchema is provided
+  let leadAssessment = [];
+  if (templateSchema && templateSchema.sections) {
+    // Find a section or question group related to lead assessment table
+    // (e.g., by label, id, or type: 'table', or containing 'lead' in label)
+    const leadSection = templateSchema.sections.find(
+      s => s.title && /lead/i.test(s.title)
+    );
+    console.log("leadSection=>", leadSection);
+
+    if (leadSection && leadSection.fields) {
+      areaDetails.forEach(area => {
+        leadSection.fields.forEach(materialGroup => {
+          // Only process groups with subfields
+          if (Array.isArray(materialGroup.fields)) {
+            materialGroup.fields.forEach(subField => {
+              // Only process radio fields (Yes/No questions)
+              if (subField.type === "radio") {
+                const radioValue = area[subField.id];
+                // Find the corresponding details and photo fields for this radio field
+                const detailsField = materialGroup.fields.find(f =>
+                  f.type === "text" &&
+                  (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                );
+                const photoField = materialGroup.fields.find(f =>
+                  f.type === "file" &&
+                  (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                );
+                const detailsValue = detailsField ? area[detailsField.id] : "";
+                const photoValue = photoField ? area[photoField.id] : "";
+
+                if (radioValue === "Yes") {
+                  leadAssessment.push({
+                    id: subField.label || subField.id || "",
+                    locationAndDescription: detailsValue || "",
+                    photo: photoValue || ""
+                  });
+                } else {
+                  leadAssessment.push({
+                    id: subField.label || subField.id || "",
+                    locationAndDescription: "None identified in subject building.",
+                    photo: ""
+                  });
+                }
+              }
+            });
+          }
+        });
+      });
+    }
+  }
+  
+  // Dynamically build pcbAssessment for Table 3 if templateSchema is provided
+  let pcbAssessment = [];
+  if (templateSchema && templateSchema.sections) {
+    // Find a section or question group related to PCB assessment table
+    // (e.g., by label, id, or type: 'table', or containing 'pcb' in label)
+    const pcbSection = templateSchema.sections.find(
+      s => s.title && /pcb/i.test(s.title)
+    );
+    console.log("pcbSection=>", pcbSection);
+
+    if (pcbSection && pcbSection.fields) {
+      areaDetails.forEach(area => {
+        pcbSection.fields.forEach(materialGroup => {
+          // Only process groups with subfields
+          if (Array.isArray(materialGroup.fields)) {
+            materialGroup.fields.forEach(subField => {
+              // Only process radio fields (Yes/No questions)
+              if (subField.type === "radio") {
+                const radioValue = area[subField.id];
+                // Find the corresponding details and photo fields for this radio field
+                const detailsField = materialGroup.fields.find(f =>
+                  f.type === "text" &&
+                  (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                );
+                const photoField = materialGroup.fields.find(f =>
+                  f.type === "file" &&
+                  (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                );
+                const detailsValue = detailsField ? area[detailsField.id] : "";
+                const photoValue = photoField ? area[photoField.id] : "";
+
+                if (radioValue === "Yes") {
+                  pcbAssessment.push({
+                    id: subField.label || subField.id || "",
+                    locationAndDescription: detailsValue || "",
+                    photo: photoValue || ""
+                  });
+                } else {
+                  pcbAssessment.push({
+                    id: subField.label || subField.id || "",
+                    locationAndDescription: "None identified in subject building.",
+                    photo: ""
+                  });
+                }
+              }
+            });
+          }
+        });
+      });
+    }
+  }
+  
+  // Area-specific sectioned output for clarity
+  let areaSections = [];
+  if (templateSchema && templateSchema.sections && areaDetails.length > 0) {
+    areaSections = areaDetails.map(area => {
+      // Area-specific asbestos assessment
+      let areaAsbestosAssessment = [];
+      const asbestosSection = templateSchema.sections.find(
+        s => s.title && /asbestos/i.test(s.title)
+      );
+      if (asbestosSection && asbestosSection.fields) {
+        asbestosSection.fields.forEach(materialGroup => {
+          if (Array.isArray(materialGroup.fields)) {
+            materialGroup.fields.forEach(subField => {
+              if (subField.type === "radio") {
+                const radioValue = area[subField.id];
+                const detailsField = materialGroup.fields.find(f =>
+                  f.type === "text" &&
+                  (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                );
+                const photoField = materialGroup.fields.find(f =>
+                  f.type === "file" &&
+                  (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                );
+                const detailsValue = detailsField ? area[detailsField.id] : "";
+                const photoValue = photoField ? area[photoField.id] : "";
+                if (radioValue === "Yes") {
+                  areaAsbestosAssessment.push({
+                    id: subField.label || subField.id || "",
+                    locationAndDescription: detailsValue || "",
+                    photo: photoValue || ""
+                  });
+                } else {
+                  areaAsbestosAssessment.push({
+                    id: subField.label || subField.id || "",
+                    locationAndDescription: "None identified in subject building.",
+                    photo: ""
+                  });
+                }
+              }
+            });
+          }
+        });
+      }
+      // Area-specific lead assessment
+      let areaLeadAssessment = [];
+      if (Array.isArray(area.leadMaterials)) {
+        areaLeadAssessment = area.leadMaterials.map((item, idx) => ({
+          id: `Lead Material ${idx + 1}`,
+          locationAndDescription: [item.materialLocation, item.materialDescription].filter(Boolean).join(' - '),
+          photo: (Array.isArray(item.materialPhoto) && item.materialPhoto.length > 0) ? item.materialPhoto[0] : ''
+        }));
+      }
+      // Area-specific suspect lead materials (dynamic)
+      let areaSuspectLeadMaterials = [];
+      if (Array.isArray(area.suspectLeadMaterials) && area.suspectLeadMaterials.length > 0) {
+        areaSuspectLeadMaterials = area.suspectLeadMaterials;
+      } else if (typeof area.suspectLeadMaterials === 'string' && area.suspectLeadMaterials.trim() !== '') {
+        // If it's a string, split by newlines or commas
+        areaSuspectLeadMaterials = area.suspectLeadMaterials.split(/\n|,/).map(s => s.trim()).filter(Boolean);
+      }
+      // Area-specific mercury assessment (dynamic)
+      let areaMercuryPresent = area.mercuryObserved === 'Yes';
+      let areaMercurySourcesMaterials = [];
+      if (area.hasLamps === 'Yes') {
+        let lampLabel = 'fluorescent lamps';
+        if (area.lampCount && !isNaN(area.lampCount)) {
+          lampLabel += ` (Count: ${area.lampCount})`;
+        }
+        areaMercurySourcesMaterials.push(lampLabel);
+      }
+      if (area.areThereVials === 'Yes') {
+        areaMercurySourcesMaterials.push('mercury vials');
+      }
+      if (area.areThereMercuryContainingEquip === 'Yes') {
+        areaMercurySourcesMaterials.push('mercury-containing equipment (thermostats, thermometers, barometers, etc.)');
+      }
+      if (area.mercuryForms && typeof area.mercuryForms === 'string' && area.mercuryForms.trim() !== '') {
+        areaMercurySourcesMaterials.push(...area.mercuryForms.split(/\n|,/).map(s => s.trim()).filter(Boolean));
+      }
+      // Area-specific silica assessment (dynamic)
+      let areaSilicaObserved = area.silicaObserved === 'Yes';
+      let areaSilicaMaterials = [];
+      if (Array.isArray(area.silicaForms)) {
+        areaSilicaMaterials = area.silicaForms;
+      } else if (typeof area.silicaForms === 'string' && area.silicaForms.trim() !== '') {
+        areaSilicaMaterials = area.silicaForms.split(/\n|,/).map(s => s.trim()).filter(Boolean);
+      }
+      // Area-specific mould assessment (dynamic)
+      let areaMouldAssessment = [];
+      if (area.moldGrowth === 'Yes' && Array.isArray(area.mouldContaminationDetails)) {
+        areaMouldAssessment = area.mouldContaminationDetails.map((item, idx) => ({
+          id: `Mould Contamination ${idx + 1}`,
+          locationAndDescription: [item.mouldLocation, item.mouldDescription].filter(Boolean).join(' - '),
+          photo: (Array.isArray(item.mouldPhoto) && item.mouldPhoto.length > 0) ? item.mouldPhoto[0] : ''
+        }));
+      }
+      // Area-specific pest infestation (dynamic)
+      let areaPestInfestationObserved = area.pestInfestationObserved === 'Yes';
+      let areaInfestationType = '';
+      if (area.infestationTypeSelect === 'Other' && area.infestationTypeOther) {
+        areaInfestationType = area.infestationTypeOther;
+      } else if (area.infestationTypeSelect) {
+        areaInfestationType = area.infestationTypeSelect;
+      }
+      let areaDroppingsObserved = area.droppingsObserved === 'Yes';
+      let areaDroppingsLocation = area.droppingsLocation || '';
+      // Area-specific PCB assessment (dynamic)
+      let areaPcbObserved = area.pcbObserved === 'Yes';
+      let areaPcbAssessment = [];
+      if (areaPcbObserved && Array.isArray(area.pcbElectricalEquipmentTable)) {
+        areaPcbAssessment = area.pcbElectricalEquipmentTable.map(item => ({
+          location: item.tableLocation || '',
+          equipment: item.tableElectricalEquipment || '',
+          manufacturer: item.tableManufacturer || '',
+          pcbInfo: item.tablePcbIdInfo || '',
+          pcbContent: item.tablePcbContent || ''
+        }));
+      }
+      // Area-specific PCB summary paragraphs (dynamic)
+      let pcbSummaryParagraphs = [];
+      if (areaPcbObserved) {
+        // Fluorescent light fixtures
+        if (area.fluorescentFixtures || area.fixtureType || area.fixtureSize || area.ballastPcbPercentage || area.assumedPcbBallastsCount) {
+          let fixtureCount = area.fluorescentFixtures || 'N/A';
+          let fixtureType = area.fixtureType || '';
+          let fixtureSize = area.fixtureSize || '';
+          let ballastCount = area.assumedPcbBallastsCount || 'N/A';
+          let ballastPcbPercent = area.ballastPcbPercentage || 'N/A';
+          pcbSummaryParagraphs.push(
+            `Fluorescent light fixtures were identified in the project areas. These were noted to be ${fixtureCount}-lamp fixtures. Most of the lamps were noted to be ${fixtureSize ? fixtureSize : 'N/A'}. ${fixtureCount} fluorescent light fixtures were inspected to determine PCB content. ${ballastCount} ballasts were identified. ${ballastPcbPercent} of these ballasts were verified to be non-PCB-containing while ${ballastPcbPercent} ballasts were verified to contain PCBs. ${ballastPcbPercent} ballast(s) did not contain sufficient information on the label to make a proper determination and therefore is assumed to contain PCBs.`
+          );
+        }
+        // HID lights
+        if (area.hidLightsPresent === 'Yes') {
+          let hidCount = area.hidLightsCount || 'N/A';
+          pcbSummaryParagraphs.push(
+            `A total of approximately ${hidCount} HID lights were also present throughout the project areas. These lights could not be accessed for further evaluation to determine the type(s) of ballasts present and therefore the ballasts within these lights are assumed to contain PCBs.`
+          );
+        }
+        // Liquid-filled transformer
+        if (area.liquidFilledTransformer === 'Yes') {
+          let transformerLocation = area.transformerLocation || 'the project areas';
+          let leakageSigns = area.transformerLeakageSigns === 'Yes' ? 'Significant staining or discolouration of the concrete floor was noted beneath the transformer that may be suggestive of previous leakage.' : 'No significant staining or discolouration of the concrete floor was noted beneath the transformer that may be suggestive of previous leakage.';
+          pcbSummaryParagraphs.push(
+            `1 liquid-filled transformer was identified in ${transformerLocation} of the project areas that was identified to be PCB-containing. ${leakageSigns} The transformer itself was observed to be in good condition and did not exhibit any signs of leakage.`
+          );
+        }
+        // Wall-mounted capacitors
+        if (area.wallMountedCapacitor === 'Yes') {
+          let capCount = area.wallMountedCapacitorCount || 'N/A';
+          let capLeakage = area.capacitorLeakageSigns === 'Yes' ? 'was verified to not contain PCBs while the second capacitor is assumed to be PCB-containing. No suspect leakage was observed on the exterior casing of these capacitors.' : 'is assumed to be PCB-containing. No suspect leakage was observed on the exterior casing of these capacitors.';
+          pcbSummaryParagraphs.push(
+            `(wall-mounted capacitors) ${capCount} wall-mounted capacitors were identified in the project areas. Based on the nameplate information obtained, ${capLeakage}`
+          );
+        }
+      }
+      // Area-specific ODS/GWS assessment (dynamic)
+      let areaOdsObserved = area.odsObserved === 'Yes';
+      let areaOdsAssessment = [];
+      if (areaOdsObserved && Array.isArray(area.odsGwsAssessmentTable)) {
+        areaOdsAssessment = area.odsGwsAssessmentTable.map(item => ({
+          location: item.tableLocation || '',
+          equipmentType: item.tableEquipmentManufacturerType || '',
+          refrigerantType: item.tableRefrigerantTypeQuantity || '',
+          classification: item.tableOdsGwsClassification || ''
+        }));
+      }
+      // ODS summary paragraphs
+      let odsSummaryParagraphs = [];
+      if (areaOdsObserved) {
+        if (area.hasAirConditioning === 'Yes') {
+          let acCount = area.acUnitCount || 'N/A';
+          let acSize = area.acUnitSize || 'N/A';
+          odsSummaryParagraphs.push(`There are ${acCount} air conditioning unit(s) (${acSize}) present in the project area.`);
+        }
+        if (area.refrigerantType) {
+          let refrigerant = area.refrigerantType;
+          let pounds = area.refrigerantPounds || 'N/A';
+          odsSummaryParagraphs.push(`The refrigerant type is ${refrigerant} with approximately ${pounds} pounds present.`);
+        }
+        if (area.fireExtinguishingEquipment === 'Yes') {
+          odsSummaryParagraphs.push('Fire extinguishing equipment is present in the project area.');
+        }
+      }
+      return {
+        areaName: area.name || area.id || `Area ${area.areaNumber || ''}`,
+        areaNumber: area.areaNumber || '',
+        asbestosAssessment: areaAsbestosAssessment,
+        leadAssessment: areaLeadAssessment,
+        suspectLeadMaterials: areaSuspectLeadMaterials,
+        mercuryAssessment: areaMercurySourcesMaterials,
+        silicaObserved: areaSilicaObserved,
+        silicaMaterials: areaSilicaMaterials,
+        mercuryPresent: areaMercuryPresent,
+        mercurySourcesMaterials: areaMercurySourcesMaterials,
+        mouldAssessment: areaMouldAssessment,
+        pestInfestationObserved: areaPestInfestationObserved,
+        infestationType: areaInfestationType,
+        droppingsObserved: areaDroppingsObserved,
+        droppingsLocation: areaDroppingsLocation,
+        pcbObserved: areaPcbObserved,
+        pcbAssessment: areaPcbAssessment,
+        pcbSummaryParagraphs: pcbSummaryParagraphs,
+        odsObserved: areaOdsObserved,
+        odsAssessment: areaOdsAssessment,
+        odsSummaryParagraphs: odsSummaryParagraphs,
+        // Add more area-specific mapped data here as needed
+      };
+    });
   }
   
   return {
@@ -861,24 +1174,14 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     summaryTable,
     // Add dynamic Table 3 mapping
     asbestosAssessment,
+    // Add dynamic Table 4 mapping    
+    leadAssessment,
+    // Add dynamic Table 5 mapping
+    pcbAssessment,
+    // Area-specific sectioned output
+    areaSections,
 
-    // Add hardcoded suspect lead materials list for template
-    suspectLeadMaterials: [
-      'paints and surface coatings (not sampled)',
-      'glazing associated with ceramic tiles',
-      'batteries associated with emergency lighting',
-      'solder in copper pipe fittings',
-      'solder in electrical components'
-    ],
-    
     // Add hardcoded suspect mercury materials list for template
-    mercurySourcesMaterials: [
-      'vapour in fluorescent lamps',
-      'vapour in HID lamps',
-      'liquid in thermostats',
-      'thermometers associated with the boiler',
-      'thermometers associated with mechanical equipment'
-    ]
   };
 };
 
