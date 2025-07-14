@@ -771,24 +771,103 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
               // Only process radio fields (Yes/No questions)
               if (subField.type === "radio") {
                 const radioValue = area[subField.id];
-                // Find the corresponding details and photo fields for this radio field
-                const detailsField = materialGroup.fields.find(f =>
-                  f.type === "text" &&
-                  (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
-                );
-                const photoField = materialGroup.fields.find(f =>
-                  f.type === "file" &&
-                  (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
-                );
-                const detailsValue = detailsField ? area[detailsField.id] : "";
-                const photoValue = photoField ? area[photoField.id] : "";
-
+                
                 if (radioValue === "Yes") {
-                  asbestosAssessment.push({
-                    id: subField.label || subField.id || "",
-                    locationAndDescription: detailsValue || "",
-                    photo: photoValue || ""
-                  });
+                  // Find the corresponding repeater field for this radio field
+                  const repeaterField = materialGroup.fields.find(f =>
+                    f.type === "repeater" &&
+                    (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                  );
+                  
+                  if (repeaterField && repeaterField.fields) {
+                    // Process repeater field entries
+                    const repeaterData = area[repeaterField.id];
+                    if (Array.isArray(repeaterData) && repeaterData.length > 0) {
+                      repeaterData.forEach((entry, index) => {
+                        // Find location, description, and photo fields within the repeater
+                        const locationField = repeaterField.fields.find(f =>
+                          f.type === "text" && f.label === "Location"
+                        );
+                        const descriptionField = repeaterField.fields.find(f =>
+                          f.type === "text" && f.label === "Description"
+                        );
+                        const photoField = repeaterField.fields.find(f =>
+                          f.type === "file" && f.label === "Photo"
+                        );
+                        
+                        const locationValue = locationField ? entry[locationField.id] : "";
+                        const descriptionValue = descriptionField ? entry[descriptionField.id] : "";
+                        const photoValue = photoField ? entry[photoField.id] : "";
+                        
+                        // Combine location and description
+                        const combinedValue = [locationValue, descriptionValue].filter(Boolean).join(" - ");
+                        
+                        asbestosAssessment.push({
+                          id: `${subField.label || subField.id || ""} ${index + 1}`,
+                          locationAndDescription: combinedValue || "",
+                          photo: photoValue || ""
+                        });
+                      });
+                    } else {
+                      // Fallback for single text fields if no repeater data
+                      const locationField = materialGroup.fields.find(f =>
+                        f.type === "text" &&
+                        f.label === "Location" &&
+                        (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                      );
+                      const descriptionField = materialGroup.fields.find(f =>
+                        f.type === "text" &&
+                        f.label === "Description" &&
+                        (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                      );
+                      const photoField = materialGroup.fields.find(f =>
+                        f.type === "file" &&
+                        (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                      );
+                      
+                      const locationValue = locationField ? area[locationField.id] : "";
+                      const descriptionValue = descriptionField ? area[descriptionField.id] : "";
+                      const photoValue = photoField ? area[photoField.id] : "";
+                      
+                      // Combine location and description
+                      const combinedValue = [locationValue, descriptionValue].filter(Boolean).join(" - ");
+                      
+                      asbestosAssessment.push({
+                        id: subField.label || subField.id || "",
+                        locationAndDescription: combinedValue || "",
+                        photo: photoValue || ""
+                      });
+                    }
+                  } else {
+                    // Fallback for single text fields if no repeater field found
+                    const locationField = materialGroup.fields.find(f =>
+                      f.type === "text" &&
+                      f.label === "Location" &&
+                      (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                    );
+                    const descriptionField = materialGroup.fields.find(f =>
+                      f.type === "text" &&
+                      f.label === "Description" &&
+                      (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                    );
+                    const photoField = materialGroup.fields.find(f =>
+                      f.type === "file" &&
+                      (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                    );
+                    
+                    const locationValue = locationField ? area[locationField.id] : "";
+                    const descriptionValue = descriptionField ? area[descriptionField.id] : "";
+                    const photoValue = photoField ? area[photoField.id] : "";
+                    
+                    // Combine location and description
+                    const combinedValue = [locationValue, descriptionValue].filter(Boolean).join(" - ");
+                    
+                    asbestosAssessment.push({
+                      id: subField.label || subField.id || "",
+                      locationAndDescription: combinedValue || "",
+                      photo: photoValue || ""
+                    });
+                  }
                 } else {
                   asbestosAssessment.push({
                     id: subField.label || subField.id || "",
@@ -823,22 +902,33 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
               // Only process radio fields (Yes/No questions)
               if (subField.type === "radio") {
                 const radioValue = area[subField.id];
-                // Find the corresponding details and photo fields for this radio field
-                const detailsField = materialGroup.fields.find(f =>
+                // Find the corresponding location, description, and photo fields for this radio field
+                const locationField = materialGroup.fields.find(f =>
                   f.type === "text" &&
+                  f.label === "Location" &&
+                  (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                );
+                const descriptionField = materialGroup.fields.find(f =>
+                  f.type === "text" &&
+                  f.label === "Description" &&
                   (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
                 );
                 const photoField = materialGroup.fields.find(f =>
                   f.type === "file" &&
                   (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
                 );
-                const detailsValue = detailsField ? area[detailsField.id] : "";
+                
+                const locationValue = locationField ? area[locationField.id] : "";
+                const descriptionValue = descriptionField ? area[descriptionField.id] : "";
                 const photoValue = photoField ? area[photoField.id] : "";
+                
+                // Combine location and description
+                const combinedValue = [locationValue, descriptionValue].filter(Boolean).join(" - ");
 
                 if (radioValue === "Yes") {
                   leadAssessment.push({
                     id: subField.label || subField.id || "",
-                    locationAndDescription: detailsValue || "",
+                    locationAndDescription: combinedValue || "",
                     photo: photoValue || ""
                   });
                 } else {
@@ -875,22 +965,33 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
               // Only process radio fields (Yes/No questions)
               if (subField.type === "radio") {
                 const radioValue = area[subField.id];
-                // Find the corresponding details and photo fields for this radio field
-                const detailsField = materialGroup.fields.find(f =>
+                // Find the corresponding location, description, and photo fields for this radio field
+                const locationField = materialGroup.fields.find(f =>
                   f.type === "text" &&
+                  f.label === "Location" &&
+                  (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                );
+                const descriptionField = materialGroup.fields.find(f =>
+                  f.type === "text" &&
+                  f.label === "Description" &&
                   (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
                 );
                 const photoField = materialGroup.fields.find(f =>
                   f.type === "file" &&
                   (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
                 );
-                const detailsValue = detailsField ? area[detailsField.id] : "";
+                
+                const locationValue = locationField ? area[locationField.id] : "";
+                const descriptionValue = descriptionField ? area[descriptionField.id] : "";
                 const photoValue = photoField ? area[photoField.id] : "";
+                
+                // Combine location and description
+                const combinedValue = [locationValue, descriptionValue].filter(Boolean).join(" - ");
 
                 if (radioValue === "Yes") {
                   pcbAssessment.push({
                     id: subField.label || subField.id || "",
-                    locationAndDescription: detailsValue || "",
+                    locationAndDescription: combinedValue || "",
                     photo: photoValue || ""
                   });
                 } else {
@@ -923,22 +1024,103 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
             materialGroup.fields.forEach(subField => {
               if (subField.type === "radio") {
                 const radioValue = area[subField.id];
-                const detailsField = materialGroup.fields.find(f =>
-                  f.type === "text" &&
-                  (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
-                );
-                const photoField = materialGroup.fields.find(f =>
-                  f.type === "file" &&
-                  (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
-                );
-                const detailsValue = detailsField ? area[detailsField.id] : "";
-                const photoValue = photoField ? area[photoField.id] : "";
+                
                 if (radioValue === "Yes") {
-                  areaAsbestosAssessment.push({
-                    id: subField.label || subField.id || "",
-                    locationAndDescription: detailsValue || "",
-                    photo: photoValue || ""
-                  });
+                  // Find the corresponding repeater field for this radio field
+                  const repeaterField = materialGroup.fields.find(f =>
+                    f.type === "repeater" &&
+                    (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                  );
+                  
+                  if (repeaterField && repeaterField.fields) {
+                    // Process repeater field entries
+                    const repeaterData = area[repeaterField.id];
+                    if (Array.isArray(repeaterData) && repeaterData.length > 0) {
+                      repeaterData.forEach((entry, index) => {
+                        // Find location, description, and photo fields within the repeater
+                        const locationField = repeaterField.fields.find(f =>
+                          f.type === "text" && f.label === "Location"
+                        );
+                        const descriptionField = repeaterField.fields.find(f =>
+                          f.type === "text" && f.label === "Description"
+                        );
+                        const photoField = repeaterField.fields.find(f =>
+                          f.type === "file" && f.label === "Photo"
+                        );
+                        
+                        const locationValue = locationField ? entry[locationField.id] : "";
+                        const descriptionValue = descriptionField ? entry[descriptionField.id] : "";
+                        const photoValue = photoField ? entry[photoField.id] : "";
+                        
+                        // Combine location and description
+                        const combinedValue = [locationValue, descriptionValue].filter(Boolean).join(" - ");
+                        
+                        areaAsbestosAssessment.push({
+                          id: `${subField.label || subField.id || ""} ${index + 1}`,
+                          locationAndDescription: combinedValue || "",
+                          photo: photoValue || ""
+                        });
+                      });
+                    } else {
+                      // Fallback for single text fields if no repeater data
+                      const locationField = materialGroup.fields.find(f =>
+                        f.type === "text" &&
+                        f.label === "Location" &&
+                        (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                      );
+                      const descriptionField = materialGroup.fields.find(f =>
+                        f.type === "text" &&
+                        f.label === "Description" &&
+                        (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                      );
+                      const photoField = materialGroup.fields.find(f =>
+                        f.type === "file" &&
+                        (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                      );
+                      
+                      const locationValue = locationField ? area[locationField.id] : "";
+                      const descriptionValue = descriptionField ? area[descriptionField.id] : "";
+                      const photoValue = photoField ? area[photoField.id] : "";
+                      
+                      // Combine location and description
+                      const combinedValue = [locationValue, descriptionValue].filter(Boolean).join(" - ");
+                      
+                      areaAsbestosAssessment.push({
+                        id: subField.label || subField.id || "",
+                        locationAndDescription: combinedValue || "",
+                        photo: photoValue || ""
+                      });
+                    }
+                  } else {
+                    // Fallback for single text fields if no repeater field found
+                    const locationField = materialGroup.fields.find(f =>
+                      f.type === "text" &&
+                      f.label === "Location" &&
+                      (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                    );
+                    const descriptionField = materialGroup.fields.find(f =>
+                      f.type === "text" &&
+                      f.label === "Description" &&
+                      (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                    );
+                    const photoField = materialGroup.fields.find(f =>
+                      f.type === "file" &&
+                      (f.condition === subField.id || (f.showWhen && f.showWhen.startsWith(subField.id + "=")))
+                    );
+                    
+                    const locationValue = locationField ? area[locationField.id] : "";
+                    const descriptionValue = descriptionField ? area[descriptionField.id] : "";
+                    const photoValue = photoField ? area[photoField.id] : "";
+                    
+                    // Combine location and description
+                    const combinedValue = [locationValue, descriptionValue].filter(Boolean).join(" - ");
+                    
+                    areaAsbestosAssessment.push({
+                      id: subField.label || subField.id || "",
+                      locationAndDescription: combinedValue || "",
+                      photo: photoValue || ""
+                    });
+                  }
                 } else {
                   areaAsbestosAssessment.push({
                     id: subField.label || subField.id || "",
