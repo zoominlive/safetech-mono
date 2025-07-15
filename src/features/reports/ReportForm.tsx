@@ -230,7 +230,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({ onCancel }) => {
             <div className="flex w-full md:w-2xl space-x-2">
               <MultiSelect
                 options={moistureOptions}
-                selected={reportData.moisture_options}
+                selected={Array.isArray(reportData.moisture_options) ? reportData.moisture_options : []}
                 onChange={(selected) =>
                   setReportData({
                     ...reportData,

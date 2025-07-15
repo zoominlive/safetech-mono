@@ -11,8 +11,8 @@ export interface Option {
 
 export interface MultiSelectProps {
   options: Option[];
-  selected: string[] | Option[];
-  onChange: (selected: string[] | Option[]) => void;
+  selected: Option[];
+  onChange: (selected: Option[]) => void;
   className?: string;
   placeholder?: string;
   disabled?: boolean;
@@ -32,38 +32,21 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 }) => {
   const [showOtherInput, setShowOtherInput] = useState(false);
   const [otherInputValue, setOtherInputValue] = useState('');
-  const [isOtherSelected, setIsOtherSelected] = useState(false);
-
-  // Type guard to check if selected is string array
-  const isStringArray = (arr: any[]): arr is string[] => {
-    return arr.length === 0 || typeof arr[0] === 'string';
-  };
 
   const handleSelect = (value: string) => {
     if (value === 'other') {
-      setIsOtherSelected(true);
       setShowOtherInput(true);
       return;
     }
 
     const option = options.find((opt) => opt.value === value);
     if (option) {
-      const isSelected = isStringArray(selected)
-        ? selected.includes(option.value)
-        : selected.some((s: Option) => s.value === option.value);
+      const isSelected = selected.some((s) => s.value === option.value);
       
       if (isSelected) {
-        if (isStringArray(selected)) {
-          onChange(selected.filter((s: string) => s !== option.value));
-        } else {
-          onChange(selected.filter((s: Option) => s.value !== option.value));
-        }
+        onChange(selected.filter((s) => s.value !== option.value));
       } else {
-        if (isStringArray(selected)) {
-          onChange([...selected, option.value]);
-        } else {
-          onChange([...selected, option]);
-        }
+        onChange([...selected, option]);
       }
     }
   };
@@ -75,26 +58,14 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
         label: otherInputValue.trim(),
       };
       
-      if (isStringArray(selected)) {
-        onChange([...selected, customOption.label]);
-      } else {
-        onChange([...selected, customOption]);
-      }
-      
+      onChange([...selected, customOption]);
       setOtherInputValue('');
       setShowOtherInput(false);
-      setIsOtherSelected(false);
     }
   };
 
-  const handleRemoveOption = (optionToRemove: string | Option) => {
-    if (isStringArray(selected)) {
-      const valueToRemove = typeof optionToRemove === 'string' ? optionToRemove : optionToRemove.label;
-      onChange(selected.filter((s: string) => s !== valueToRemove));
-    } else {
-      const valueToRemove = typeof optionToRemove === 'string' ? optionToRemove : optionToRemove.value;
-      onChange(selected.filter((s: Option) => s.value !== valueToRemove));
-    }
+  const handleRemoveOption = (optionToRemove: Option) => {
+    onChange(selected.filter((s) => s.value !== optionToRemove.value));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -108,13 +79,8 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
     ? [...options, { value: 'other', label: otherOptionLabel }]
     : options;
 
-  // Convert selected values to display format
-  const selectedForDisplay = isStringArray(selected) 
-    ? selected.map(s => ({ value: s, label: s }))
-    : selected;
-
-  const currentValue = selectedForDisplay.length > 0 
-    ? selectedForDisplay[selectedForDisplay.length - 1].value 
+  const currentValue = selected.length > 0 
+    ? selected[selected.length - 1].value 
     : undefined;
 
   return (
@@ -132,7 +98,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             <SelectItem
               key={option.value}
               value={option.value}
-              className={selectedForDisplay.some((s) => s.value === option.value) ? 'bg-accent' : ''}
+              className={selected.some((s) => s.value === option.value) ? 'bg-accent' : ''}
             >
               {option.label}
             </SelectItem>
@@ -165,7 +131,6 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             onClick={() => {
               setShowOtherInput(false);
               setOtherInputValue('');
-              setIsOtherSelected(false);
             }}
             disabled={disabled}
             className="px-3"
@@ -176,9 +141,9 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
       )}
 
       {/* Selected chips/tags */}
-      {selectedForDisplay.length > 0 && (
+      {selected.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-2">
-          {selectedForDisplay.map((option) => (
+          {selected.map((option) => (
             <div
               key={option.value}
               className="flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-sm"
