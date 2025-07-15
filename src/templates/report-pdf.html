@@ -1049,38 +1049,35 @@
             {{#each areaSections}}
               <h3>Area: {{this.areaName}}</h3>
               {{#if this.pcbObserved}}
-              <p>The assessment for potential PCB-containing electrical equipment is summarized in the
-                following table. Equipment where the presence/absence of PCBs could be verified are
-                indicated as such in the table. Equipment where the absence of PCBs could not be
-                verified based on the information available are assumed to contain PCBs.</p>
+              <p>The assessment for potential PCB-containing electrical equipment is summarized in the following table. Equipment where the presence/absence of PCBs could be verified are indicated as such in the table. Equipment where the absence of PCBs could not be verified based on the information available are assumed to contain PCBs.</p>
               <h2 style="margin-top: 30px;">Table 7: Results of Assessment for PCB-Containing Electrical Equipment</h2>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Location</th>
-                      <th>Electrical Equipment</th>
-                      <th>Manufacturer</th>
-                      <th>PCB Identification Information</th>
-                      <th>PCB Content</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {{#each this.pcbAssessment}}
-                    <tr>
-                      <td>{{this.location}}</td>
-                      <td>{{this.equipment}}</td>
-                      <td>{{this.manufacturer}}</td>
-                      <td>{{this.pcbInfo}}</td>
-                      <td>{{this.pcbContent}}</td>
-                    </tr>
-                    {{/each}}
-                  </tbody>
-                </table>
-                {{#each pcbSummaryParagraphs}}
-                <p>{{this}}</p>
-                {{/each}}
+              <table>
+                <thead>
+                  <tr>
+                    <th>Location</th>
+                    <th>Electrical Equipment</th>
+                    <th>Manufacturer</th>
+                    <th>PCB Identification Information</th>
+                    <th>PCB Content</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {{#each this.pcbAssessment}}
+                  <tr>
+                    <td>{{this.location}}</td>
+                    <td>{{this.equipment}}</td>
+                    <td>{{this.manufacturer}}</td>
+                    <td>{{this.pcbInfo}}</td>
+                    <td>{{this.pcbContent}}</td>
+                  </tr>
+                  {{/each}}
+                </tbody>
+              </table>
+              {{#each pcbSummaryParagraphs}}
+              <p>{{this}}</p>
+              {{/each}}
               {{else}}
-                <p>No sources of polychlorinated biphenyls (PCBs) were observed in this area.</p>
+              <p>No sources of polychlorinated biphenyls (PCBs) were observed in this area.</p>
               {{/if}}
             {{/each}}
         
@@ -1133,45 +1130,262 @@
         <div style="margin-top: 30px; margin-bottom: 30px; font-family: Arial, sans-serif; font-size: 12pt;">
             <!-- Section 3.0 Conclusions and Recommendations -->
             <div style="font-weight: bold;">3.0 CONCLUSIONS AND RECOMMENDATIONS</div>
-            {{#if conclusions}}
-            <div>
-                {{#each conclusions}}
-                <p>{{this}}</p>
-                {{/each}}
-            </div>
-            {{/if}}
-            {{#if recommendations}}
-            <div>
-                <h4>Recommendations</h4>
-                <ul>
-                    {{#each recommendations}}
-                    <li>{{this}}</li>
-                    {{/each}}
-                </ul>
-            </div>
-            {{/if}}
+            
             <!-- Section 3.1 Designated Substances -->
             <div style="font-weight: bold; margin-top: 24px;" id="designated-substances-conclusions">3.1 Designated Substances</div>
-            <p>Summary of conclusions and recommendations regarding designated substances identified in the assessment.</p>
+            
+            <!-- Section 3.1.1 Asbestos -->
             <div style="font-weight: bold; margin-left: 16px;" id="asbestos-conclusions">3.1.1 Asbestos</div>
-            <p style="margin-left: 16px;">No asbestos-containing materials were identified in the areas assessed. All sampled materials were confirmed to be non-asbestos containing. Should any suspect materials be uncovered during future work, they must be tested prior to disturbance in accordance with regulatory requirements.</p>
+            {{#if asbestosFound}}
+            <p style="margin-left: 16px;">Results of the assessment indicated that the following asbestos-containing materials are present in the project areas that may be disturbed as part of the construction project. Therefore, these materials are considered to be asbestos-containing and specific measures and procedures are required to be followed during renovation or demolition projects that have the potential to disturb this material.</p>
+            <ul style="margin-left: 32px;">
+                {{#each asbestosContainingMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            {{#if suspectAsbestosMaterials.length}}
+            <p style="margin-left: 16px;">The following building materials are suspected to be asbestos-containing but were not sampled as sampling would compromise the integrity of the material, lack of accessibility or potential hazards to the surveyor:</p>
+            <ul style="margin-left: 32px;">
+                {{#each suspectAsbestosMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            {{/if}}
+            <p style="margin-left: 16px;">Refer to Appendix A (Summary of ACM Occurrences) and Appendix B (Site Drawings) for types, locations, estimated quantities, and condition of asbestos-containing materials identified in the subject area.</p>
+            {{#if isRenovation}}
+            <p style="margin-left: 16px;">Removal or disturbance of identified asbestos-containing materials must be conducted in accordance with O.Reg. 278/05. Asbestos containing materials in Poor condition must be removed and/or repaired immediately following applicable asbestos abatement procedures. Asbestos-containing materials in Good condition can remain in place until major system upgrading, maintenance or demolition which could result in disturbance of this material.</p>
+            {{/if}}
+            {{#if isDemolition}}
+            <p style="margin-left: 16px;">In accordance with O.Reg. 278/05, prior to the demolition of the subject building, any identified asbestos-containing materials must be removed. However, this does not apply so as to prevent work necessary to gain access to the asbestos-containing material that is to be removed, if the workers doing the work are protected from the hazard. Our recommendations for the removal of the aforementioned asbestos-containing materials can be found below.</p>
+            {{/if}}
+            {{else}}
+            <p style="margin-left: 16px;">As results summarized in Table 3 indicate, no asbestos was detected in any of the bulk samples of ________, _________, or __________ retrieved for analysis. Therefore, these building materials are considered to be Non-ACM and there are no requirements for management, disturbance or removal of these materials under O. Reg. 278/05.</p>
+            <p style="margin-left: 16px;">Should any building materials be uncovered during demolition activities that were not referenced in this report, they must be assumed to be asbestos-containing unless proven otherwise by bulk sampling in accordance with Section 3 of O. Reg. 278/05.</p>
+            {{/if}}
+            
+            {{#if textureCoatAsbestos}}
+            <p style="margin-left: 16px;">Texture Coat/ Plaster identified to be asbestos-containing is recommended to be treated as friable ACM since disturbance of this material typically results in significant degradation and subsequent dust/debris generation that cannot be adequately controlled through wetting. Therefore, removal or disturbance of 1 square metre or less of texture coat should be conducted following Type 2 operations. If more than 1 square metre of texture coat is to be removed or disturbed then work should be conducted following Type 3 operations.</p>
+            {{/if}}
+            
+            {{#if nonFriableMaterials}}
+            <p style="margin-left: 16px;">{{nonFriableMaterials}} is/are considered to be a non-friable ACM. As per O. Reg. 278/05, removal of non-friable ACM can be conducted following Type 1 operations; as long as the material can be removed without being broken, cut, drilled or otherwise similarly disturbed. If the material cannot be removed without it breaking or being similarly disturbed then the work should be conducted using non-powered hand tools and the material should be wetted to control the spread of dust. If the material cannot be wetted or if power tools attached to dust-collecting devices equipped with HEPA (high efficiency particulate aerosol) filters are used during removal or disturbance, then work should be performed following Type 2 operations. If non-friable materials are removed or disturbed using power tools that are not attached to dust-collecting devices that are equipped with HEPA filters then work should be conducted following Type 3 operations.</p>
+            {{/if}}
+            
+            {{#if friableMaterials}}
+            <p style="margin-left: 16px;">{{friableMaterials}} is/are considered to be a friable ACM. As per O. Reg. 278/05, removal or disturbance of 1 square metre or less of friable ACM is classified as a Type 2 operation. If more than 1 square metre of friable ACM is to be removed or disturbed then work should be conducted following Type 3 operations; unless the material is removed using a glove bag, in which case Type 2 operations are applicable.</p>
+            {{/if}}
+            
+            {{#if sprayedFireproofing}}
+            <p style="margin-left: 16px;">Sprayed fireproofing is considered to be a friable ACM. As per O. Reg. 278/05, removal or disturbance of 1.0 m2 or less of friable ACM is classified as a Type 2 operation. If more than 1.0 m2 of friable ACM is to be removed or disturbed, then work should be conducted following Type 3 operations.</p>
+            <p style="margin-left: 16px;">Given the presence of asbestos-containing sprayed fireproofing, it is cautioned that this material or related debris may be concealed on the surface of false ceilings. As such, access above a false ceiling where asbestos-containing sprayed fireproofing is present is classified as a Type 2 operation (full enclosure method for access).</p>
+            <p style="margin-left: 16px;">Similarly, asbestos-containing sprayed fireproofing debris may be present within wall cavities. Therefore, access within these spaces is recommended to be conducted following Type 2 operations as a precautionary measure.</p>
+            <p style="margin-left: 16px;">As required by O.Reg. 278/05, cleaning or removal of ventilation components including rigid ducting (excluding filters) in the buildings with asbestos-containing sprayed fireproofing must be conducted following Type 3 procedures. For buildings where asbestos-containing sprayed fireproofing has been identified, replacement of filters within the ventilation system (air handling units and fan coils) must be conducted as a Type 2 operation as per the requirements of O.Reg. 278/05.</p>
+            {{/if}}
+            
+            {{#if ceilingTilesAsbestos}}
+            <p style="margin-left: 16px;">In accordance with O. Reg. 278/05, removal of 7.5 m2 or more of asbestos-containing ceiling tiles (i.e. ten or more 2′x4′ tiles) should be conducted following Type 2 operations. However, care should be taken when removing the ceiling tiles to ensure they are removed without being broken, cut, abraded or otherwise handled in a manner that can cause an excessive release of ceiling tile debris. Otherwise, Type 3 operations are recommended to be followed. If less than 7.5 m2 of asbestos-containing ceiling tiles are removed and they can be removed in the manner indicated above, removal can be conducted following Type 1 operations.</p>
+            {{/if}}
+            
+            {{#if drywallJointCompoundAsbestos}}
+            <p style="margin-left: 16px;">In accordance with O. Reg. 278/05, removal of less than 1 m2 of drywall where asbestos-containing drywall joint compound has been used can be conducted following Type 1 operations. If 1 square metre or more of drywall is removed where asbestos-containing drywall joint compound has been used then work should be conducted following Type 2 operations.</p>
+            {{/if}}
+            
+            {{#if refractoryNotSampled}}
+            <p style="margin-left: 16px;">The boiler units were in operation at the time of the assessment and internal refractory materials could not be accessed for sampling. As such, refractory is assumed to be asbestos-containing. If refractory materials are found once the units are opened, Safetech should be contacted to conduct bulk sampling of the material to determine if it asbestos-containing. If samples of refractory are not collected, removal must be conducted following Type 3 procedures outlined in O.Reg. 278/05.</p>
+            {{/if}}
+            
+            {{#if refractorySampled}}
+            <p style="margin-left: 16px;">Removal of refractory materials must be conducted following Type 3 procedures outlined in O.Reg. 278/05.</p>
+            {{/if}}
+            
+            {{#if generalAsbestosRecommendations}}
+            <p style="margin-left: 16px;">The removal or disturbance of ACM must follow the measures and procedures indicated in O. Reg. 278/05. This work should be conducted by workers who have received proper training by a "competent person" in the hazards of asbestos exposure, personal hygiene and work practices, and the use and care of respirators and protective clothing. Any worker/supervisor who works in a Type 3 operation must successfully complete the Asbestos Abatement Worker or Supervisor Training Program approved by the Ministry of Labour, Immigration, Training and Skills Development. It is recommended that all work involving the removal or disturbance of ACM be subject to inspection and testing to document conformance with O. Reg. 278/05 requirements. The degree of inspection and testing is dependent on site-specific conditions such as the type, duration, size and location of the work. In most circumstances Type 3 operations require a visual inspection and clearance air testing to be conducted by a competent worker on completion of the work. The inspection should be conducted to ensure that the enclosure and the work area inside the enclosure are free from visible dust, debris or residue that may contain asbestos. Clearance air testing for Type 3 operations requires a minimum number of air samples to be taken (depending on the size of the work area) following specific sampling and analytical procedures and all samples taken must meet the clearance criteria set out in O. Reg. 278/05.</p>
+            {{/if}}
+            
+            <!-- Section 3.1.2 Lead -->
             <div style="font-weight: bold; margin-left: 16px;" id="lead-conclusions">3.1.2 Lead</div>
-            <p style="margin-left: 16px;">Lead-containing paints and coatings were identified in select areas. Any disturbance of these materials should be conducted using lead-safe work practices, including appropriate personal protective equipment and waste disposal procedures.</p>
+            {{#if lowLevelLeadPaint}}
+            <p style="margin-left: 16px;">Results of paint chip analysis for the determination of lead content indicated in Samples {{lowLevelLeadSamples}} is/are considered a 'low-level lead paint' (≤0.1% based on requirements of the Environmental Abatement Council of Canada (EACC) Lead Guideline (2014)). If the 'low-level lead paint' is disturbed in a non-aggressive manner (no use of power tools/abrasive blasting, grinding, welding, heating, etc.), then respirators are not considered necessary. However, Class 1 measures and procedures should still be implemented during the non-aggressive disturbance of 'low-level lead paints', including, but not limited to, no smoking, eating, drinking and chewing gum in the work area; dust suppression methods must be implemented; and facilities must be made available so that workers can wash their hands and face.</p>
+            {{/if}}
+            
+            {{#if leadContainingPaint}}
+            <p style="margin-left: 16px;">Result of paint chip analysis for the determination of lead content indicated Samples {{leadContainingSamples}} is/are confirmed to be lead-containing (>0.1% lead content based on required of Environmental Abatement Council of Canada (EACC) "Lead Guideline" (October 2014)).</p>
+            {{/if}}
+            
+            <p style="margin-left: 16px;">Paints and surface coatings not sampled are assumed to be lead-containing. Any disturbance of the lead-containing paint should be conducted in accordance the procedures outlined in the Environmental Abatement Council of Canada (EACC) "Lead Guideline" (October 2014) and/or the Ontario Ministry of Labour, Immigration, Training and Skills Development (MLITSD) "Lead on Construction Projects" guideline (April 2011). The extent of procedures (Class or Type of operation) necessary depends on the type of work to be conducted.</p>
+            
+            {{#if emergencyLighting}}
+            <p style="margin-left: 16px;">Emergency lighting is present {{emergencyLightingLocation}} in the project areas and are suspected to contain lead-acid batteries. If emergency lighting is removed/replaced as part of the scheduled work activities, the batteries are recommended to be sent to a recycling facility for proper treatment.</p>
+            {{/if}}
+            
+            {{#if suspectLeadMaterials}}
+            <p style="margin-left: 16px;">Additional suspect lead-containing products includes {{suspectLeadMaterials}}. Future testing of these materials and specific handling/disposal requirements may be necessary if/when these materials are to be disturbed.</p>
+            {{/if}}
+            
+            {{#if leadDisturbanceRequired}}
+            <p style="margin-left: 16px;">Any disturbance of the lead-containing materials should be conducted in accordance with the procedures outlined in the Environmental Abatement Council of Canada (EACC) "Lead Guideline" (October 2014) and/or the Ontario Ministry of Labour, Immigration, Training and Skills Development (MLITSD) "Lead on Construction Projects" guideline (April 2011). The extent of procedures required depends on the type of work to be conducted.</p>
+            {{/if}}
+            
+            {{#if noLeadMaterials}}
+            <p style="margin-left: 16px;">At this time the method of disturbance, if any, of lead-containing materials is unknown. It is recommended that any contractor whose work requires lead-containing materials to be disturbed consult the EACC or Ontario MLITSD guidelines prior to the start of work to determine the Class/Type of operation(s) and the corresponding control measures (engineering controls, work/hygiene practices, protective clothing and equipment and worker training) necessary to conduct the work in a manner that will prevent worker overexposure to lead. The following table outlines the classification of lead disturbance based on the EACC guideline.</p>
+            {{/if}}
+            
+            {{#if leadGuidelineTable}}
+            <table style="margin-left: 16px; margin-top: 10px;">
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th>Description</th>
+                        <th>Requirements</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Class 1</td>
+                        <td>Non-aggressive disturbance</td>
+                        <td>Basic hygiene practices, dust suppression</td>
+                    </tr>
+                    <tr>
+                        <td>Class 2</td>
+                        <td>Aggressive disturbance</td>
+                        <td>Respiratory protection, containment</td>
+                    </tr>
+                    <tr>
+                        <td>Class 3</td>
+                        <td>Major disturbance</td>
+                        <td>Full containment, air monitoring</td>
+                    </tr>
+                </tbody>
+            </table>
+            {{/if}}
+            
+            <p style="margin-left: 16px;">If practicable, all bulk lead waste materials should be separated from other wastes and sent to a recycling facility. If not practicable, lead-containing waste should be handled and disposed of according to R.R.O. 1990, Regulation 347, General - Waste Management (Reg. 347) made under the Environmental Protection Act. Under this regulation (and depending on the quantity of waste generated) the waste may be subject to analysis following the Toxicity Characteristic Leaching Procedure (TCLP) to determine if it is a "leachate toxic waste" based on the leachate quality criteria provided in Schedule 4 of the regulation. Such wastes must meet specific treatment requirements (Schedule 5) or undergo alternative treatment for hazardous debris (Schedule 8) prior to land disposal.</p>
+            
+            <!-- Section 3.1.3 Mercury -->
             <div style="font-weight: bold; margin-left: 16px;" id="mercury-conclusions">3.1.3 Mercury</div>
-            <p style="margin-left: 16px;">Mercury-containing equipment, such as fluorescent lamps and thermostats, was observed. These items should be handled with care and recycled at approved facilities to prevent environmental contamination.</p>
+            {{#if mercuryLamps}}
+            <p style="margin-left: 16px;">Fluorescent and HID lamps that require removal should be handled with care and kept intact to avoid potential exposure to mercury vapour present within the lamps. To prevent the release of mercury into the environment, Safetech recommends that all waste lamps be sent to a lamp recycling facility and not disposed of in landfill.</p>
+            {{/if}}
+            
+            {{#if mercuryEquipmentNotRemoved}}
+            <p style="margin-left: 16px;">Mercury-containing thermostats, thermometers, barometers and other measuring devices (pressure gauges/sensors, vacuum gauges, manometers, etc.), and a variety of other electrical switches (temperature sensitive, tilt switches, float switches, etc.) associated with mechanical equipment were observed in the project areas. These items are not expected to be removed as part of the {{projectName}}. However, care should be taken not to disturb these items during the work as breakage could cause a spill of liquid mercury. If any of these items are to be removed it should be done so carefully to avoid spillage and stored/packaged in a manner that will prevent breakage or spillage. Any mercury-containing equipment that is to be removed is recommended to be recycled rather than disposed of in landfill.</p>
+            {{/if}}
+            
+            {{#if mercuryEquipmentRemoved}}
+            <p style="margin-left: 16px;">Mercury-containing thermostats, thermometers, barometers and other measuring devices (pressure gauges/sensors, vacuum gauges, manometers, etc.), and a variety of other electrical switches (temperature sensitive, tilt switches, float switches, etc.) associated with mechanical equipment are expected to be removed as part of the {{projectName}}. Care should be taken not to disturb these items during the work as breakage could cause a spill of liquid mercury. If any of these items are to be removed it should be done so carefully to avoid spillage and stored/packaged in a manner that will prevent breakage or spillage. Any mercury-containing equipment that is to be removed is recommended to be recycled rather than disposed of in landfill.</p>
+            {{/if}}
+            
+            <p style="margin-left: 16px;">Although no mercury was visibly identified in other equipment, dismantling of equipment was not conducted to verify the presence/absence of mercury. It is cautioned that thermometers, barometers and other measuring devices (pressure gauges/sensors, vacuum gauges, manometers, etc.), thermostats and a variety of other electrical switches (temperature sensitive, tilt switches, float switches, etc.) may contain mercury that may not be visible without dismantling the equipment. Such devices should be assumed to contain mercury until proven otherwise and similar precautions to those outlined above should be taken if any of these items are to be disturbed or taken out of service in the future.</p>
+            
+            <!-- Section 3.1.4 Silica -->
             <div style="font-weight: bold; margin-left: 16px;" id="silica-conclusions">3.1.4 Silica</div>
-            <p style="margin-left: 16px;">Building materials such as concrete, mortar, and drywall joint compound that may contain crystalline silica were present. Dust control measures and respiratory protection are recommended during any activities that may generate airborne silica.</p>
+            <p style="margin-left: 16px;">Suspect silica-containing materials were identified to be present in the project areas. In their current state, building materials containing silica do not represent a risk to building occupants or construction workers. Risks associated with exposure to silica arise during demolition activities that cause silica dust to be created (particularly grinding, drilling or cutting operations and during major demolition), resulting in a crystalline silica inhalation hazard.</p>
+            <p style="margin-left: 16px;">If any materials suspected to contain silica are to be removed or otherwise disturbed as a result of renovation/demolition activities it is recommended that procedures be put in place to control the generation of dust (such as routine water misting) and thus reduce the potential for worker exposure. Workers that have the potential to be exposed to airborne silica should also wear appropriate protective clothing and respiratory protection.</p>
+            <p style="margin-left: 16px;">Any work involving the disturbance of silica-containing materials should follow the procedures outlined in the Ontario MLITSD "Silica on Construction Projects" guideline (April 2011). The appropriate engineering controls, work practices, hygiene practices, personal protective measures and training necessary to conduct the work in a safe manner are provided in this guideline. The general measures and procedures (or Type of operation) necessary depends on the type of work to be conducted. The following table outlines the classification of silica disturbance based on the Ontario MLITSD guideline.</p>
+            
+            <table style="margin-left: 16px; margin-top: 10px;">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Requirements</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Type 1</td>
+                        <td>Low exposure potential</td>
+                        <td>Basic dust control, hygiene practices</td>
+                    </tr>
+                    <tr>
+                        <td>Type 2</td>
+                        <td>Medium exposure potential</td>
+                        <td>Respiratory protection, containment</td>
+                    </tr>
+                    <tr>
+                        <td>Type 3</td>
+                        <td>High exposure potential</td>
+                        <td>Full containment, air monitoring</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- Section 3.1.5 Other Designated Substances -->
             <div style="font-weight: bold; margin-left: 16px;" id="other-designated-substances-conclusions">3.1.5 Other Designated Substances</div>
-            <p style="margin-left: 16px;">No other designated substances, such as arsenic, benzene, or isocyanates, were identified or are expected to be present in significant quantities in the building materials assessed.</p>
+            <p style="margin-left: 16px;">No other designated substances are expected to be a component of building materials in the project areas in a form that would represent an exposure concern. Therefore, no protective measures or procedures specific to acrylonitrile, arsenic, benzene, coke oven emissions, ethylene oxide, isocyanates, and vinyl chloride are considered necessary.</p>
+            
             <!-- Section 3.2 Other Hazardous Materials -->
             <div style="font-weight: bold; margin-top: 24px;" id="other-hazardous-materials-conclusions">3.2 Other Hazardous Materials</div>
-            <p>Summary of conclusions and recommendations regarding other hazardous materials identified in the assessment.</p>
+            
+            <!-- Section 3.2.1 Chemical Hazards -->
             <div style="font-weight: bold; margin-left: 16px;" id="chemical-hazards-conclusions">3.2.1 Chemical Hazards</div>
-            <p style="margin-left: 16px;">No evidence of chemical hazards, such as urea formaldehyde foam insulation (UFFI) or polychlorinated biphenyls (PCBs), was observed. If any suspect materials are encountered during future work, they should be assessed and managed in accordance with applicable regulations.</p>
+            <p style="margin-left: 16px;">As no UFFI was identified or is suspected to be present in the project areas, no further action is required. However, given that no destructive testing was conducted, there is a remote possibility that UFFI could be hidden within locations such as exterior wall cavities. If suspect foam insulation is identified during renovation/demolition activities work should be stopped and the area should be re-assessed to evaluate conditions and determine appropriate control measures and worker protection, if necessary.</p>
+            
+            <!-- Section 3.2.2 Biological Hazards -->
             <div style="font-weight: bold; margin-left: 16px;" id="biological-hazards-conclusions">3.2.2 Biological Hazards</div>
-            <p style="margin-left: 16px;">No visible mould growth or significant pest infestation was identified at the time of assessment. Should mould or pests be discovered during future activities, appropriate remediation and control measures should be implemented.</p>
+            
+            <!-- Section 3.2.2.1 Mould Contamination -->
+            <div style="font-weight: bold; margin-left: 32px;">3.2.2.1 Mould Contamination</div>
+            {{#if mouldContamination}}
+            <p style="margin-left: 32px;">Suspect mould growth was identified on {{mouldAreas}}. Removal should follow mould remediation procedures following the methods outlined in the Environmental Abatement Council of Canada's (EACC) Mould Abatement Guidelines (Edition 3).</p>
+            {{else}}
+            <p style="margin-left: 32px;">No mould contamination was identified in the project areas and no further action is required at this time. Although no obvious mould contamination or evidence to suggest possible hidden mould contamination was identified in the project areas, there is still a potential for hidden mould growth to exist behind or underneath building finishes. Should suspect mould growth be discovered during the course of renovation or demolition work, Safetech recommends that all work stop so that the area can be assessed to evaluate proper control measures and remediation protocols in order to avoid worker exposure to mould and possible contamination of adjacent areas.</p>
+            {{/if}}
+            
+            <!-- Section 3.2.2.2 Pest Infestation -->
+            <div style="font-weight: bold; margin-left: 32px;">3.2.2.2 Pest Infestation</div>
+            {{#if pestInfestation}}
+            <p style="margin-left: 32px;">The presence of {{pestType}} droppings {{pestLocation}} in the project areas may pose a hazard to renovation/demolition workers if disturbed as part of their work activities.</p>
+            {{#if mouseInfestation}}
+            <p style="margin-left: 32px;">Exposure to mouse droppings as well as their saliva and urine can result in exposure to certain proteins that can act as allergens, resulting in allergic or asthmatic reactions to sensitized persons. Additionally, although rare, mice may be infected with Hantavirus, which can be shed in their urine, saliva and droppings. Exposure to Hantavirus can result in a serious respiratory illness called hantavirus pulmonary syndrome (HPS).</p>
+            {{/if}}
+            <p style="margin-left: 32px;">In order to reduce the potential for worker exposure, Safetech recommends that precautions be taken when disturbing/removing {{pestType}}. Procedures should be followed that minimize the potential for dust generation. It is recommended that prior to disturbance of {{pestType}}, affected surfaces should be wetted down with a disinfectant or diluted bleach solution. The generated waste should then be placed directly into heavy gauge bags, double-bagged and sealed prior to removing them from the work area. Workers conducting this work should wear personal protection, consisting of disposable coveralls, disposable gloves (rubber, latex, vinyl or nitrile) and appropriate respiratory protection such as a half-mask air-purifying HEPA-filtered (N95 minimum) respirator.</p>
+            {{else}}
+            <p style="margin-left: 32px;">No visual evidence of any significant pest infestation was observed in the project areas. Therefore, no additional precautionary measures are deemed necessary for protection against biological contaminants potentially associated with pest infestation.</p>
+            {{/if}}
+            
+            <!-- Section 3.2.3 Environmental Hazards -->
             <div style="font-weight: bold; margin-left: 16px;" id="environmental-hazards-conclusions">3.2.3 Environmental Hazards</div>
-            <p style="margin-left: 16px;">No environmental hazards, such as ozone-depleting substances or hazardous refrigerants, were identified in the building. All equipment should be properly decommissioned and disposed of in accordance with environmental protection regulations.</p>
+            
+            <!-- Section 3.2.3.1 Polychlorinated Biphenyls (PCBs) -->
+            <div style="font-weight: bold; margin-left: 32px;">3.2.3.1 Polychlorinated Biphenyls (PCBs)</div>
+            {{#if pcbObserved}}
+            <p style="margin-left: 32px;">The federal government has set strict regulations for the handling, storage and disposal of PCBs. The PCB Regulations (SOR/2008-273) came into effect on September 5th, 2008 and consolidates and replaces the Chlorobiphenyls Regulations (SOR/91-152) and the Storage of PCB Material Regulations (SOR/92-507). The purpose of the PCB Regulations is to improve the protection of Canada's environment and the health of Canadians by minimizing the risks posed by the use, storage and release of PCBs by accelerating the elimination of these substances.</p>
+            <p style="margin-left: 32px;">As of December 31, 2009 all current PCB storage sites are to have been eliminated and there should no longer be any electrical capacitors, electrical transformers, electromagnets, heat transfer equipment or any other equipment in service that contains PCBs at a concentration greater than 500 mg/kg (500 ppm). As of this time, all of this equipment should have been removed from service and sent for destruction. Furthermore, the PCB Regulations restricts the use of equipment containing PCBs (other than light ballasts or pole-top electrical transformers) at concentrations exceeding 50 mg/kg (50 ppm) in sensitive areas (such as drinking water treatment plants, schools, hospitals and senior citizen care facilities) by the same date. All other locations have until December 31, 2025 to decommission equipment containing 50 ppm to 500 ppm PCBs. The assessment confirmed that some of the existing fluorescent light ballasts contain PCB's.</p>
+            {{#if pcbLightFixtures}}
+            <p style="margin-left: 32px;">Based on our inspection results, of the approximate {{totalLightFixtures}} light fixtures present throughout the {{lightFixtureLocation}} it is estimated that approximately {{pcbPercentage}}% have ballasts that contain PCBs. Our inspection also identified {{assumedPcbBallasts}} "assumed PCB-containing" light ballast(s) while, based on the age of the building, existing HID lamp ballasts are also "assumed PCB-containing".</p>
+            {{/if}}
+            <p style="margin-left: 32px;">When light fixtures are to be decommissioned all PCB-containing ballasts should be removed and separated from other waste and disposed of as PCB waste at an authorized destruction facility. The PCB content of "assumed PCB-containing" fluorescent light ballasts and HID lamp ballasts should be verified at this time by determining the date of manufacture and other pertinent information by referring to the Environment Canada document entitled "Identification of Lamp Ballasts Containing PCBs" (Report EPS 2/CC/2 (revised) August 1991) to aid in identification.</p>
+            {{#if recentLightingRetrofit}}
+            <p style="margin-left: 32px;">Newer T8 lamps present in some of the four lamp fluorescent light fixtures indicate that a partial lighting retrofit has taken place. These newer T8 lamps use ballasts that do not contain PCBs. Therefore, light fixtures containing T8 lamps are not expected to contain PCB ballasts. However, it should be cautioned that since only the lamps were retrofitted (and not the entire light fixture) there is a potential for previous ballasts used with T12 lamps (which may contain PCBs) to be left in place; although this was not identified within the one fixture with T8 lamps that was inspected. Therefore, should renovation/demolition work result in removal and disposal of existing fluorescent light fixtures containing T8 lamps it is still recommended that each fixture is individually assessed for the presence of PCB-containing ballasts and if discovered should be handled and disposed of accordingly as described above.</p>
+            {{/if}}
+            {{#if additionalPcbEquipment}}
+            <p style="margin-left: 32px;">Additional PCB-containing electrical equipment in the form of {{additionalPcbEquipmentType}} was identified in {{additionalPcbLocation}}. Based on information obtained from the nameplate this {{additionalPcbEquipmentType}} has approximately {{pcbPounds}} pounds of {{pcbType}}, which is a trade name for a specific type of PCB. {{additionalPcbEquipmentCount}} {{additionalPcbEquipmentType}} identified in the {{additionalPcbLocation}} was classified as "assumed PCB-containing" as the date of manufacture or other pertinent information could not be identified at the time of the assessment.</p>
+            {{/if}}
+            <p style="margin-left: 32px;">This electrical equipment is not expected to be decommissioned as part of the {{projectName}} and as long as operational can remain in place until the regulated decommissioning deadline of December 31, 2025. At the time of decommissioning any suspect PCB-containing equipment should be verified by referring to the Environment Canada document entitled "Handbook on PCB's in Electrical Equipment" (Third Edition, April 1988) to aid in identification. In some cases, sampling and analysis of the material or liquid may be necessary for full verification.</p>
+            <p style="margin-left: 32px;">When PCB-containing equipment is taken out of service, jurisdiction falls under provincial regulations. As per R.R.O 1990, Regulation 347, General - Waste Management, the land disposal of PCB waste is prohibited. PCB wastes in Ontario are regulated under R.R.O 1990, Regulation 362, Waste Management – PCBs (Reg. 362), made under the Environmental Protection Act. Under this regulation, PCB waste is defined as any waste material containing PCBs at a concentration of more than fifty (50) parts per million by weight (i.e. >50mg/kg), with the exception of an electrical capacitor that has never contained over 1 kg of PCB's. Any PCB-containing equipment taken out of service should be properly handled and disposed of at an authorized destruction facility in accordance with the requirements of Federal Regulation SOR/2008-273 and Reg. 362.</p>
+            {{else}}
+            <p style="margin-left: 32px;">No equipment was identified in the project areas that is expected to be PCB-containing. Additionally, it was confirmed that all original T12 fluorescent lights (including the ballasts and complete fixtures) have been replaced with T8 fluorescent lights in the project areas and, therefore, this lighting should not have PCB-containing ballasts. Or, If the building is known to be constructed after 1980, no light fixtures are expected to have PCB-containing ballasts as the manufacture of PCBs in the U.S. was banned in 1979 and Canada banned the import, manufacture and sale of PCBs in 1977. Similarly, no other electrical equipment (such as transformers and capacitors) present in the subject area(s) is expected to contain PCBs based on the age of building construction.</p>
+            {{/if}}
+            
+            <!-- Section 3.2.3.2 Ozone Depleting and Global Warming Substances -->
+            <div style="font-weight: bold; margin-left: 32px;">3.2.3.2 Ozone Depleting and Global Warming Substances</div>
+            {{#if odsObserved}}
+            <p style="margin-left: 32px;">Ontario Regulation 463/10, Ozone Depleting Substances and Other Halocarbons (O.Reg. 463/10, made under the Environmental Protection Act) controls the use, discharge, sale, transfer, transport, storage and disposal of ozone depleting substances and halocarbons in Ontario. This regulation enhances the control and management of ODS and other halocarbons to prevent or minimize emissions, which serves a dual environmental benefit of lowering emissions of substances that deplete the ozone layer and contribute to global warming.</p>
+            {{#if airConditioningUnits}}
+            <p style="margin-left: 32px;">{{airConditioningCount}} {{airConditioningSize}} air-conditioning unit was noted on {{airConditioningArea}} in the {{airConditioningRoom}}. This air-conditioning unit will require removal as part of the {{projectName}} and the assessment confirmed that the unit contained approximately {{refrigerantPounds}} lbs of {{refrigerantType}}. Under O.Reg. 463/10 {{refrigerantType}} are considered "class {{refrigerantClass}}" ozone depleting substances.</p>
+            {{#if class1or2Refrigerant}}
+            <p style="margin-left: 32px;">O.Reg. 463/10 restricts the discharge of a class 1 and class 2 ozone depleting substance or a halocarbon into the natural environment or within a building. Servicing and testing of refrigeration equipment should be conducted in accordance with Environment Canada's "Environmental Code of Practice for Elimination of Fluorocarbon Emissions from Refrigeration and Air Conditioning Systems". This work must be conducted by a certified person who holds a valid Ozone Depletion Prevention (ODP) Certificate. Refrigeration equipment and containers that are to be dismantled and disposed of need to be properly purged of remaining refrigerant by a certified person and a notice must be affixed to the equipment or container that indicates it no longer contains a refrigerant (in addition to other information required by the regulation).</p>
+            {{/if}}
+            {{/if}}
+            {{#if fireExtinguishingEquipment}}
+            <p style="margin-left: 32px;">Under O.Reg. 463/10 Halon 1301 is considered a "class 1" ozone depleting substance. Fire extinguishing equipment that contains a halon may be discharged to fight fires and can be refilled once up to December 31, 2015 provided that the system is replaced by an alternative within a year of refill. Refilling of these systems with halon is prohibited as of January 1, 2016. Any inspection, maintenance, handling or decommissioning of this system should be conducted in accordance with Environment Canada's "Environmental Code of Practice on Halons" and ULC/ORD-C1058.18-2004, "The Servicing of Halon and Clean Agent Extinguishing Systems". Inspection and servicing of fire extinguishing equipment that contains a halon and recovery or reconditioning a halon from fire extinguishing equipment can only be conducted by a person employed in a business certified for the inspection of fire extinguishing equipment by Underwriters' Laboratories of Canada. Fire extinguishing equipment and containers containing halon cannot be dismantled, recycled or otherwise disposed of until it is confirmed by a qualified person that it no longer contains halon and a notice of such is affixed. The only exception to this requirement is portable fire extinguishing equipment containing less than three kilograms of halon.</p>
+            {{/if}}
+            <p style="margin-left: 32px;">Any refrigerant that is removed from an air-conditioning unit, heat pump, refrigeration or freezer unit (that is not mobile) is defined as a Stationary Refrigerant Waste under Reg. 347 and must be collected, handled, transported and recycled or disposed of in accordance with the requirements set forth in Sections 30 to 35 of this regulation.</p>
+            {{else}}
+            <p style="margin-left: 32px;">No equipment was identified in the project areas that is expected to contain ozone depleting or global warming substances. As such, no recommendations are considered necessary at this time.</p>
+            {{/if}}
+            
             <!-- End Section 3.0 Conclusions and Recommendations -->
         </div>
     </div>
