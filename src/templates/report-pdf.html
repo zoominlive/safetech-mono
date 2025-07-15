@@ -206,6 +206,39 @@
             color: #003366;
         }
         
+        /* TOC Page Numbers */
+        .toc a {
+            text-decoration: none;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+        
+        .toc a:hover {
+            color: #003366;
+        }
+        
+        .toc .page-number {
+            font-weight: bold;
+            color: #003366;
+        }
+        
+        .toc .toc-text {
+            flex: 1;
+        }
+        
+        .toc .toc-dots {
+            flex: 1;
+            border-bottom: 1px dotted #999;
+            margin: 0 8px;
+        }
+        
+        /* Section IDs for navigation */
+        .section-id {
+            position: relative;
+        }
+        
         /* Tables */
         table {
             width: 100%;
@@ -471,55 +504,216 @@
     <div class="section toc">
         <h1>TABLE OF CONTENTS</h1>
         <ul>
-            <li><span class="section-number"></span> EXECUTIVE SUMMARY</li>
-            <li><span class="section-number">1.0</span> Introduction
-                <ul>
-                    <li><span class="section-number">1.1</span> Background and Objectives</li>
-                    <li><span class="section-number">1.2</span> Scope of Work</li>
-                    <li><span class="section-number">1.3</span> Description of Area(s) Assessed</li>
-                </ul>
+            <li>
+                <a href="#executive-summary">
+                    <span class="toc-text"><span class="section-number"></span> EXECUTIVE SUMMARY</span>
+                    <span class="toc-dots"></span>
+                    <span class="page-number">5</span>
+                </a>
             </li>
-            <li><span class="section-number">2.0</span> Results
+            <li>
+                <a href="#introduction">
+                    <span class="toc-text"><span class="section-number">1.0</span> Introduction</span>
+                    <span class="toc-dots"></span>
+                    <span class="page-number">6</span>
+                </a>
                 <ul>
-                    <li><span class="section-number">2.1</span> Designated Substances
-                        <ul>
-                            <li><span class="section-number">2.1.1</span> Asbestos</li>
-                            <li><span class="section-number">2.1.2</span> Lead</li>
-                            <li><span class="section-number">2.1.3</span> Mercury</li>
-                            <li><span class="section-number">2.1.4</span> Silica</li>
-                            <li><span class="section-number">2.1.5</span> Other Designated Substances</li>
-                        </ul>
+                    <li>
+                        <a href="#background-objectives">
+                            <span class="toc-text"><span class="section-number">1.1</span> Background and Objectives</span>
+                            <span class="toc-dots"></span>
+                            <span class="page-number">6</span>
+                        </a>
                     </li>
-                    <li><span class="section-number">2.2</span> Other Hazardous Materials
-                        <ul>
-                            <li><span class="section-number">2.2.1</span> Chemical Hazards</li>
-                            <li><span class="section-number">2.2.2</span> Biological Hazards</li>
-                            <li><span class="section-number">2.2.3</span> Environmental Hazards</li>
-                        </ul>
+                    <li>
+                        <a href="#scope-of-work">
+                            <span class="toc-text"><span class="section-number">1.2</span> Scope of Work</span>
+                            <span class="toc-dots"></span>
+                            <span class="page-number">6</span>
+                        </a>
                     </li>
-                </ul>
-            </li>
-            <li><span class="section-number">3.0</span> Conclusions and Recommendations
-                <ul>
-                    <li><span class="section-number">3.1</span> Designated Substances
-                        <ul>
-                            <li><span class="section-number">3.1.1</span> Asbestos</li>
-                            <li><span class="section-number">3.1.2</span> Lead</li>
-                            <li><span class="section-number">3.1.3</span> Mercury</li>
-                            <li><span class="section-number">3.1.4</span> Silica</li>
-                            <li><span class="section-number">3.1.5</span> Other Designated Substances</li>
-                        </ul>
-                    </li>
-                    <li><span class="section-number">3.2</span> Other Hazardous Materials
-                        <ul>
-                            <li><span class="section-number">3.2.1</span> Chemical Hazards</li>
-                            <li><span class="section-number">3.2.2</span> Biological Hazards</li>
-                            <li><span class="section-number">3.2.3</span> Environmental Hazards</li>
-                        </ul>
+                    <li>
+                        <a href="#description-of-areas">
+                            <span class="toc-text"><span class="section-number">1.3</span> Description of Area(s) Assessed</span>
+                            <span class="toc-dots"></span>
+                            <span class="page-number">7</span>
+                        </a>
                     </li>
                 </ul>
             </li>
-            <li><span class="section-number">4.0</span> Limitations</li>
+            <li>
+                <a href="#results">
+                    <span class="toc-text"><span class="section-number">2.0</span> Results</span>
+                    <span class="toc-dots"></span>
+                    <span class="page-number">8</span>
+                </a>
+                <ul>
+                    <li>
+                        <a href="#designated-substances">
+                            <span class="toc-text"><span class="section-number">2.1</span> Designated Substances</span>
+                            <span class="toc-dots"></span>
+                            <span class="page-number">8</span>
+                        </a>
+                        <ul>
+                            <li>
+                                <a href="#asbestos">
+                                    <span class="toc-text"><span class="section-number">2.1.1</span> Asbestos</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">8</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#lead">
+                                    <span class="toc-text"><span class="section-number">2.1.2</span> Lead</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">10</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#mercury">
+                                    <span class="toc-text"><span class="section-number">2.1.3</span> Mercury</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">12</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#silica">
+                                    <span class="toc-text"><span class="section-number">2.1.4</span> Silica</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">12</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#other-designated-substances">
+                                    <span class="toc-text"><span class="section-number">2.1.5</span> Other Designated Substances</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">13</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#other-hazardous-materials">
+                            <span class="toc-text"><span class="section-number">2.2</span> Other Hazardous Materials</span>
+                            <span class="toc-dots"></span>
+                            <span class="page-number">13</span>
+                        </a>
+                        <ul>
+                            <li>
+                                <a href="#chemical-hazards">
+                                    <span class="toc-text"><span class="section-number">2.2.1</span> Chemical Hazards</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">13</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#biological-hazards">
+                                    <span class="toc-text"><span class="section-number">2.2.2</span> Biological Hazards</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">14</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#environmental-hazards">
+                                    <span class="toc-text"><span class="section-number">2.2.3</span> Environmental Hazards</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">15</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="#conclusions-recommendations">
+                    <span class="toc-text"><span class="section-number">3.0</span> Conclusions and Recommendations</span>
+                    <span class="toc-dots"></span>
+                    <span class="page-number">16</span>
+                </a>
+                <ul>
+                    <li>
+                        <a href="#designated-substances-conclusions">
+                            <span class="toc-text"><span class="section-number">3.1</span> Designated Substances</span>
+                            <span class="toc-dots"></span>
+                            <span class="page-number">16</span>
+                        </a>
+                        <ul>
+                            <li>
+                                <a href="#asbestos-conclusions">
+                                    <span class="toc-text"><span class="section-number">3.1.1</span> Asbestos</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">16</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#lead-conclusions">
+                                    <span class="toc-text"><span class="section-number">3.1.2</span> Lead</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">16</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#mercury-conclusions">
+                                    <span class="toc-text"><span class="section-number">3.1.3</span> Mercury</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">16</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#silica-conclusions">
+                                    <span class="toc-text"><span class="section-number">3.1.4</span> Silica</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">16</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#other-designated-substances-conclusions">
+                                    <span class="toc-text"><span class="section-number">3.1.5</span> Other Designated Substances</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">16</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#other-hazardous-materials-conclusions">
+                            <span class="toc-text"><span class="section-number">3.2</span> Other Hazardous Materials</span>
+                            <span class="toc-dots"></span>
+                            <span class="page-number">17</span>
+                        </a>
+                        <ul>
+                            <li>
+                                <a href="#chemical-hazards-conclusions">
+                                    <span class="toc-text"><span class="section-number">3.2.1</span> Chemical Hazards</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">17</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#biological-hazards-conclusions">
+                                    <span class="toc-text"><span class="section-number">3.2.2</span> Biological Hazards</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">17</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#environmental-hazards-conclusions">
+                                    <span class="toc-text"><span class="section-number">3.2.3</span> Environmental Hazards</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">17</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="#limitations">
+                    <span class="toc-text"><span class="section-number">4.0</span> Limitations</span>
+                    <span class="toc-dots"></span>
+                    <span class="page-number">18</span>
+                </a>
+            </li>
         </ul>
     </div>
 
@@ -547,7 +741,7 @@
     </div>
 
     <!-- Executive Summary -->
-    <div class="section">
+    <div class="section" id="executive-summary">
         <h1>EXECUTIVE SUMMARY</h1>
         
         <div class="executive-summary">
@@ -581,7 +775,7 @@
     </div>
 
     <!-- INTRO -->
-    <div class="section">
+    <div class="section" id="introduction">
         <!-- Inserted Section: Designated Substances and Hazardous Materials Assessment Details -->
         <div style="margin-top: 30px; margin-bottom: 30px; font-family: Arial, sans-serif; font-size: 12pt;">
             <div style="margin-bottom: 16px;">
@@ -604,11 +798,11 @@
             </div>
             <!-- Section 1.0 INTRODUCTION and subsections -->
             <div style="margin-top: 32px; font-weight: bold;">1.0 INTRODUCTION</div>
-            <div style="font-weight: bold;">1.1 Background and Objectives</div>
+            <div style="font-weight: bold;" id="background-objectives">1.1 Background and Objectives</div>
             <p>Safetech Environmental Limited (Safetech) was commissioned by <strong>{{clientName}}</strong> to conduct a designated substances and hazardous materials assessment within <strong>Project Area Placeholder</strong> of <strong>Building Name Placeholder</strong> located at <strong>{{projectLocation}}</strong>. The objective of the assessment was to determine the presence, location, condition and quantities of designated substances and other hazardous materials in the project areas that have the potential to be disturbed as part of planned <strong>{{projectName}}</strong> so that appropriate control measures can be implemented to protect workers during the work.</p>
             <p>This assessment satisfies the Owner's requirements under Section 30 of the Ontario Occupational Health and Safety Act (OHSA), Revised Statutes of Ontario 1990, as amended. Section 30(1) requires a building owner to determine if there are any designated substances present at a project site prior to construction or demolition activities. Sections 30(2), (3) and (4) require the Owner and constructors for a project to provide the findings in this report as part of the tendering information for any tendered project or to prospective contractors (and subcontractors) of a project before entering into a binding contract.</p>
             <p>This report documents findings of our on-site inspection that was conducted on <strong>{{assessmentDate}}</strong> and provides conclusions and recommendations based on our findings and knowledge of the planned <strong>{{projectName}}</strong> project.</p>
-            <div style="font-weight: bold;">1.2 Scope of Work</div>
+            <div style="font-weight: bold;" id="scope-of-work">1.2 Scope of Work</div>
             <p>In accordance with our fee proposal document, our scope of work included the following activities:</p>
             <ul>
                 <li>A review of existing documents, including renovation documents and drawings, floor plans and existing environmental assessment reports, etc., where available;</li>
@@ -629,7 +823,7 @@
                 <li>Assessing enclosed wall or ceiling cavities; and</li>
                 <li>Assessing risers, pipe chases or elevator shafts.</li>
             </ul>
-            <div style="font-weight: bold;">1.3 Description of Area(s) Assessed</div>
+            <div style="font-weight: bold;" id="description-of-areas">1.3 Description of Area(s) Assessed</div>
             <p>The area(s) investigated included all accessible locations of the subject building. The extent of the area investigated is indicated on the floor plan(s) provided in Appendix B. Please note, the following areas were not accessible during the assessment:</p>
             <ul>
                 <li>Area Not Accessible 1 Placeholder</li>
@@ -641,14 +835,14 @@
     </div>
 
     <!-- RESULTS -->
-    <div class="section">
+    <div class="section" id="results">
         <!-- Inserted Section: Designated Substances and Hazardous Materials Assessment Details -->
         <div style="margin-top: 30px; margin-bottom: 30px; font-family: Arial, sans-serif; font-size: 12pt;">
             <div style="font-weight: bold;">2.0 RESULTS</div>
             <p>Results of our visual assessment and bulk sample analytical findings are summarized in the sections below.</p>
             <!-- Section 2.1 Designated Substances -->
-            <div style="font-weight: bold;">2.1 Designated Substances</div>
-            <div style="font-weight: bold;">2.1.1 Asbestos</div>
+            <div style="font-weight: bold;" id="designated-substances">2.1 Designated Substances</div>
+            <div style="font-weight: bold;" id="asbestos">2.1.1 Asbestos</div>
             <p>Results of bulk sample analysis for the determination of asbestos content are summarized in the following table. Materials have been classified as "ACM", "Non-ACM", "Suspected ACM" or "Presumed Non-ACM" based on analytical results. Materials classified as Suspected ACM or Presumed Non-ACM may require further analysis (depending on site-specific conditions) to verify whether the material should be classified as ACM or Non-ACM.  Please refer to the Limitations section of this report (Section 4.0) for additional details. The Laboratory Certificate of Analysis is included in Appendix C.</p>
             <h2 style="margin-top: 30px;">Table 2: Bulk Sample Analytical Results for Determination of Asbestos Content</h2>
             <table>
@@ -700,7 +894,7 @@
             <!-- Additional asbestos findings and recommendations can be inserted here as needed -->
         
             <!-- Section 2.1.2 Lead -->
-            <div style="font-weight: bold;">2.1.2 Lead</div>
+            <div style="font-weight: bold;" id="lead">2.1.2 Lead</div>
             <p>Laboratory analytical results for paints tested to determine lead content are summarized in the following table. The Laboratory Certificate of Analysis is included in Appendix D. Refer to Section 3.1.2 of this report for recommended lead abatement procedures (if any) that correspond to the type of proposed construction, renovation, or demolition work.</p>
             <h2 style="margin-top: 30px;">Table 4: Results of Paint Condition and Lead Content Assessment</h2>
             <table>
@@ -766,7 +960,7 @@
             <!-- End Section 2.1.2 Lead -->
 
             <!-- Section 2.1.3 Mercury -->
-            <div style="font-weight: bold;">2.1.3 Mercury</div>
+            <div style="font-weight: bold;" id="mercury">2.1.3 Mercury</div>
             <p>Mercury is present in the subject building in the form of:</p>
             {{#each areaSections}}
               <h3>Area: {{this.areaName}}</h3>
@@ -783,7 +977,7 @@
             <!-- End Section 2.1.3 Mercury -->
 
             <!-- Section 2.1.4 Silica -->
-            <div style="font-weight: bold;">2.1.4 Silica</div>
+            <div style="font-weight: bold;" id="silica">2.1.4 Silica</div>
             {{#each areaSections}}
             <h3>Area: {{this.areaName}}</h3>
             {{#if silicaObserved}}
@@ -797,16 +991,16 @@
             <p>No silica-containing materials were identified in the project areas.</p>
             {{/if}}
             {{/each}}
-            <div style="font-weight: bold;">2.1.5 Other Designated Substances</div>
+            <div style="font-weight: bold;" id="other-designated-substances">2.1.5 Other Designated Substances</div>
             <p>Acrylonitrile, arsenic, benzene, coke oven emissions, ethylene oxide, isocyanates, and vinyl chloride were not included in the assessment as these substances are not expected to be a significant component of building materials or present in a form that would represent an exposure concern. Additionally, no specific information regarding their use was provided to us.</p>
             <!-- End Section 2.1 Designated Substances -->
         
             <!-- Section 2.2 Other Hazardous Materials -->
-            <div style="font-weight: bold;">2.2 Other Hazardous Materials</div>
-            <div style="font-weight: bold;">2.2.1 Chemical Hazards</div>
+            <div style="font-weight: bold;" id="other-hazardous-materials">2.2 Other Hazardous Materials</div>
+            <div style="font-weight: bold;" id="chemical-hazards">2.2.1 Chemical Hazards</div>
             <p>No visible evidence of UFFI installation (i.e. injection openings) or overspray of foam insulation at wall/ceiling joints was identified in the subject building. However, given that no destructive testing was conducted, there is a remote possibility that UFFI could be hidden within locations such as exterior wall cavities. If suspect foam insulation is identified during renovation/demolition activities work should be stopped and the area should be re-assessed to evaluate conditions and determine appropriate control measures and worker protection, if necessary.</p>
         
-            <div style="font-weight: bold;">2.2.2 Biological Hazards</div>
+            <div style="font-weight: bold;" id="biological-hazards">2.2.2 Biological Hazards</div>
             <div style="font-weight: bold;">2.2.2.1 Mould Contamination</div>
             {{#each areaSections}}
               <h3>Area: {{this.areaName}}</h3>
@@ -850,7 +1044,7 @@
               {{/if}}
             {{/each}}
         
-            <div style="font-weight: bold;">2.2.3 Environmental Hazards</div>
+            <div style="font-weight: bold;" id="environmental-hazards">2.2.3 Environmental Hazards</div>
             <div style="font-weight: bold;">2.2.3.1 Polychlorinated Biphenyls (PCBs)</div>
             {{#each areaSections}}
               <h3>Area: {{this.areaName}}</h3>
@@ -934,7 +1128,7 @@
     </div>    
 
     <!-- CONCLUSIONS AND RECOMMENDATIONS -->
-    <div class="section">
+    <div class="section" id="conclusions-recommendations">
         <!-- Inserted Section: Designated Substances and Hazardous Materials Assessment Details -->
         <div style="margin-top: 30px; margin-bottom: 30px; font-family: Arial, sans-serif; font-size: 12pt;">
             <!-- Section 3.0 Conclusions and Recommendations -->
@@ -957,33 +1151,33 @@
             </div>
             {{/if}}
             <!-- Section 3.1 Designated Substances -->
-            <div style="font-weight: bold; margin-top: 24px;">3.1 Designated Substances</div>
+            <div style="font-weight: bold; margin-top: 24px;" id="designated-substances-conclusions">3.1 Designated Substances</div>
             <p>Summary of conclusions and recommendations regarding designated substances identified in the assessment.</p>
-            <div style="font-weight: bold; margin-left: 16px;">3.1.1 Asbestos</div>
+            <div style="font-weight: bold; margin-left: 16px;" id="asbestos-conclusions">3.1.1 Asbestos</div>
             <p style="margin-left: 16px;">No asbestos-containing materials were identified in the areas assessed. All sampled materials were confirmed to be non-asbestos containing. Should any suspect materials be uncovered during future work, they must be tested prior to disturbance in accordance with regulatory requirements.</p>
-            <div style="font-weight: bold; margin-left: 16px;">3.1.2 Lead</div>
+            <div style="font-weight: bold; margin-left: 16px;" id="lead-conclusions">3.1.2 Lead</div>
             <p style="margin-left: 16px;">Lead-containing paints and coatings were identified in select areas. Any disturbance of these materials should be conducted using lead-safe work practices, including appropriate personal protective equipment and waste disposal procedures.</p>
-            <div style="font-weight: bold; margin-left: 16px;">3.1.3 Mercury</div>
+            <div style="font-weight: bold; margin-left: 16px;" id="mercury-conclusions">3.1.3 Mercury</div>
             <p style="margin-left: 16px;">Mercury-containing equipment, such as fluorescent lamps and thermostats, was observed. These items should be handled with care and recycled at approved facilities to prevent environmental contamination.</p>
-            <div style="font-weight: bold; margin-left: 16px;">3.1.4 Silica</div>
+            <div style="font-weight: bold; margin-left: 16px;" id="silica-conclusions">3.1.4 Silica</div>
             <p style="margin-left: 16px;">Building materials such as concrete, mortar, and drywall joint compound that may contain crystalline silica were present. Dust control measures and respiratory protection are recommended during any activities that may generate airborne silica.</p>
-            <div style="font-weight: bold; margin-left: 16px;">3.1.5 Other Designated Substances</div>
+            <div style="font-weight: bold; margin-left: 16px;" id="other-designated-substances-conclusions">3.1.5 Other Designated Substances</div>
             <p style="margin-left: 16px;">No other designated substances, such as arsenic, benzene, or isocyanates, were identified or are expected to be present in significant quantities in the building materials assessed.</p>
             <!-- Section 3.2 Other Hazardous Materials -->
-            <div style="font-weight: bold; margin-top: 24px;">3.2 Other Hazardous Materials</div>
+            <div style="font-weight: bold; margin-top: 24px;" id="other-hazardous-materials-conclusions">3.2 Other Hazardous Materials</div>
             <p>Summary of conclusions and recommendations regarding other hazardous materials identified in the assessment.</p>
-            <div style="font-weight: bold; margin-left: 16px;">3.2.1 Chemical Hazards</div>
+            <div style="font-weight: bold; margin-left: 16px;" id="chemical-hazards-conclusions">3.2.1 Chemical Hazards</div>
             <p style="margin-left: 16px;">No evidence of chemical hazards, such as urea formaldehyde foam insulation (UFFI) or polychlorinated biphenyls (PCBs), was observed. If any suspect materials are encountered during future work, they should be assessed and managed in accordance with applicable regulations.</p>
-            <div style="font-weight: bold; margin-left: 16px;">3.2.2 Biological Hazards</div>
+            <div style="font-weight: bold; margin-left: 16px;" id="biological-hazards-conclusions">3.2.2 Biological Hazards</div>
             <p style="margin-left: 16px;">No visible mould growth or significant pest infestation was identified at the time of assessment. Should mould or pests be discovered during future activities, appropriate remediation and control measures should be implemented.</p>
-            <div style="font-weight: bold; margin-left: 16px;">3.2.3 Environmental Hazards</div>
+            <div style="font-weight: bold; margin-left: 16px;" id="environmental-hazards-conclusions">3.2.3 Environmental Hazards</div>
             <p style="margin-left: 16px;">No environmental hazards, such as ozone-depleting substances or hazardous refrigerants, were identified in the building. All equipment should be properly decommissioned and disposed of in accordance with environmental protection regulations.</p>
             <!-- End Section 3.0 Conclusions and Recommendations -->
         </div>
     </div>
 
     <!-- LIMITATIONS -->
-    <div class="section">
+    <div class="section" id="limitations">
         <!-- Inserted Section: Designated Substances and Hazardous Materials Assessment Details -->
         <div style="margin-top: 30px; margin-bottom: 30px; font-family: Arial, sans-serif; font-size: 12pt;">
             <!-- Section 4.0 Limitations -->
