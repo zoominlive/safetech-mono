@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { LocationData } from "@/types/customer";
 
 type CustomerDetailsProps = {
   companyName: string;
@@ -12,6 +13,7 @@ type CustomerDetailsProps = {
   city: string;
   province: string;
   postal_code: string;
+  locations: LocationData[];
 };
 
 const CustomerDetails: React.FC<CustomerDetailsProps> = ({
@@ -25,7 +27,18 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
   city,
   province,
   postal_code,
+  locations,
 }: CustomerDetailsProps) => {
+  // Filter out the head office address from other locations
+  const otherLocations = locations.filter(
+    (loc) =>
+      loc.address_line_1 !== address_line_1 ||
+      loc.address_line_2 !== address_line_2 ||
+      loc.city !== city ||
+      loc.province !== province ||
+      loc.postal_code !== postal_code
+  );
+
   return (
     <Card>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-14">
@@ -80,6 +93,40 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
             </div>
           </div>
         </div>
+        {/* Other Locations Section */}
+        {otherLocations.length > 0 && (
+          <div className="col-span-2">
+            <Label className="font-semibold text-lg mb-2 block">
+              Other Locations
+            </Label>
+            <div className="space-y-4">
+              {otherLocations.map((loc, idx) => (
+                <div key={loc.id || idx} className="border rounded p-3 bg-sf-gray-50">
+                  <div className="font-semibold text-sf-gray-700">{loc.name}</div>
+                  <div className="text-sf-gray-500 text-sm">
+                    <div>
+                      <span className="font-medium">Address Line 1:</span> {loc.address_line_1}
+                    </div>
+                    {loc.address_line_2 && (
+                      <div>
+                        <span className="font-medium">Address Line 2:</span> {loc.address_line_2}
+                      </div>
+                    )}
+                    <div>
+                      <span className="font-medium">City:</span> {loc.city}
+                    </div>
+                    <div>
+                      <span className="font-medium">Province:</span> {loc.province}
+                    </div>
+                    <div>
+                      <span className="font-medium">Postal Code:</span> {loc.postal_code}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

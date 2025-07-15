@@ -55,6 +55,7 @@ function ProjectTableOperations({
     { value: "all", label: "All" },
     { value: "new", label: "New" },
     { value: "in progress", label: "In Progress" },
+    { value: "pm review", label: "PM Review" },
     { value: "completed", label: "Completed" },
     { value: "on hold", label: "On Hold" },
   ];
@@ -80,7 +81,7 @@ function ProjectTableOperations({
       <div className="flex flex-col lg:flex-row items-start lg:items-center w-full gap-4 lg:gap-6 mb-4">
         <div className="w-full lg:w-auto">
           <SearchInput 
-            placeholder="Type customer name..." 
+            placeholder="Search Project" 
             onSearch={(value: string) => onSearch && onSearch(value)}
           />
         </div>

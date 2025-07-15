@@ -25,6 +25,7 @@ const ProjectReportTable: React.FC<ProjectReportTableProps> = ({ searchQuery, so
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloadingReportId, setDownloadingReportId] = useState<string | null>(null);
   const token = useAuthStore.getState().token;
 
   // Pagination state
@@ -104,6 +105,7 @@ const ProjectReportTable: React.FC<ProjectReportTableProps> = ({ searchQuery, so
 
   const handleDownloadPDF = async (id: string) => {
     try {
+      setDownloadingReportId(id);
       const pdfBlob = await reportService.generateReportPDF(id);
       
       // Create a URL for the blob
@@ -133,6 +135,8 @@ const ProjectReportTable: React.FC<ProjectReportTableProps> = ({ searchQuery, so
         description: "Failed to download report PDF",
         variant: "destructive",
       });
+    } finally {
+      setDownloadingReportId(null);
     }
   };
 
@@ -187,7 +191,7 @@ const ProjectReportTable: React.FC<ProjectReportTableProps> = ({ searchQuery, so
         columns={columns}
         data={reports}
         hasActions={true}
-        onDetails={(report) => navigate(`/project-reports/${report.id}`)}
+        // onDetails={(report) => navigate(`/project-reports/${report.id}`)}
         onEdit={(report) => navigate(`/project-reports/${report.id}/edit`)}
         onDownload={(report) => handleDownloadPDF(report.id)}
         pagination={true}
@@ -198,6 +202,7 @@ const ProjectReportTable: React.FC<ProjectReportTableProps> = ({ searchQuery, so
         onPageSizeChange={handlePageSizeChange}
         isReportsTable={true}
         onToggleStatus={handleToggleStatus}
+        downloadingReportId={downloadingReportId}
       />
     </>
   );

@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { formatDate } from "@/lib/utils";
+import { reportService } from "@/services/api/reportService";
 
 interface Project {
   id: string;
@@ -73,8 +74,10 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
   const [error, setError] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [downloadingReportId, setDownloadingReportId] = useState<string | null>(null);
+  const [sendingToCustomerId, setSendingToCustomerId] = useState<string | null>(null);
   const token = useAuthStore.getState().token;
-
+  const user = useAuthStore.getState().user;
    // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -110,7 +113,7 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
           return {
             id: project.id,
             projectName: project.name,
-            company: project.company?.first_name + ' ' +  project.company?.last_name || '-',
+            company: project.company?.company_name || '-',
             startDate: formatDate(project.start_date),
             pm: project.pm?.first_name + ' ' + project.pm?.last_name || '-',
             technician: project.technician?.first_name + ' ' + project.technician?.last_name || '-',
@@ -145,7 +148,7 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
   };
 
   const handleDetails = (project: Project) => {
-    navigate(`/projects/${project.id}`);
+    navigate(`/project-reports/${project.latestReportId}/view`);
   };
   
   const handleEdit = (project: Project) => {
@@ -195,13 +198,87 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
   // Add handler for navigating to the latest report
   const handleViewReport = (project: Project) => {
     if (project.latestReportId) {
-      navigate(`/project-reports/${project.latestReportId}`);
+      navigate(`/project-reports/${project.latestReportId}/edit`);
     } else {
       toast({
         title: "No Report",
         description: "No report available for this project.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleDownloadPDF = async (id: string) => {
+    try {
+      setDownloadingReportId(id);
+      const pdfBlob = await reportService.generateReportPDF(id);
+      
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(pdfBlob);
+      
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `report-${id}.pdf`;
+      
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the URL
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Success",
+        description: "Report PDF downloaded successfully",
+      });
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      toast({
+        title: "Error",
+        description: "Failed to download report PDF",
+        variant: "destructive",
+      });
+    } finally {
+      setDownloadingReportId(null);
+    }
+  };
+
+  // Handler to send report to customer
+  const handleSendToCustomer = async (project: Project) => {
+    if (!project.latestReportId) {
+      toast({
+        title: "No Report",
+        description: "No report available to send.",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      setSendingToCustomerId(project.latestReportId);
+      const response = await reportService.sendReportToCustomer(project.latestReportId);
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Report sent to customer successfully.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: response.message || "Failed to send report to customer.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error sending report to customer:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send report to customer.",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingToCustomerId(null);
     }
   };
 
@@ -222,7 +299,7 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
           hasActions={true}
           onDetails={handleDetails}
           onDelete={openDeleteDialog}
-          onEdit={handleEdit}
+          onEdit={user?.role?.toLowerCase() === 'technician' ? undefined : handleEdit}
           onViewReport={handleViewReport}
           pagination={true}
           currentPage={currentPage}
@@ -230,6 +307,11 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
           totalCount={totalCount}
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
+          isReportsTable={true}
+          onDownload={(report) => report.latestReportId && handleDownloadPDF(report.latestReportId)}
+          onSendToCustomer={handleSendToCustomer}
+          downloadingReportId={downloadingReportId}
+          sendingToCustomerId={sendingToCustomerId}
         />
       </div>
       

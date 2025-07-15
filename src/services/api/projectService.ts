@@ -29,6 +29,7 @@ interface ProjectsResponse {
         last_name: string;
       },
       company: {
+        company_name: string;
         first_name: string;
         last_name: string;
       },
@@ -75,12 +76,14 @@ export interface ProjectData {
   customer_id: string;
   company: {
     id: string;
+    company_name: string;
     first_name: string;
     last_name: string;
   }
   start_date: string;
   end_date: string;
   project_number?: string;
+  report_id?: string;
 }
 
 export interface ProjectResponse {
@@ -122,6 +125,7 @@ export interface ProjectResponse {
     },
     company: {
       id: string;
+      company_name: string;
       first_name: string;
       last_name: string;
     },

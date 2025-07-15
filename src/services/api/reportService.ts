@@ -302,5 +302,57 @@ export const reportService = {
         message: errorMessage 
       };
     }
-  }
+  },
+
+  /**
+   * Import lab results by uploading a CSV file
+   * @param {FormData} formData - The form data containing the CSV file
+   * @returns {Promise<any>} - The API response
+   */
+  importLab: async (formData: FormData): Promise<any> => {
+    const response = await BaseClient.post('/reports/import-lab', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  /**
+   * Fetch lab reports for a given project
+   * @param {string} projectId - The project ID
+   * @returns {Promise<any>} - The lab reports data
+   */
+  getLabReports: async (projectId: string): Promise<any> => {
+    const response = await BaseClient.get(`/reports/project/${projectId}/lab-reports`);
+    return response.data;
+  },
+
+  // Send report to customer
+  sendReportToCustomer: async (reportId: string): Promise<{ success: boolean; message?: string }> => {
+    const response: AxiosResponse<{ success: boolean; message?: string }> = await BaseClient.post(`/reports/${reportId}/send-to-customer`);
+    return response.data;
+  },
+
+  // Submit report to PM review
+  submitToPMReview: async (reportId: string): Promise<{ success: boolean; message?: string }> => {
+    const response: AxiosResponse<{ success: boolean; message?: string }> = await BaseClient.post(`/reports/${reportId}/submit-to-pm`);
+    return response.data;
+  },
+
+  // Update project status
+  updateProjectStatus: async (projectId: string, status: string): Promise<{ success: boolean; message?: string }> => {
+    const response: AxiosResponse<{ success: boolean; message?: string }> = await BaseClient.patch(`/projects/${projectId}/status`, { status });
+    return response.data;
+  },
+
+  // Approve and complete report
+  approveAndCompleteReport: async (reportId: string): Promise<{ success: boolean; message?: string }> => {
+    const response: AxiosResponse<{ success: boolean; message?: string }> = await BaseClient.post(`/reports/${reportId}/approve-and-complete`);
+    return response.data;
+  },
+
+  // Request changes for report
+  requestReportChanges: async (reportId: string, feedback?: string): Promise<{ success: boolean; message?: string }> => {
+    const response: AxiosResponse<{ success: boolean; message?: string }> = await BaseClient.post(`/reports/${reportId}/request-changes`, { feedback });
+    return response.data;
+  },
 };
