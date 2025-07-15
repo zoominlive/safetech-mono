@@ -689,6 +689,8 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               className="w-full"
               placeholder={field.placeholder || `Select ${field.label}`}
               disabled={!isEditable}
+              showOtherOption={true}
+              otherOptionLabel="Other"
             />
           </div>
         );
