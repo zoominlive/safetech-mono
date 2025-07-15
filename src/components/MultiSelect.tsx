@@ -54,7 +54,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   const handleAddOther = () => {
     if (otherInputValue.trim()) {
       const customOption: Option = {
-        value: `other_${Date.now()}`,
+        value: otherInputValue.trim(),
         label: otherInputValue.trim(),
       };
       

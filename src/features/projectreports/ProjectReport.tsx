@@ -684,7 +684,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               options={field.options?.map((opt: string) => ({ value: opt, label: opt })) || []}
               selected={Array.isArray(value) ? value.map((v: string) => ({ value: v, label: v })) : []}
               onChange={(selected) =>
-                updateAreaAssessment(field.id, selected.map((opt: { value: string; label: string }) => opt.value))
+                updateAreaAssessment(field.id, selected.map((opt: { value: string; label: string }) => opt.label))
               }
               className="w-full"
               placeholder={field.placeholder || `Select ${field.label}`}
