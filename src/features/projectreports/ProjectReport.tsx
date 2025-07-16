@@ -34,6 +34,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import LabImport from "@/components/LabImport";
 import { Textarea } from "@/components/ui/textarea";
+import { AsbestosAssessmentForm } from "@/components/AsbestosAssessmentForm";
+import { transformAsbestosSchema, convertOldAsbestosDataToNew } from "@/lib/asbestosSchemaTransformer";
 
 interface SchemaField {
   type: string;
@@ -52,7 +54,7 @@ interface SchemaField {
   fields?: SchemaField[];
 }
 
-interface SchemaSection {
+export interface SchemaSection {
   title: string;
   fields: SchemaField[];
   showWhen?: string;
@@ -468,10 +470,32 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
             const parsedSchema = typeof response.data.template.schema === 'string' 
               ? JSON.parse(response.data.template.schema)
               : response.data.template.schema;
-            setSchema(parsedSchema.sections);
+            
+            // Transform the asbestos schema to use the new simplified format
+            const transformedSchema = transformAsbestosSchema(parsedSchema.sections);
+            setSchema(transformedSchema);
+
+            // Convert old asbestos data to new format for each area
+            const updatedAreas = initialAreas.map(area => {
+              const oldAsbestosData = area.assessments;
+              const newAsbestosMaterials = convertOldAsbestosDataToNew(oldAsbestosData);
+              
+              return {
+                ...area,
+                assessments: {
+                  ...area.assessments,
+                  asbestosMaterials: newAsbestosMaterials,
+                  // Keep the old data for backward compatibility
+                  ...oldAsbestosData
+                }
+              };
+            });
+            
+            setAreas(updatedAreas);
+            setSelectedArea(updatedAreas[0]);
 
             // Set Yes/No defaults for all areas
-            initialAreas.forEach(area => setYesNoDefaultsToNo(parsedSchema.sections, area));
+            updatedAreas.forEach(area => setYesNoDefaultsToNo(transformedSchema, area));
           } catch (error) {
             console.error("Error parsing schema:", error);
             toast({
@@ -1227,6 +1251,32 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
         return (
           <div className="space-y-2">
             <LabImport projectId={projectId} />
+          </div>
+        );
+      case "asbestosAssessment":
+        return (
+          <div className="space-y-2">
+            <AsbestosAssessmentForm
+              value={value || []}
+              onChange={(materials) => updateAreaAssessment(field.id, materials)}
+              disabled={!isEditable}
+              projectId={projectId}
+              reportId={id}
+              onFileUpload={async (files) => {
+                if (!id) return [];
+                const formData = new FormData();
+                Array.from(files).forEach(file => {
+                  formData.append('files', file);
+                });
+                const response = await reportService.uploadReportFile(id, formData);
+                if (response.success) {
+                  return (response.data as { data: { urls: string[] } }).data.urls;
+                }
+                return [];
+              }}
+              existingMaterials={[]} // TODO: Implement cross-area material tracking
+              materialUsageStats={{}} // TODO: Implement usage statistics
+            />
           </div>
         );
       default:
