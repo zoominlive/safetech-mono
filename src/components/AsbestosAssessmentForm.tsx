@@ -100,6 +100,13 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
     setCustomMaterials(existingMaterials);
   }, [existingMaterials]);
 
+  // Auto-add first material if none exist and form is enabled
+  useEffect(() => {
+    if (materials.length === 0 && !disabled) {
+      handleAddMaterial();
+    }
+  }, [disabled]); // Only run when disabled state changes
+
   const handleAddMaterial = () => {
     const newMaterial: AsbestosMaterial = {
       id: `material-${Date.now()}`,
@@ -326,38 +333,10 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Initial Question */}
-      <div className="space-y-4">
-        <Label className="text-lg font-semibold">Is asbestos present?</Label>
-        <RadioGroup
-          value={materials.length > 0 ? "Yes" : "No"}
-          onValueChange={(value) => {
-            if (value === "No") {
-              setMaterials([]);
-              onChange([]);
-            } else if (value === "Yes" && materials.length === 0) {
-              handleAddMaterial();
-            }
-          }}
-          disabled={disabled}
-          className="flex space-x-4"
-        >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="Yes" id="asbestos-yes" />
-            <Label htmlFor="asbestos-yes">Yes</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="No" id="asbestos-no" />
-            <Label htmlFor="asbestos-no">No</Label>
-          </div>
-        </RadioGroup>
-      </div>
-
       {/* Materials List */}
-      {materials.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-lg font-semibold">Asbestos-Containing Materials</Label>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+            {/* <Label className="text-lg font-semibold">Asbestos-Containing Materials</Label> */}
             {!disabled && (
               <Button onClick={handleAddMaterial} size="sm">
                 <CirclePlus className="h-4 w-4 mr-2" />
@@ -424,9 +403,9 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                                         <p className="font-medium">Material Usage Across Areas:</p>
                                         <p>• Used in {usageInfo.usageCount} area(s)</p>
                                         <p>• {usageInfo.samplesCollected} sample(s) collected</p>
-                                        {usageInfo.samplesCollected > 0 && (
+                                        {/* {usageInfo.samplesCollected > 0 && (
                                           <p className="text-green-600 text-sm">✓ Samples available for testing</p>
-                                        )}
+                                        )} */}
                                       </div>
                                     </TooltipContent>
                                   </Tooltip>
@@ -594,7 +573,6 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
             );
           })}
         </div>
-      )}
 
       {/* Confirmation Dialog for Material Removal */}
       <AlertDialog open={!!materialToDelete} onOpenChange={(open) => !open && setMaterialToDelete(null)}>
