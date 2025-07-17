@@ -82,17 +82,23 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
   onChange,
   disabled = false,
   onFileUpload,
+  existingMaterials = [],
   materialUsageStats = {},
 }) => {
   const [materials, setMaterials] = useState<AsbestosMaterial[]>(value);
   const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
-  const [customMaterials, setCustomMaterials] = useState<string[]>([]);
+  const [customMaterials, setCustomMaterials] = useState<string[]>(existingMaterials);
   const [expandedMaterials, setExpandedMaterials] = useState<Set<string>>(new Set());
   const [materialToDelete, setMaterialToDelete] = useState<AsbestosMaterial | null>(null);
 
   useEffect(() => {
     setMaterials(value);
   }, [value]);
+
+  // Update custom materials when existingMaterials changes
+  useEffect(() => {
+    setCustomMaterials(existingMaterials);
+  }, [existingMaterials]);
 
   const handleAddMaterial = () => {
     const newMaterial: AsbestosMaterial = {
@@ -225,9 +231,13 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
       return;
     }
     
-    const isCustom = !STANDARD_MATERIALS.includes(materialType);
+    // Find the material option to determine if it's custom
+    const materialOption = materialOptions.find(option => option.value === materialType);
+    const isCustom = materialOption?.isCustom || false;
+    
     console.log('Material type:', materialType, 'isCustom:', isCustom);
     
+    // If it's a custom material and not already in our list, add it
     if (isCustom && materialType && !customMaterials.includes(materialType)) {
       setCustomMaterials(prev => [...prev, materialType]);
     }
@@ -274,7 +284,45 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
     return material.materialType;
   };
 
-  const allMaterialOptions = [...STANDARD_MATERIALS, ...customMaterials];
+  // Create material options with usage statistics
+  interface MaterialOption {
+    value: string;
+    label: string;
+    isCustom: boolean;
+    usageStats?: { count: number; samplesCollected: number };
+  }
+
+  const createMaterialOptions = (): MaterialOption[] => {
+    const options: MaterialOption[] = [];
+    
+    // Add standard materials
+    STANDARD_MATERIALS.forEach(material => {
+      const stats = materialUsageStats[material];
+      const usageText = stats ? ` (Used ${stats.count} times, ${stats.samplesCollected} samples)` : '';
+      options.push({
+        value: material,
+        label: material + usageText,
+        isCustom: false,
+        usageStats: stats
+      });
+    });
+    
+    // Add custom materials
+    customMaterials.forEach(material => {
+      const stats = materialUsageStats[material];
+      const usageText = stats ? ` (Used ${stats.count} times, ${stats.samplesCollected} samples)` : '';
+      options.push({
+        value: material,
+        label: material + usageText,
+        isCustom: true,
+        usageStats: stats
+      });
+    });
+    
+    return options;
+  };
+
+  const materialOptions = createMaterialOptions();
 
   return (
     <div className="space-y-6">
@@ -363,19 +411,28 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                         <div className="space-y-2">
                           <div className="flex items-center space-x-2">
                             <Label>Material Type *</Label>
-                            {getDisplayMaterialName(material) && getMaterialUsageInfo(getDisplayMaterialName(material)) && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <Info className="h-4 w-4 text-blue-600" />
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Used {getMaterialUsageInfo(getDisplayMaterialName(material))?.usageCount} times</p>
-                                    <p>Samples collected: {getMaterialUsageInfo(getDisplayMaterialName(material))?.samplesCollected}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            )}
+                            {(() => {
+                              const usageInfo = getDisplayMaterialName(material) ? getMaterialUsageInfo(getDisplayMaterialName(material)) : null;
+                              return usageInfo && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <Info className="h-4 w-4 text-blue-600" />
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs">
+                                      <div className="space-y-1">
+                                        <p className="font-medium">Material Usage Across Areas:</p>
+                                        <p>• Used in {usageInfo.usageCount} area(s)</p>
+                                        <p>• {usageInfo.samplesCollected} sample(s) collected</p>
+                                        {usageInfo.samplesCollected > 0 && (
+                                          <p className="text-green-600 text-sm">✓ Samples available for testing</p>
+                                        )}
+                                      </div>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              );
+                            })()}
                           </div>
                           <Select
                             value={material.materialType || undefined}
@@ -386,9 +443,9 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                               <SelectValue placeholder="Select material type" />
                             </SelectTrigger>
                             <SelectContent>
-                              {allMaterialOptions.map((option) => (
-                                <SelectItem key={option} value={option}>
-                                  {option}
+                              {materialOptions.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
                                 </SelectItem>
                               ))}
                               <SelectItem value="__custom__">Add Other Material...</SelectItem>

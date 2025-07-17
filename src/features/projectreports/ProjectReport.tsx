@@ -1253,7 +1253,32 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
             <LabImport projectId={projectId} />
           </div>
         );
-      case "asbestosAssessment":
+      case "asbestosAssessment": {
+        // Calculate material usage statistics across all areas
+        const materialUsageStats: Record<string, { count: number; samplesCollected: number }> = {};
+        const allCustomMaterials: string[] = [];
+        
+        areas.forEach(area => {
+          const areaMaterials = area.assessments.asbestosMaterials || [];
+          areaMaterials.forEach((material: any) => {
+            const materialName = material.isCustomMaterial ? material.customMaterialName : material.materialType;
+            if (materialName) {
+              if (!materialUsageStats[materialName]) {
+                materialUsageStats[materialName] = { count: 0, samplesCollected: 0 };
+              }
+              materialUsageStats[materialName].count++;
+              if (material.sampleCollected === 'Yes') {
+                materialUsageStats[materialName].samplesCollected++;
+              }
+              
+              // Track custom materials for reuse
+              if (material.isCustomMaterial && material.customMaterialName && !allCustomMaterials.includes(material.customMaterialName)) {
+                allCustomMaterials.push(material.customMaterialName);
+              }
+            }
+          });
+        });
+        
         return (
           <div className="space-y-2">
             <AsbestosAssessmentForm
@@ -1274,11 +1299,12 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                 }
                 return [];
               }}
-              existingMaterials={[]} // TODO: Implement cross-area material tracking
-              materialUsageStats={{}} // TODO: Implement usage statistics
+              existingMaterials={allCustomMaterials}
+              materialUsageStats={materialUsageStats}
             />
           </div>
         );
+      }
       default:
         return null;
     }
