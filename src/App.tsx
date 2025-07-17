@@ -26,6 +26,7 @@ import Support from "./pages/Support";
 import ProjectReports from "./pages/ProjectReports";
 import ProjectReport from "./pages/ProjectReport";
 import { ProjectReportReadOnly } from "./features/projectreports/ProjectReportReadOnly";
+import Samples from "./pages/Samples";
 
 function App() {
   const { isAuthenticated } = useAuthStore();
@@ -130,6 +131,14 @@ function App() {
                 element={
                   <RoleBasedRoute allowedRoles={[...managerAdminRoles, 'technician']}>
                     <ProjectReport />
+                  </RoleBasedRoute>
+                }
+              />
+              <Route
+                path="samples"
+                element={
+                  <RoleBasedRoute allowedRoles={[...managerAdminRoles, 'technician']}>
+                    <Samples />
                   </RoleBasedRoute>
                 }
               />

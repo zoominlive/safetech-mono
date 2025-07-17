@@ -35,6 +35,10 @@ interface AsbestosMaterial {
   sampleCollected: 'Yes' | 'No';
   suspectedAcm: 'Yes' | 'No';
   isCustomMaterial: boolean;
+  sampleId?: string;
+  percentageAsbestos?: number;
+  asbestosType?: string;
+  timestamp?: string;
 }
 
 interface AsbestosAssessmentFormProps {
@@ -159,7 +163,30 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
   const handleMaterialChange = (id: string, field: keyof AsbestosMaterial, value: any) => {
     const updatedMaterials = materials.map(material => {
       if (material.id === id) {
-        return { ...material, [field]: value };
+        const updatedMaterial = { ...material, [field]: value };
+        
+        // If sampleCollected is being set to 'Yes', add timestamp and generate sampleId
+        if (field === 'sampleCollected' && value === 'Yes') {
+          const timestamp = new Date().toISOString();
+          
+          // Find the highest existing sample ID to generate the next one
+          const existingSampleIds = materials
+            .filter(m => m.sampleId)
+            .map(m => {
+              const match = m.sampleId?.match(/S(\d+)/);
+              return match ? parseInt(match[1]) : 0;
+            });
+          
+          const nextSampleNumber = existingSampleIds.length > 0 
+            ? Math.max(...existingSampleIds) + 1 
+            : 10001;
+          
+          const sampleId = `S${nextSampleNumber.toString().padStart(5, '0')}`;
+          updatedMaterial.timestamp = timestamp;
+          updatedMaterial.sampleId = sampleId;
+        }
+        
+        return updatedMaterial;
       }
       return material;
     });

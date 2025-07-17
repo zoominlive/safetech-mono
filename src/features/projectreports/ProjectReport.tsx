@@ -1,4 +1,4 @@
-import { CirclePlus, CircleX, Upload, List, Loader2 } from "lucide-react";
+import { CirclePlus, CircleX, Upload, List, Loader2, TestTube } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -1801,6 +1801,14 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               )}
             </SheetContent>
           </Sheet>
+          <Button
+            variant="outline"
+            onClick={() => navigate(`/project-reports/${id}/samples`)}
+            disabled={isSaving}
+          >
+            <TestTube className="h-4 w-4 mr-2" />
+            Samples
+          </Button>
           <Button
             variant="outline"
             onClick={handleCancel}
