@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useParams } from 'react-router';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, ArrowLeft } from "lucide-react";
+import { Download } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { reportService } from "@/services/api/reportService";
 import BackButton from "@/components/BackButton";
@@ -42,12 +41,11 @@ const ASBESTOS_TYPES = [
 
 export const SamplesManagement: React.FC = () => {
   const { id: reportId } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [samples, setSamples] = useState<Sample[]>([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [nextSampleId, setNextSampleId] = useState(10001); // Start with 5-digit IDs
+  const [_nextSampleId, setNextSampleId] = useState(10001); // Start with 5-digit IDs
 
   useEffect(() => {
     if (reportId) {
