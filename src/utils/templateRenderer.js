@@ -1009,6 +1009,65 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     }
   }
   
+  // Process asbestos samples for Table 2
+  let asbestosSamples = [];
+  areaDetails.forEach(area => {
+    if (Array.isArray(area.asbestosMaterials)) {
+      area.asbestosMaterials.forEach((material, index) => {
+        // Determine material classification based on percentage and suspected status
+        let materialClassification = 'Non-ACM';
+        
+        // Check if percentageAsbestos is a positive number
+        const isPositiveNumber = material.percentageAsbestos && 
+          !isNaN(parseFloat(material.percentageAsbestos)) && 
+          parseFloat(material.percentageAsbestos) > 0;
+        
+        if (isPositiveNumber || material.suspectedAcm === 'Yes') {
+          materialClassification = 'ACM';
+        }
+        
+        // Format sample number with area name
+        const sampleNo = `${area.name || 'Area'}-${material.sampleNo || (index + 1)}`;
+        
+        function containsNumber(str) {
+          return /\d/.test(str);
+        }
+        asbestosSamples.push({
+          sampleNo: sampleNo,
+          materialDescription: material.materialType || material.customMaterialName || 'Unknown Material',
+          sampleLocation: material.location || 'Unknown Location',
+          asbestosContent: material.percentageAsbestos && containsNumber(material.percentageAsbestos) ? `${material.percentageAsbestos}%` : material.percentageAsbestos,
+          materialClassification: materialClassification
+        });
+      });
+    }
+  });
+  // Process lead samples for Table 4
+  let leadSamples = [];
+  areaDetails.forEach(area => {
+    if (Array.isArray(area.leadMaterials)) {
+      area.leadMaterials.forEach((material, index) => {
+        // Determine material classification based on lead concentration
+        let materialClassification = 'Non-LCP';
+        if (material.leadConcentration && parseFloat(material.leadConcentration) > 0.1) {
+          materialClassification = 'LCP';
+        } else if (material.leadConcentration && parseFloat(material.leadConcentration) === 0.1) {
+          materialClassification = 'LLLP';
+        }
+        
+        leadSamples.push({
+          sampleNo: material.sampleNo || `L${index + 1}`,
+          location: material.materialLocation || 'Unknown Location',
+          surface: material.materialDescription || 'Unknown Surface',
+          paintColour: material.paintColour || 'Unknown',
+          condition: material.condition || 'Unknown',
+          leadConcentration: material.leadConcentration ? `${material.leadConcentration}%` : 'N/A',
+          materialClassification: materialClassification
+        });
+      });
+    }
+  });
+
   // Area-specific sectioned output for clarity
   let areaSections = [];
   if (templateSchema && templateSchema.sections && areaDetails.length > 0) {
@@ -1354,8 +1413,12 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
 
     // Summary table for hazardous materials and designated substances
     summaryTable,
+    // Add dynamic Table 2 mapping for asbestos samples
+    asbestosSamples,
     // Add dynamic Table 3 mapping
     asbestosAssessment,
+    // Add dynamic Table 4 mapping for lead samples
+    leadSamples,
     // Add dynamic Table 4 mapping    
     leadAssessment,
     // Add dynamic Table 5 mapping
