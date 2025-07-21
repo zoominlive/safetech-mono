@@ -1257,6 +1257,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
         // Calculate material usage statistics across all areas
         const materialUsageStats: Record<string, { count: number; samplesCollected: number }> = {};
         const allCustomMaterials: string[] = [];
+        const allExistingSampleIds: string[] = [];
         
         areas.forEach(area => {
           const areaMaterials = area.assessments.asbestosMaterials || [];
@@ -1274,6 +1275,11 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               // Track custom materials for reuse
               if (material.isCustomMaterial && material.customMaterialName && !allCustomMaterials.includes(material.customMaterialName)) {
                 allCustomMaterials.push(material.customMaterialName);
+              }
+              
+              // Track existing sample IDs
+              if (material.sampleId) {
+                allExistingSampleIds.push(material.sampleId);
               }
             }
           });
@@ -1301,6 +1307,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               }}
               existingMaterials={allCustomMaterials}
               materialUsageStats={materialUsageStats}
+              existingSampleIds={allExistingSampleIds}
             />
           </div>
         );

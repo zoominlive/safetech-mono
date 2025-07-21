@@ -36,6 +36,7 @@ interface AsbestosMaterial {
   suspectedAcm: 'Yes' | 'No';
   isCustomMaterial: boolean;
   sampleId?: string;
+  sampleNo?: string;
   percentageAsbestos?: number;
   asbestosType?: string;
   timestamp?: string;
@@ -50,6 +51,7 @@ interface AsbestosAssessmentFormProps {
   onFileUpload?: (files: FileList) => Promise<string[]>;
   existingMaterials?: string[]; // For tracking usage across areas
   materialUsageStats?: Record<string, { count: number; samplesCollected: number }>;
+  existingSampleIds?: string[]; // For tracking sample IDs across all areas
 }
 
 const STANDARD_MATERIALS = [
@@ -88,6 +90,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
   onFileUpload,
   existingMaterials = [],
   materialUsageStats = {},
+  existingSampleIds = [],
 }) => {
   const [materials, setMaterials] = useState<AsbestosMaterial[]>(value);
   const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
@@ -169,16 +172,20 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
         if (field === 'sampleCollected' && value === 'Yes') {
           const timestamp = new Date().toISOString();
           
-          // Find the highest existing sample ID to generate the next one
-          const existingSampleIds = materials
-            .filter(m => m.sampleId)
-            .map(m => {
-              const match = m.sampleId?.match(/S(\d+)/);
+          // Find the highest existing sample ID across all areas and current materials
+          const allExistingSampleIds = [
+            ...existingSampleIds,
+            ...materials.filter(m => m.sampleId).map(m => m.sampleId!)
+          ];
+          
+          const existingSampleNumbers = allExistingSampleIds
+            .map(sampleId => {
+              const match = sampleId.match(/S(\d+)/);
               return match ? parseInt(match[1]) : 0;
             });
           
-          const nextSampleNumber = existingSampleIds.length > 0 
-            ? Math.max(...existingSampleIds) + 1 
+          const nextSampleNumber = existingSampleNumbers.length > 0 
+            ? Math.max(...existingSampleNumbers) + 1 
             : 10001;
           
           const sampleId = `S${nextSampleNumber.toString().padStart(5, '0')}`;
