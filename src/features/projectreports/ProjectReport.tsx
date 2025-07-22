@@ -37,6 +37,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { AsbestosAssessmentForm } from "@/components/AsbestosAssessmentForm";
 import { transformAsbestosSchema, convertOldAsbestosDataToNew } from "@/lib/asbestosSchemaTransformer";
 
+
 interface SchemaField {
   type: string;
   label: string;
@@ -73,6 +74,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { user } = useAuthStore();
+
   const userRole = user?.role;
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedArea, setSelectedArea] = useState<Area | null>(null);
@@ -1256,7 +1258,6 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
       case "asbestosAssessment": {
         // Calculate material usage statistics across all areas
         const materialUsageStats: Record<string, { count: number; samplesCollected: number }> = {};
-        const allCustomMaterials: string[] = [];
         const allExistingSampleIds: string[] = [];
         
         areas.forEach(area => {
@@ -1270,11 +1271,6 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               materialUsageStats[materialName].count++;
               if (material.sampleCollected === 'Yes') {
                 materialUsageStats[materialName].samplesCollected++;
-              }
-              
-              // Track custom materials for reuse
-              if (material.isCustomMaterial && material.customMaterialName && !allCustomMaterials.includes(material.customMaterialName)) {
-                allCustomMaterials.push(material.customMaterialName);
               }
               
               // Track existing sample IDs
@@ -1305,7 +1301,6 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                 }
                 return [];
               }}
-              existingMaterials={allCustomMaterials}
               materialUsageStats={materialUsageStats}
               existingSampleIds={allExistingSampleIds}
             />

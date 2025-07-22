@@ -205,3 +205,76 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
+
+// Material store for managing standard and custom materials
+interface MaterialState {
+  standardMaterials: string[];
+  customMaterials: string[];
+  
+  // Actions
+  addCustomMaterial: (materialName: string) => void;
+  getAvailableMaterials: () => string[];
+  isStandardMaterial: (materialName: string) => boolean;
+  isCustomMaterial: (materialName: string) => boolean;
+}
+
+export const useMaterialStore = create<MaterialState>()(
+  persist(
+    (set, get) => ({
+      standardMaterials: [
+        "Sprayed Fireproofing",
+        "Blown Insulation",
+        "Loose Fill / Vermiculite Insulation",
+        "Mechanical Pipe Insulation – Straights",
+        "Mechanical Pipe Insulation – Fittings",
+        "HVAC Duct Insulation",
+        "Breeching / Exhaust Insulation",
+        "Tank Insulation",
+        "Boiler Insulation",
+        "Other Mechanical Equipment Insulation",
+        "Sprayed Texture / Stucco Finishes",
+        "Plaster Finishes",
+        "Drywall Joint Compound",
+        "Lay-in Acoustic Ceiling Tiles",
+        "Glued-on Acoustic Ceiling Tiles",
+        "Cement Ceiling Panels",
+        "Vinyl Floor Tiles",
+        "Vinyl Sheet Flooring",
+        "Mastic (Flooring)",
+        "Asbestos Cement Piping",
+        "Asbestos Cement Roofing, Siding, Wallboard",
+        "Other Cement Products (Asbestos Cement)",
+        "Exterior Building Caulking",
+        "Exterior Building Shingles",
+        "Exterior Building Roof Membrane",
+        "Miscellaneous Mastic",
+      ],
+      customMaterials: [],
+
+      addCustomMaterial: (materialName: string) => {
+        const { customMaterials } = get();
+        if (!customMaterials.includes(materialName)) {
+          set({ customMaterials: [...customMaterials, materialName] });
+        }
+      },
+
+      getAvailableMaterials: () => {
+        const { standardMaterials, customMaterials } = get();
+        return [...standardMaterials, ...customMaterials];
+      },
+
+      isStandardMaterial: (materialName: string) => {
+        const { standardMaterials } = get();
+        return standardMaterials.includes(materialName);
+      },
+
+      isCustomMaterial: (materialName: string) => {
+        const { customMaterials } = get();
+        return customMaterials.includes(materialName);
+      },
+    }),
+    {
+      name: 'material-storage',
+    }
+  )
+);

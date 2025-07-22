@@ -23,6 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useMaterialStore } from "@/store";
 
 interface AsbestosMaterial {
   id: string;
@@ -54,35 +55,6 @@ interface AsbestosAssessmentFormProps {
   existingSampleIds?: string[]; // For tracking sample IDs across all areas
 }
 
-const STANDARD_MATERIALS = [
-  "Sprayed Fireproofing",
-  "Blown Insulation",
-  "Loose Fill / Vermiculite Insulation",
-  "Mechanical Pipe Insulation – Straights",
-  "Mechanical Pipe Insulation – Fittings",
-  "HVAC Duct Insulation",
-  "Breeching / Exhaust Insulation",
-  "Tank Insulation",
-  "Boiler Insulation",
-  "Other Mechanical Equipment Insulation",
-  "Sprayed Texture / Stucco Finishes",
-  "Plaster Finishes",
-  "Drywall Joint Compound",
-  "Lay-in Acoustic Ceiling Tiles",
-  "Glued-on Acoustic Ceiling Tiles",
-  "Cement Ceiling Panels",
-  "Vinyl Floor Tiles",
-  "Vinyl Sheet Flooring",
-  "Mastic (Flooring)",
-  "Asbestos Cement Piping",
-  "Asbestos Cement Roofing, Siding, Wallboard",
-  "Other Cement Products (Asbestos Cement)",
-  "Exterior Building Caulking",
-  "Exterior Building Shingles",
-  "Exterior Building Roof Membrane",
-  "Miscellaneous Mastic",
-];
-
 export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
   value = [],
   onChange,
@@ -94,18 +66,20 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
 }) => {
   const [materials, setMaterials] = useState<AsbestosMaterial[]>(value);
   const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
-  const [customMaterials, setCustomMaterials] = useState<string[]>(existingMaterials);
   const [expandedMaterials, setExpandedMaterials] = useState<Set<string>>(new Set());
   const [materialToDelete, setMaterialToDelete] = useState<AsbestosMaterial | null>(null);
+
+  // Use the material store
+  const { 
+    getAvailableMaterials, 
+    isStandardMaterial, 
+    isCustomMaterial, 
+    addCustomMaterial 
+  } = useMaterialStore();
 
   useEffect(() => {
     setMaterials(value);
   }, [value]);
-
-  // Update custom materials when existingMaterials changes
-  useEffect(() => {
-    setCustomMaterials(existingMaterials);
-  }, [existingMaterials]);
 
   // Auto-add first material if none exist and form is enabled
   useEffect(() => {
@@ -262,6 +236,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
           return { 
             ...material, 
             materialType: '',
+            customMaterialName: '',
             isCustomMaterial: true 
           };
         }
@@ -272,23 +247,19 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
       return;
     }
     
-    // Find the material option to determine if it's custom
-    const materialOption = materialOptions.find(option => option.value === materialType);
-    const isCustom = materialOption?.isCustom || false;
+    // Check if this is a standard or custom material
+    const isStandard = isStandardMaterial(materialType);
+    const isCustom = isCustomMaterial(materialType);
     
-    console.log('Material type:', materialType, 'isCustom:', isCustom);
+    console.log('Material type:', materialType, 'isStandard:', isStandard, 'isCustom:', isCustom);
     
-    // If it's a custom material and not already in our list, add it
-    if (isCustom && materialType && !customMaterials.includes(materialType)) {
-      setCustomMaterials(prev => [...prev, materialType]);
-    }
-    
-    console.log('Updating material with:', { materialType, isCustom });
+    console.log('Updating material with:', { materialType, isCustomMaterial: isCustom });
     const updatedMaterials = materials.map(material => {
       if (material.id === materialId) {
         return { 
           ...material, 
           materialType: materialType,
+          customMaterialName: materialType, // Set the custom material name to the selected material type
           isCustomMaterial: isCustom 
         };
       }
@@ -335,27 +306,17 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
 
   const createMaterialOptions = (): MaterialOption[] => {
     const options: MaterialOption[] = [];
+    const availableMaterials = getAvailableMaterials();
     
-    // Add standard materials
-    STANDARD_MATERIALS.forEach(material => {
+    // Add all available materials (both standard and custom)
+    availableMaterials.forEach(material => {
       const stats = materialUsageStats[material];
       const usageText = stats ? ` (Used ${stats.count} times, ${stats.samplesCollected} samples)` : '';
+      const isCustom = isCustomMaterial(material);
       options.push({
         value: material,
         label: material + usageText,
-        isCustom: false,
-        usageStats: stats
-      });
-    });
-    
-    // Add custom materials
-    customMaterials.forEach(material => {
-      const stats = materialUsageStats[material];
-      const usageText = stats ? ` (Used ${stats.count} times, ${stats.samplesCollected} samples)` : '';
-      options.push({
-        value: material,
-        label: material + usageText,
-        isCustom: true,
+        isCustom: isCustom,
         usageStats: stats
       });
     });
@@ -467,15 +428,41 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                         </div>
 
                         {/* Custom Material Input */}
-                        {material.isCustomMaterial && (
+                        {material.isCustomMaterial && 
+                         (!material.customMaterialName || 
+                          (!isStandardMaterial(material.customMaterialName) && 
+                           !isCustomMaterial(material.customMaterialName))) && (
                           <div className="space-y-2">
                             <Label>Custom Material Name</Label>
-                            <Input
-                              value={material.customMaterialName}
-                              onChange={(e) => handleMaterialChange(material.id, 'customMaterialName', e.target.value)}
-                              placeholder="Enter custom material name"
-                              disabled={disabled}
-                            />
+                            <div className="flex space-x-2">
+                              <Input
+                                value={material.customMaterialName}
+                                onChange={(e) => handleMaterialChange(material.id, 'customMaterialName', e.target.value)}
+                                placeholder="Enter custom material name"
+                                disabled={disabled}
+                                className="flex-1"
+                              />
+                              {material.customMaterialName && material.customMaterialName.trim() && (
+                                <Button
+                                  type="button"
+                                  onClick={() => {
+                                    addCustomMaterial(material.customMaterialName.trim());
+                                    toast({
+                                      title: "Material Added",
+                                      description: `"${material.customMaterialName.trim()}" has been added to the material options.`,
+                                    });
+                                  }}
+                                  disabled={disabled}
+                                  size="sm"
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                >
+                                  Add to Options
+                                </Button>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-500">
+                              Click "Add to Options" to make this material available for future use across all areas.
+                            </p>
                           </div>
                         )}
 

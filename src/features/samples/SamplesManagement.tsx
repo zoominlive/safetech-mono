@@ -10,7 +10,6 @@ import { toast } from "@/components/ui/use-toast";
 import { reportService } from "@/services/api/reportService";
 import BackButton from "@/components/BackButton";
 import * as XLSX from 'xlsx';
-import { Checkbox } from "@/components/ui/checkbox";
 
 interface Sample {
   id: string;
@@ -52,7 +51,6 @@ export const SamplesManagement: React.FC = () => {
   const [projectName, setProjectName] = useState<string>("");
   const [projectId, setProjectId] = useState<string>("");
   const [isImporting, setIsImporting] = useState(false);
-  const [matchBySampleId, setMatchBySampleId] = useState(true);
 
   useEffect(() => {
     if (reportId) {
@@ -282,13 +280,13 @@ export const SamplesManagement: React.FC = () => {
     }
 
     const csvData = samples.map(sample => ({
-      'SampleID': sample.sampleId,
+      'SampleNo': sample.sampleNo,
       'Material Type': sample.materialType,
       'Material Description': sample.description,
-      'Sample Location': sample.location
+      // 'Sample Location': sample.location
     }));
 
-    const headers = ['SampleID', 'Material Type', 'Material Description', 'Sample Location'];
+    const headers = ['SampleNo', 'Material Type', 'Material Description'];
     const csvContent = [
       headers.join(','),
       ...csvData.map(row => headers.map(header => `"${row[header as keyof typeof row]}"`).join(','))
@@ -321,38 +319,23 @@ export const SamplesManagement: React.FC = () => {
       const data = await readFileData(file);
       const results = parseLabResults(data);
       console.log("results===>", results);
-      let updatedSamples: Sample[] = [];
-      if (matchBySampleId) {
-        // Match by Sample ID (current logic)
-        updatedSamples = samples.map(sample => {
-          const result = results.find(r => r.sampleId === sample.sampleId);
-          if (result) {
-            return {
-              ...sample,
-              percentageAsbestos: result.percentageAsbestos,
-              asbestosType: result.asbestosType,
-              location: result.location,
-              description: result.description
-            };
-          }
-          return sample;
-        });
-      } else {
-        // Row-by-row import (regardless of Sample ID)
-        updatedSamples = samples.map((sample, idx) => {
-          const result = results[idx];
-          if (result) {
-            return {
-              ...sample,
-              percentageAsbestos: result.percentageAsbestos,
-              asbestosType: result.asbestosType,
-              location: result.location,
-              description: result.description
-            };
-          }
-          return sample;
-        });
-      }
+      
+      // Match by Location (Excel) with Material Type (Sample) and Description (Excel) with Area Name (Sample)
+      const updatedSamples = samples.map(sample => {
+        const result = results.find(r => 
+          r.location?.toLowerCase().trim() === sample.materialType.toLowerCase().trim() &&
+          r.description?.toLowerCase().trim() === sample.areaName.toLowerCase().trim()
+        );
+        console.log("result===>", result);
+        if (result) {
+          return {
+            ...sample,
+            percentageAsbestos: result.percentageAsbestos,
+            asbestosType: result.asbestosType
+          };
+        }
+        return sample;
+      });
       setSamples(updatedSamples);
       toast({
         title: "Success",
@@ -419,14 +402,16 @@ export const SamplesManagement: React.FC = () => {
     });
   };
 
-  const parseLabResults = (data: any[]): Array<{ sampleId: string; percentageAsbestos?: any; asbestosType?: string; location?: string; description?: string }> => {
-    const results: Array<{ sampleId: string; percentageAsbestos?: any; asbestosType?: string; location?: string; description?: string }> = [];
+  const parseLabResults = (data: any[]): Array<{ sampleId: string; percentageAsbestos?: any; asbestosType?: string; location?: string; description?: string; areaName?: string; materialType?: string }> => {
+    const results: Array<{ sampleId: string; percentageAsbestos?: any; asbestosType?: string; location?: string; description?: string; areaName?: string; materialType?: string }> = [];
     data.forEach(row => {
       const sampleId = row.SampleID || row.SampleId || row.sampleID || row.sampleId || row['Sample ID'] || '';
       const content1 = row.Content_1 || row.content_1 || row['Content 1'] || row['content 1'] || '';
       const type1 = row.Type_1 || row.type_1 || row['Type 1'] || row['type 1'] || '';
       const location = row.Location || row.location || row['Location'] || row['location'] || '';
       const description = row.Description || row.description || row['Description'] || row['description'] || '';
+      const areaName = row.AreaName || row.areaName || row['Area Name'] || row['area name'] || row['Area'] || row.area || '';
+      const materialType = row.MaterialType || row.materialType || row['Material Type'] || row['material type'] || row['Material'] || row.material || '';
       const percentageAsbestos = content1;
    
       results.push({
@@ -434,7 +419,9 @@ export const SamplesManagement: React.FC = () => {
         percentageAsbestos,
         asbestosType: type1 || undefined,
         location: location || undefined,
-        description: description || undefined
+        description: description || undefined,
+        areaName: areaName || undefined,
+        materialType: materialType || undefined
       });
     });
     return results;
@@ -487,10 +474,6 @@ export const SamplesManagement: React.FC = () => {
             <Upload className="h-4 w-4 mr-2" />
             {isImporting ? "Importing..." : "Import Results"}
           </Button>
-          <div className="flex items-center space-x-1">
-            <Checkbox id="matchBySampleId" checked={matchBySampleId} onCheckedChange={(checked: boolean) => setMatchBySampleId(checked)} />
-            <label htmlFor="matchBySampleId" className="text-sm select-none cursor-pointer">Match by Sample ID only</label>
-          </div>
           <Button
             onClick={handleSaveResults}
             disabled={isSaving}
@@ -521,7 +504,7 @@ export const SamplesManagement: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Sample ID</TableHead>
+                    {/* <TableHead>Sample ID</TableHead> */}
                     <TableHead>Sample No.</TableHead>
                     <TableHead>Area Name</TableHead>
                     <TableHead>Material Type</TableHead>
@@ -535,14 +518,14 @@ export const SamplesManagement: React.FC = () => {
                 <TableBody>
                   {samples.map((sample) => (
                     <TableRow key={sample.id}>
-                      <TableCell className="font-mono font-medium">
+                      {/* <TableCell className="font-mono font-medium">
                         <Input
                           value={sample.sampleId}
                           onChange={(e) => updateSample(sample.sampleId, 'sampleId', e.target.value)}
                           className="w-24 font-mono text-sm"
                           placeholder="sample id"
                         />
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell className="font-mono font-medium">
                         <Input
                           value={sample.areaName + "-" + sample.sampleNo}
