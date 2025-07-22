@@ -4,6 +4,19 @@ const { INTERNAL_SERVER_ERROR } = require("./constants");
 const Handler = (err, req, res, next) => {
   console.error('Error Stack Trace:', err.stack || err);
 
+  // Handle payload size errors specifically
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({
+      code: 413,
+      message: 'Request payload too large',
+      errors: {
+        payload: 'The request body exceeds the maximum allowed size. Please reduce the data size or contact support.',
+        maxSize: process.env.JSON_PAYLOAD_LIMIT || '50mb'
+      },
+      success: false,
+    });
+  }
+
   const statusCode =
     typeof err.status === 'number' && err.status >= 400 && err.status < 600
       ? err.status

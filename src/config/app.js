@@ -8,12 +8,20 @@ const routes = require('../routes');
 const { ErrorHandler } = require('../helpers/errorHandler');
 const { logType, morganConfig } = require('./use_env_variable');
 
+// Get payload limits from environment or use defaults
+const JSON_LIMIT = process.env.JSON_PAYLOAD_LIMIT || '50mb';
+const URL_LIMIT = process.env.URL_PAYLOAD_LIMIT || '50mb';
 
-// Parse JSON playload
-app.use(express.json({}));
+// Parse JSON payload with increased limits
+app.use(express.json({ 
+  limit: JSON_LIMIT // Configurable limit
+}));
 
-// Parse URl-Encoded Data
-app.use(express.urlencoded({ extended: true }));
+// Parse URL-Encoded Data with increased limits
+app.use(express.urlencoded({ 
+  extended: true,
+  limit: URL_LIMIT // Configurable limit
+}));
 
 app.use(morgan(logType, morganConfig));
 
