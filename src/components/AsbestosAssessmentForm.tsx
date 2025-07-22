@@ -60,7 +60,6 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
   onChange,
   disabled = false,
   onFileUpload,
-  existingMaterials = [],
   materialUsageStats = {},
   existingSampleIds = [],
 }) => {
