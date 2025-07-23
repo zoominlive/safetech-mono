@@ -77,14 +77,72 @@ export const SamplesManagement: React.FC = () => {
         // Set areas
         setAreas(areaDetails);
         
-        // Extract samples from areas
+        // Extract samples from areas and preserve material addition order
         const extractedSamples: Sample[] = [];
         let nextSampleNumber = 10001;
         const usedSampleIds = new Set<string>();
 
-        // Track sample counts per material type for naming convention
-        const materialSampleCounts: Record<string, number> = {};
+        // Track the order in which materials were added across all areas
+        const materialOrder: string[] = [];
+        const materialOrderMap = new Map<string, number>();
+        const materialTimestamps: { materialName: string; timestamp: string; areaName: string }[] = [];
 
+        // First pass: collect all materials with their timestamps
+        console.log('Processing areas:', areaDetails.map(a => a.name));
+        
+        areaDetails.forEach((area: Area) => {
+          const areaMaterials = area.assessments.asbestosMaterials || [];
+          console.log(`Area ${area.name} has ${areaMaterials.length} materials:`, areaMaterials.map((m: any) => ({
+            materialType: m.materialType,
+            customMaterialName: m.customMaterialName,
+            isCustomMaterial: m.isCustomMaterial,
+            sampleCollected: m.sampleCollected,
+            timestamp: m.timestamp
+          })));
+          
+          areaMaterials.forEach((material: any) => {
+            if (material.sampleCollected === 'Yes') {
+              const materialName = material.isCustomMaterial ? material.customMaterialName : material.materialType;
+              
+              // Collect material with timestamp for ordering
+              if (material.timestamp) {
+                materialTimestamps.push({
+                  materialName,
+                  timestamp: material.timestamp,
+                  areaName: area.name
+                });
+              }
+            }
+          });
+        });
+
+        // Sort materials by their earliest timestamp to determine addition order
+        const uniqueMaterials = new Set<string>();
+        materialTimestamps.forEach(item => uniqueMaterials.add(item.materialName));
+        
+        // For each unique material, find its earliest timestamp
+        const materialEarliestTimestamps = Array.from(uniqueMaterials).map(materialName => {
+          const timestamps = materialTimestamps
+            .filter(item => item.materialName === materialName)
+            .map(item => new Date(item.timestamp).getTime());
+          const earliestTimestamp = Math.min(...timestamps);
+          return { materialName, earliestTimestamp };
+        });
+
+        // Sort by earliest timestamp to get the actual addition order
+        materialEarliestTimestamps.sort((a, b) => a.earliestTimestamp - b.earliestTimestamp);
+        
+        // Create the material order map
+        materialEarliestTimestamps.forEach((item, index) => {
+          materialOrder.push(item.materialName);
+          materialOrderMap.set(item.materialName, index + 1);
+          console.log(`Material order by timestamp: ${item.materialName} -> ${index + 1} (earliest: ${new Date(item.earliestTimestamp).toISOString()})`);
+        });
+        
+        console.log('Final material order:', materialOrder);
+        console.log('Material order map:', Object.fromEntries(materialOrderMap));
+
+        // Second pass: create samples with proper numbering
         areaDetails.forEach((area: Area) => {
           const areaMaterials = area.assessments.asbestosMaterials || [];
           
@@ -117,20 +175,21 @@ export const SamplesManagement: React.FC = () => {
                 }
               }
 
-              // Generate sample number using material-based naming convention
-              if (!materialSampleCounts[materialName]) {
-                materialSampleCounts[materialName] = 0;
-              }
-              materialSampleCounts[materialName]++;
+              // Get the material order number (1 for first material added, 2 for second, etc.)
+              const materialOrderNumber = materialOrderMap.get(materialName) || 1;
               
-              // Convert number to letter (1=A, 2=B, 3=C, etc.)
-              const sampleLetter = String.fromCharCode(64 + materialSampleCounts[materialName]); // 65 is 'A' in ASCII
-              const sampleNo = `1${sampleLetter}`;
+              // Count how many samples of this material we've seen so far
+              const samplesOfThisMaterial = extractedSamples.filter(s => s.materialType === materialName).length;
+              const sampleLetter = String.fromCharCode(65 + samplesOfThisMaterial); // 65 is 'A' in ASCII
+              
+              const sampleNo = `${materialOrderNumber}${sampleLetter}`;
+              
+              console.log(`Sample: ${area.name} - ${materialName} -> ${sampleNo} (order: ${materialOrderNumber}, count: ${samplesOfThisMaterial})`);
               
               extractedSamples.push({
                 id: material.id,
                 sampleId: sampleId,
-                sampleNo: material.sampleNo || sampleNo,
+                sampleNo: sampleNo, // Always use the calculated sample number
                 areaName: area.name,
                 materialType: materialName,
                 location: material.location || '',
@@ -144,22 +203,8 @@ export const SamplesManagement: React.FC = () => {
           });
         });
 
-        // Update sample numbers based on material type sequence
-        const materialSequence: string[] = [];
-        const updatedSamples = extractedSamples.map(sample => {
-          if (!materialSequence.includes(sample.materialType)) {
-            materialSequence.push(sample.materialType);
-          }
-          
-          const materialIndex = materialSequence.indexOf(sample.materialType) + 1;
-          const materialCount = extractedSamples.filter(s => s.materialType === sample.materialType).indexOf(sample) + 1;
-          const sampleLetter = String.fromCharCode(64 + materialCount); // 65 is 'A' in ASCII
-          
-          return {
-            ...sample,
-            sampleNo: `${materialIndex}${sampleLetter}`
-          };
-        });
+        // No need for additional processing since we've already assigned correct sample numbers
+        const updatedSamples = extractedSamples;
 
         // Ensure unique sample IDs by checking for duplicates
         extractedSamples.forEach(sample => {
@@ -320,13 +365,12 @@ export const SamplesManagement: React.FC = () => {
       const results = parseLabResults(data);
       console.log("results===>", results);
       
-      // Match by Location (Excel) with Material Type (Sample) and Description (Excel) with Area Name (Sample)
+      // Match by Sample No. from Excel with Sample No. in the management screen
       const updatedSamples = samples.map(sample => {
         const result = results.find(r => 
-          r.location?.toLowerCase().trim() === sample.materialType.toLowerCase().trim() &&
-          r.description?.toLowerCase().trim() === sample.areaName.toLowerCase().trim()
+          r.sample?.toString().toLowerCase().trim() === sample.sampleNo?.toString().toLowerCase().trim()
         );
-        console.log("result===>", result);
+        console.log(`Matching sample ${sample.sampleNo} with result:`, result);
         if (result) {
           return {
             ...sample,
@@ -402,10 +446,10 @@ export const SamplesManagement: React.FC = () => {
     });
   };
 
-  const parseLabResults = (data: any[]): Array<{ sampleId: string; percentageAsbestos?: any; asbestosType?: string; location?: string; description?: string; areaName?: string; materialType?: string }> => {
-    const results: Array<{ sampleId: string; percentageAsbestos?: any; asbestosType?: string; location?: string; description?: string; areaName?: string; materialType?: string }> = [];
+  const parseLabResults = (data: any[]): Array<{ sample: string; percentageAsbestos?: any; asbestosType?: string; location?: string; description?: string; areaName?: string; materialType?: string }> => {
+    const results: Array<{ sample: string; percentageAsbestos?: any; asbestosType?: string; location?: string; description?: string; areaName?: string; materialType?: string }> = [];
     data.forEach(row => {
-      const sampleId = row.SampleID || row.SampleId || row.sampleID || row.sampleId || row['Sample ID'] || '';
+      const sample = row.Sample || row.Sample || row.sample || row.sample || row['Sample'] || '';
       const content1 = row.Content_1 || row.content_1 || row['Content 1'] || row['content 1'] || '';
       const type1 = row.Type_1 || row.type_1 || row['Type 1'] || row['type 1'] || '';
       const location = row.Location || row.location || row['Location'] || row['location'] || '';
@@ -415,7 +459,7 @@ export const SamplesManagement: React.FC = () => {
       const percentageAsbestos = content1;
    
       results.push({
-        sampleId: sampleId.toString(),
+        sample: sample,
         percentageAsbestos,
         asbestosType: type1 || undefined,
         location: location || undefined,
