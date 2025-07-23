@@ -325,7 +325,7 @@ export const SamplesManagement: React.FC = () => {
     }
 
     const csvData = samples.map(sample => ({
-      'SampleNo': sample.sampleNo,
+      'SampleNo':sample.areaName + "-" + sample.sampleNo,
       'Material Type': sample.materialType,
       'Material Description': sample.description,
       // 'Sample Location': sample.location
