@@ -367,9 +367,20 @@ export const SamplesManagement: React.FC = () => {
       
       // Match by Sample No. from Excel with Sample No. in the management screen
       const updatedSamples = samples.map(sample => {
-        const result = results.find(r => 
-          r.sample?.toString().toLowerCase().trim() === sample.sampleNo?.toString().toLowerCase().trim()
-        );
+        const result = results.find(r => {
+          // Extract sample number from CSV sample name (e.g., "Main Roof-1A" -> "1A")
+          const csvSampleName = r.sample?.toString() || '';
+          const sampleNumberMatch = csvSampleName.match(/-(\d+[A-Z])$/);
+          const csvSampleNumber = sampleNumberMatch ? sampleNumberMatch[1] : csvSampleName;
+          
+          const managementSampleNo = sample.sampleNo?.toString() || '';
+          
+          const match = csvSampleNumber.toLowerCase().trim() === managementSampleNo.toLowerCase().trim();
+          console.log(`Matching CSV sample "${csvSampleName}" (extracted: "${csvSampleNumber}") with management sample "${managementSampleNo}": ${match}`);
+          
+          return match;
+        });
+        
         console.log(`Matching sample ${sample.sampleNo} with result:`, result);
         if (result) {
           return {

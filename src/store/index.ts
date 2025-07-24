@@ -206,75 +206,128 @@ export const useAuthStore = create<AuthState>()(
   )
 );
 
+import { materialService, Material } from '@/services/api/materialService';
+
 // Material store for managing standard and custom materials
 interface MaterialState {
-  standardMaterials: string[];
-  customMaterials: string[];
+  materials: Material[];
+  loading: boolean;
+  error: string | null;
   
   // Actions
-  addCustomMaterial: (materialName: string) => void;
+  fetchMaterials: () => Promise<void>;
+  addCustomMaterial: (materialName: string) => Promise<void>;
+  deleteCustomMaterial: (id: string) => Promise<void>;
   getAvailableMaterials: () => string[];
   isStandardMaterial: (materialName: string) => boolean;
   isCustomMaterial: (materialName: string) => boolean;
+  clearError: () => void;
 }
 
 export const useMaterialStore = create<MaterialState>()(
-  persist(
-    (set, get) => ({
-      standardMaterials: [
-        "Sprayed Fireproofing",
-        "Blown Insulation",
-        "Loose Fill / Vermiculite Insulation",
-        "Mechanical Pipe Insulation – Straights",
-        "Mechanical Pipe Insulation – Fittings",
-        "HVAC Duct Insulation",
-        "Breeching / Exhaust Insulation",
-        "Tank Insulation",
-        "Boiler Insulation",
-        "Other Mechanical Equipment Insulation",
-        "Sprayed Texture / Stucco Finishes",
-        "Plaster Finishes",
-        "Drywall Joint Compound",
-        "Lay-in Acoustic Ceiling Tiles",
-        "Glued-on Acoustic Ceiling Tiles",
-        "Cement Ceiling Panels",
-        "Vinyl Floor Tiles",
-        "Vinyl Sheet Flooring",
-        "Mastic (Flooring)",
-        "Asbestos Cement Piping",
-        "Asbestos Cement Roofing, Siding, Wallboard",
-        "Other Cement Products (Asbestos Cement)",
-        "Exterior Building Caulking",
-        "Exterior Building Shingles",
-        "Exterior Building Roof Membrane",
-        "Miscellaneous Mastic",
-      ],
-      customMaterials: [],
+  (set, get) => ({
+    materials: [],
+    loading: false,
+    error: null,
 
-      addCustomMaterial: (materialName: string) => {
-        const { customMaterials } = get();
-        if (!customMaterials.includes(materialName)) {
-          set({ customMaterials: [...customMaterials, materialName] });
+    fetchMaterials: async () => {
+      set({ loading: true, error: null });
+      try {
+        console.log('Fetching materials from API...');
+        const response = await materialService.getAllMaterials();
+        console.log('Materials API response:', response);
+        
+        // Check for both success property and status 200
+        if (response.success || response.status === 200) {
+          console.log('Materials fetched successfully:', response.data.materials);
+          set({ materials: response.data.materials, loading: false });
+        } else {
+          console.error('Materials API returned error:', response.message);
+          set({ error: response.message || 'Failed to fetch materials', loading: false });
         }
-      },
+      } catch (error) {
+        console.error('Error fetching materials:', error);
+        set({ 
+          error: error instanceof Error ? error.message : 'Failed to fetch materials', 
+          loading: false 
+        });
+      }
+    },
 
-      getAvailableMaterials: () => {
-        const { standardMaterials, customMaterials } = get();
-        return [...standardMaterials, ...customMaterials];
-      },
+    addCustomMaterial: async (materialName: string) => {
+      set({ loading: true, error: null });
+      try {
+        const response = await materialService.createCustomMaterial({
+          name: materialName,
+          type: 'custom'
+        });
+        
+        if (response.success) {
+          // Refresh materials list
+          await get().fetchMaterials();
+        } else {
+          set({ error: response.message || 'Failed to add material', loading: false });
+        }
+      } catch (error) {
+        console.error('Error adding custom material:', error);
+        set({ 
+          error: error instanceof Error ? error.message : 'Failed to add material', 
+          loading: false 
+        });
+      }
+    },
 
-      isStandardMaterial: (materialName: string) => {
-        const { standardMaterials } = get();
-        return standardMaterials.includes(materialName);
-      },
+    deleteCustomMaterial: async (id: string) => {
+      set({ loading: true, error: null });
+      try {
+        const response = await materialService.deleteCustomMaterial(id);
+        if (response.success) {
+          // Refresh materials list
+          await get().fetchMaterials();
+        } else {
+          set({ error: response.message || 'Failed to delete material', loading: false });
+        }
+      } catch (error) {
+        console.error('Error deleting custom material:', error);
+        set({ 
+          error: error instanceof Error ? error.message : 'Failed to delete material', 
+          loading: false 
+        });
+      }
+    },
 
-      isCustomMaterial: (materialName: string) => {
-        const { customMaterials } = get();
-        return customMaterials.includes(materialName);
-      },
-    }),
-    {
-      name: 'material-storage',
-    }
-  )
+    getAvailableMaterials: () => {
+      const { materials } = get();
+      const availableMaterials = materials
+        .filter(material => material.is_active)
+        .map(material => material.name);
+      
+      console.log('getAvailableMaterials called:', {
+        totalMaterials: materials.length,
+        activeMaterials: availableMaterials.length,
+        materials: materials,
+        availableMaterials: availableMaterials
+      });
+      
+      return availableMaterials;
+    },
+
+    isStandardMaterial: (materialName: string) => {
+      const { materials } = get();
+      const material = materials.find(m => m.name === materialName && m.is_active);
+      const result = material?.type === 'standard';
+      console.log('isStandardMaterial:', { materialName, result, material });
+      return result;
+    },
+
+    isCustomMaterial: (materialName: string) => {
+      const { materials } = get();
+      const material = materials.find(m => m.name === materialName && m.is_active);
+      const result = material?.type === 'custom';
+      console.log('isCustomMaterial:', { materialName, result, material });
+      return result;
+    },
+
+    clearError: () => set({ error: null }),
+  })
 );

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { MaterialSelect } from "@/components/MaterialSelect";
 import { Card, CardContent } from "@/components/ui/card";
 import { CirclePlus, CircleX, Upload, Info, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
@@ -63,26 +63,47 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
   materialUsageStats = {},
   existingSampleIds = [],
 }) => {
-  const [materials, setMaterials] = useState<AsbestosMaterial[]>(value);
+  const [localMaterials, setLocalMaterials] = useState<AsbestosMaterial[]>(value);
   const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
   const [expandedMaterials, setExpandedMaterials] = useState<Set<string>>(new Set());
   const [materialToDelete, setMaterialToDelete] = useState<AsbestosMaterial | null>(null);
 
   // Use the material store
   const { 
+    materials,
+    loading: materialsLoading,
+    error: materialsError,
     getAvailableMaterials, 
     isStandardMaterial, 
     isCustomMaterial, 
-    addCustomMaterial 
+    addCustomMaterial,
   } = useMaterialStore();
 
+  // Fetch materials on component mount
   useEffect(() => {
-    setMaterials(value);
+    console.log('AsbestosAssessmentForm mounted, fetching materials...');
+    // Call fetchMaterials directly from store state
+    const store = useMaterialStore.getState();
+    store.fetchMaterials();
+  }, []); // Empty dependency array
+
+  // Debug materials loading
+  useEffect(() => {
+    console.log('Materials state changed:', {
+      materials: materials.length,
+      loading: materialsLoading,
+      error: materialsError,
+      availableMaterials: getAvailableMaterials()
+    });
+  }, [materials, materialsLoading, materialsError]);
+
+  useEffect(() => {
+    setLocalMaterials(value);
   }, [value]);
 
   // Auto-add first material if none exist and form is enabled
   useEffect(() => {
-    if (materials.length === 0 && !disabled) {
+    if (localMaterials.length === 0 && !disabled) {
       handleAddMaterial();
     }
   }, [disabled]); // Only run when disabled state changes
@@ -100,8 +121,8 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
       suspectedAcm: 'No',
       isCustomMaterial: false,
     };
-    const updatedMaterials = [newMaterial, ...materials];
-    setMaterials(updatedMaterials);
+    const updatedMaterials = [newMaterial, ...localMaterials];
+    setLocalMaterials(updatedMaterials);
     onChange(updatedMaterials);
     
     // Automatically expand the new material
@@ -109,7 +130,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
   };
 
   const handleRemoveMaterial = (id: string) => {
-    const material = materials.find(m => m.id === id);
+    const material = localMaterials.find(m => m.id === id);
     if (material) {
       setMaterialToDelete(material);
     }
@@ -117,8 +138,8 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
 
   const confirmRemoveMaterial = () => {
     if (materialToDelete) {
-      const updatedMaterials = materials.filter(material => material.id !== materialToDelete.id);
-      setMaterials(updatedMaterials);
+      const updatedMaterials = localMaterials.filter(material => material.id !== materialToDelete.id);
+      setLocalMaterials(updatedMaterials);
       onChange(updatedMaterials);
       setMaterialToDelete(null);
     }
@@ -137,7 +158,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
   };
 
   const handleMaterialChange = (id: string, field: keyof AsbestosMaterial, value: any) => {
-    const updatedMaterials = materials.map(material => {
+    const updatedMaterials = localMaterials.map(material => {
       if (material.id === id) {
         const updatedMaterial = { ...material, [field]: value };
         
@@ -148,7 +169,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
           // Find the highest existing sample ID across all areas and current materials
           const allExistingSampleIds = [
             ...existingSampleIds,
-            ...materials.filter(m => m.sampleId).map(m => m.sampleId!)
+            ...localMaterials.filter(m => m.sampleId).map(m => m.sampleId!)
           ];
           
           const existingSampleNumbers = allExistingSampleIds
@@ -170,7 +191,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
       }
       return material;
     });
-    setMaterials(updatedMaterials);
+    setLocalMaterials(updatedMaterials);
     onChange(updatedMaterials);
   };
 
@@ -181,7 +202,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
       setUploadingFiles(prev => ({ ...prev, [materialId]: true }));
       const uploadedUrls = await onFileUpload(files);
       
-      const updatedMaterials = materials.map(material => {
+      const updatedMaterials = localMaterials.map(material => {
         if (material.id === materialId) {
           return {
             ...material,
@@ -191,7 +212,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
         return material;
       });
       
-      setMaterials(updatedMaterials);
+      setLocalMaterials(updatedMaterials);
       onChange(updatedMaterials);
       
       toast({
@@ -211,16 +232,16 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
   };
 
   const handleRemovePhoto = (materialId: string, photoUrl: string) => {
-    const updatedMaterials = materials.map(material => {
+    const updatedMaterials = localMaterials.map(material => {
       if (material.id === materialId) {
         return {
           ...material,
-          photos: material.photos.filter(url => url !== photoUrl)
+          photos: material.photos.filter((url: string) => url !== photoUrl)
         };
       }
       return material;
     });
-    setMaterials(updatedMaterials);
+    setLocalMaterials(updatedMaterials);
     onChange(updatedMaterials);
   };
 
@@ -230,7 +251,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
     // Handle the custom material option
     if (materialType === "__custom__") {
       console.log('Setting custom material mode');
-      const updatedMaterials = materials.map(material => {
+      const updatedMaterials = localMaterials.map(material => {
         if (material.id === materialId) {
           return { 
             ...material, 
@@ -241,7 +262,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
         }
         return material;
       });
-      setMaterials(updatedMaterials);
+      setLocalMaterials(updatedMaterials);
       onChange(updatedMaterials);
       return;
     }
@@ -253,7 +274,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
     console.log('Material type:', materialType, 'isStandard:', isStandard, 'isCustom:', isCustom);
     
     console.log('Updating material with:', { materialType, isCustomMaterial: isCustom });
-    const updatedMaterials = materials.map(material => {
+    const updatedMaterials = localMaterials.map(material => {
       if (material.id === materialId) {
         return { 
           ...material, 
@@ -264,7 +285,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
       }
       return material;
     });
-    setMaterials(updatedMaterials);
+    setLocalMaterials(updatedMaterials);
     onChange(updatedMaterials);
   };
 
@@ -305,25 +326,79 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
 
   const createMaterialOptions = (): MaterialOption[] => {
     const options: MaterialOption[] = [];
-    const availableMaterials = getAvailableMaterials();
     
-    // Add all available materials (both standard and custom)
-    availableMaterials.forEach(material => {
-      const stats = materialUsageStats[material];
-      const usageText = stats ? ` (Used ${stats.count} times, ${stats.samplesCollected} samples)` : '';
-      const isCustom = isCustomMaterial(material);
-      options.push({
-        value: material,
-        label: material + usageText,
-        isCustom: isCustom,
-        usageStats: stats
-      });
+    console.log('Creating material options:', {
+      materialsLoading,
+      materialsLength: materials.length,
+      materialsError,
+      materials: materials
     });
     
+    // Only create options if materials are loaded and not loading
+    if (!materialsLoading) {
+      const availableMaterials = getAvailableMaterials();
+      
+      console.log('Available materials:', availableMaterials);
+      console.log('Materials loading:', materialsLoading);
+      console.log('Materials error:', materialsError);
+      console.log('Store materials:', materials);
+      
+      // Add all available materials (both standard and custom)
+      availableMaterials.forEach(material => {
+        const stats = materialUsageStats[material];
+        const usageText = stats ? ` (Used ${stats.count} times, ${stats.samplesCollected} samples)` : '';
+        const isCustom = isCustomMaterial(material);
+        options.push({
+          value: material,
+          label: material + usageText,
+          isCustom: isCustom,
+          usageStats: stats
+        });
+      });
+      
+      // If no materials are available from API, add some default materials
+      if (availableMaterials.length === 0 && !materialsError) {
+        console.log('No materials from API, adding default materials');
+        const defaultMaterials = [
+          'Acoustic Ceiling Tiles',
+          'Asphalt Roofing',
+          'Cement Pipes',
+          'Floor Tiles',
+          'Insulation',
+          'Joint Compound',
+          'Pipe Insulation',
+          'Roofing Felt',
+          'Siding',
+          'Textured Paint',
+          'Vinyl Floor Tiles',
+          'Wallboard'
+        ];
+        
+        defaultMaterials.forEach(material => {
+          options.push({
+            value: material,
+            label: material,
+            isCustom: false
+          });
+        });
+      }
+    }
+    
+    console.log('Created options:', options);
     return options;
   };
 
   const materialOptions = createMaterialOptions();
+  
+  // Debug material options
+  useEffect(() => {
+    console.log('Material options updated:', {
+      optionsCount: materialOptions.length,
+      options: materialOptions,
+      materialsLoading,
+      materialsError
+    });
+  }, [materialOptions, materialsLoading, materialsError]);
 
   return (
     <div className="space-y-6">
@@ -339,7 +414,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
             )}
           </div>
 
-          {materials.map((material, index) => {
+          {localMaterials.map((material, index) => {
             const isExpanded = expandedMaterials.has(material.id);
             const displayName = getDisplayMaterialName(material) || `Material ${index + 1}`;
             
@@ -406,24 +481,30 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                                 </TooltipProvider>
                               );
                             })()}
+                            {materialsError && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger>
+                                    <Info className="h-4 w-4 text-red-600" />
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs">
+                                    <div className="space-y-1">
+                                      <p className="font-medium text-red-600">Error Loading Materials:</p>
+                                      <p className="text-red-600">{materialsError}</p>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
                           </div>
-                          <Select
-                            value={material.materialType || undefined}
+                          <MaterialSelect
+                            value={material.materialType || ""}
                             onValueChange={(value) => handleMaterialTypeChange(material.id, value)}
-                            disabled={disabled}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select material type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {materialOptions.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                              <SelectItem value="__custom__">Add Other Material...</SelectItem>
-                            </SelectContent>
-                          </Select>
+                            options={materialOptions}
+                            placeholder={materialsLoading ? "Loading materials..." : "Select material type"}
+                            disabled={disabled || materialsLoading}
+                            loading={materialsLoading}
+                          />
                         </div>
 
                         {/* Custom Material Input */}
@@ -444,12 +525,24 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                               {material.customMaterialName && material.customMaterialName.trim() && (
                                 <Button
                                   type="button"
-                                  onClick={() => {
-                                    addCustomMaterial(material.customMaterialName.trim());
-                                    toast({
-                                      title: "Material Added",
-                                      description: `"${material.customMaterialName.trim()}" has been added to the material options.`,
-                                    });
+                                  onClick={async () => {
+                                    try {
+                                      await addCustomMaterial(material.customMaterialName.trim());
+                                      // Fetch materials again to refresh the dropdown
+                                      const store = useMaterialStore.getState();
+                                      await store.fetchMaterials();
+                                      toast({
+                                        title: "Material Added",
+                                        description: `"${material.customMaterialName.trim()}" has been added to the material options.`,
+                                      });
+                                    } catch (error) {
+                                      console.error('Error adding custom material:', error);
+                                      toast({
+                                        title: "Error",
+                                        description: "Failed to add material to options.",
+                                        variant: "destructive",
+                                      });
+                                    }
                                   }}
                                   disabled={disabled}
                                   size="sm"
