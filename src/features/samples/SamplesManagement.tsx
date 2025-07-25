@@ -761,13 +761,18 @@ export const SamplesManagement: React.FC = () => {
                       <TableBody>
                         {samples.filter(s => s.sampleType === 'asbestos').map((sample) => (
                           <TableRow key={sample.id}>
-                            <TableCell className="font-mono font-medium">
+                            {/* <TableCell className="font-mono font-medium">
                               <Input
                                 value={sample.areaName.replace(/\s+/g, '') + "-" + sample.sampleNo}
                                 onChange={(e) => updateSample(sample.sampleId, 'sampleNo', e.target.value)}
                                 className="w-32 font-mono text-sm"
                                 placeholder="Area-1A"
                               />
+                            </TableCell> */}
+                            <TableCell className="font-mono text-sm">
+                              <div className="truncate" title={sample.areaName.replace(/\s+/g, '') + "-" + sample.sampleNo}>
+                                {sample.areaName.replace(/\s+/g, '') + "-" + sample.sampleNo}
+                              </div>
                             </TableCell>
                             <TableCell>{sample.areaName}</TableCell>
                             <TableCell>{sample.materialType}</TableCell>
@@ -775,13 +780,15 @@ export const SamplesManagement: React.FC = () => {
                             <TableCell>{sample.description}</TableCell>
                             <TableCell>{sample.squareFootage}</TableCell>
                             <TableCell>
-                              <Input
-                                type="text"
-                                value={sample.percentageAsbestos || ''}
-                                onChange={(e) => updateSample(sample.sampleId, 'percentageAsbestos', e.target.value || undefined)}
-                                className="w-20"
-                                placeholder="%"
-                              />
+                              <div title={sample.percentageAsbestos !== undefined ? sample.percentageAsbestos.toString() : 'No value'}>
+                                <Input
+                                  type="text"
+                                  value={sample.percentageAsbestos !== undefined ? sample.percentageAsbestos.toString() : ''}
+                                  onChange={(e) => updateSample(sample.sampleId, 'percentageAsbestos', e.target.value || undefined)}
+                                  className="w-20"
+                                  placeholder="%"
+                                />
+                              </div>
                             </TableCell>
                             <TableCell>
                               <Select
@@ -880,26 +887,33 @@ export const SamplesManagement: React.FC = () => {
                       <TableBody>
                         {samples.filter(s => s.sampleType === 'lead').map((sample) => (
                           <TableRow key={sample.id}>
-                            <TableCell className="font-mono font-medium">
+                            {/* <TableCell className="font-mono font-medium">
                               <Input
                                 value={sample.areaName.replace(/\s+/g, '') + "-" + sample.sampleNo}
                                 onChange={(e) => updateSample(sample.sampleId, 'sampleNo', e.target.value)}
                                 className="w-32 font-mono text-sm"
                                 placeholder="Area-1A"
                               />
+                            </TableCell> */}
+                            <TableCell className="font-mono text-sm">
+                              <div className="truncate" title={sample.areaName.replace(/\s+/g, '') + "-" + sample.sampleNo}>
+                                {sample.areaName.replace(/\s+/g, '') + "-" + sample.sampleNo}
+                              </div>
                             </TableCell>
                             <TableCell>{sample.areaName}</TableCell>
                             <TableCell>{sample.materialType}</TableCell>
                             <TableCell>{sample.location}</TableCell>
                             <TableCell>{sample.description}</TableCell>
                             <TableCell>
-                              <Input
-                                type="text"
-                                value={sample.percentageLead || ''}
-                                onChange={(e) => updateSample(sample.sampleId, 'percentageLead', e.target.value || undefined)}
-                                className="w-20"
-                                placeholder="%"
-                              />
+                              <div title={sample.percentageLead !== undefined ? sample.percentageLead.toString() : 'No value'}>
+                                <Input
+                                  type="text"
+                                  value={sample.percentageLead !== undefined ? sample.percentageLead.toString() : ''}
+                                  onChange={(e) => updateSample(sample.sampleId, 'percentageLead', e.target.value || undefined)}
+                                  className="w-20"
+                                  placeholder="%"
+                                />
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
