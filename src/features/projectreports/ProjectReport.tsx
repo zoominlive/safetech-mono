@@ -35,7 +35,9 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import LabImport from "@/components/LabImport";
 import { Textarea } from "@/components/ui/textarea";
 import { AsbestosAssessmentForm } from "@/components/AsbestosAssessmentForm";
+import { LeadAssessmentForm } from "@/components/LeadAssessmentForm";
 import { transformAsbestosSchema, convertOldAsbestosDataToNew } from "@/lib/asbestosSchemaTransformer";
+import { transformLeadSchema, convertOldLeadDataToNew } from "@/lib/leadSchemaTransformer";
 
 
 interface SchemaField {
@@ -473,20 +475,24 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               ? JSON.parse(response.data.template.schema)
               : response.data.template.schema;
             
-            // Transform the asbestos schema to use the new simplified format
-            const transformedSchema = transformAsbestosSchema(parsedSchema.sections);
+            // Transform the asbestos and lead schemas to use the new simplified format
+            let transformedSchema = transformAsbestosSchema(parsedSchema.sections);
+            transformedSchema = transformLeadSchema(transformedSchema);
+            console.log('Transformed asbestos schema:', transformedSchema);
             setSchema(transformedSchema);
 
-            // Convert old asbestos data to new format for each area
+            // Convert old asbestos and lead data to new format for each area
             const updatedAreas = initialAreas.map(area => {
               const oldAsbestosData = area.assessments;
               const newAsbestosMaterials = convertOldAsbestosDataToNew(oldAsbestosData);
+              const newLeadMaterials = convertOldLeadDataToNew(oldAsbestosData);
               
               return {
                 ...area,
                 assessments: {
                   ...area.assessments,
                   asbestosMaterials: newAsbestosMaterials,
+                  leadMaterials: newLeadMaterials,
                   // Keep the old data for backward compatibility
                   ...oldAsbestosData
                 }
@@ -1284,6 +1290,58 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
         return (
           <div className="space-y-2">
             <AsbestosAssessmentForm
+              value={value || []}
+              onChange={(materials) => updateAreaAssessment(field.id, materials)}
+              disabled={!isEditable}
+              projectId={projectId}
+              reportId={id}
+              onFileUpload={async (files) => {
+                if (!id) return [];
+                const formData = new FormData();
+                Array.from(files).forEach(file => {
+                  formData.append('files', file);
+                });
+                const response = await reportService.uploadReportFile(id, formData);
+                if (response.success) {
+                  return (response.data as { data: { urls: string[] } }).data.urls;
+                }
+                return [];
+              }}
+              materialUsageStats={materialUsageStats}
+              existingSampleIds={allExistingSampleIds}
+            />
+          </div>
+        );
+      }
+      case "leadAssessment": {
+        // Calculate material usage statistics across all areas
+        const materialUsageStats: Record<string, { count: number; samplesCollected: number }> = {};
+        const allExistingSampleIds: string[] = [];
+        
+        areas.forEach(area => {
+          const areaMaterials = area.assessments.leadMaterials || [];
+          areaMaterials.forEach((material: any) => {
+            const materialName = material.isCustomMaterial ? material.customMaterialName : material.materialType;
+            if (materialName) {
+              if (!materialUsageStats[materialName]) {
+                materialUsageStats[materialName] = { count: 0, samplesCollected: 0 };
+              }
+              materialUsageStats[materialName].count++;
+              if (material.sampleCollected === 'Yes') {
+                materialUsageStats[materialName].samplesCollected++;
+              }
+              
+              // Track existing sample IDs
+              if (material.sampleId) {
+                allExistingSampleIds.push(material.sampleId);
+              }
+            }
+          });
+        });
+        
+        return (
+          <div className="space-y-2">
+            <LeadAssessmentForm
               value={value || []}
               onChange={(materials) => updateAreaAssessment(field.id, materials)}
               disabled={!isEditable}

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, Upload } from "lucide-react";
+import { Download, Upload, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { reportService } from "@/services/api/reportService";
 import BackButton from "@/components/BackButton";
@@ -22,6 +22,8 @@ interface Sample {
   squareFootage: string;
   percentageAsbestos?: number;
   asbestosType?: string;
+  percentageLead?: number;
+  sampleType: 'asbestos' | 'lead';
   timestamp: string;
 }
 
@@ -51,6 +53,7 @@ export const SamplesManagement: React.FC = () => {
   const [projectName, setProjectName] = useState<string>("");
   const [projectId, setProjectId] = useState<string>("");
   const [isImporting, setIsImporting] = useState(false);
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (reportId) {
@@ -91,8 +94,9 @@ export const SamplesManagement: React.FC = () => {
         console.log('Processing areas:', areaDetails.map(a => a.name));
         
         areaDetails.forEach((area: Area) => {
-          const areaMaterials = area.assessments.asbestosMaterials || [];
-          console.log(`Area ${area.name} has ${areaMaterials.length} materials:`, areaMaterials.map((m: any) => ({
+          // Process asbestos materials
+          const asbestosMaterials = area.assessments.asbestosMaterials || [];
+          console.log(`Area ${area.name} has ${asbestosMaterials.length} asbestos materials:`, asbestosMaterials.map((m: any) => ({
             materialType: m.materialType,
             customMaterialName: m.customMaterialName,
             isCustomMaterial: m.isCustomMaterial,
@@ -100,7 +104,32 @@ export const SamplesManagement: React.FC = () => {
             timestamp: m.timestamp
           })));
           
-          areaMaterials.forEach((material: any) => {
+          asbestosMaterials.forEach((material: any) => {
+            if (material.sampleCollected === 'Yes') {
+              const materialName = material.isCustomMaterial ? material.customMaterialName : material.materialType;
+              
+              // Collect material with timestamp for ordering
+              if (material.timestamp) {
+                materialTimestamps.push({
+                  materialName,
+                  timestamp: material.timestamp,
+                  areaName: area.name
+                });
+              }
+            }
+          });
+
+          // Process lead materials
+          const leadMaterials = area.assessments.leadMaterials || [];
+          console.log(`Area ${area.name} has ${leadMaterials.length} lead materials:`, leadMaterials.map((m: any) => ({
+            materialType: m.materialType,
+            customMaterialName: m.customMaterialName,
+            isCustomMaterial: m.isCustomMaterial,
+            sampleCollected: m.sampleCollected,
+            timestamp: m.timestamp
+          })));
+          
+          leadMaterials.forEach((material: any) => {
             if (material.sampleCollected === 'Yes') {
               const materialName = material.isCustomMaterial ? material.customMaterialName : material.materialType;
               
@@ -144,9 +173,10 @@ export const SamplesManagement: React.FC = () => {
 
         // Second pass: create samples with proper numbering
         areaDetails.forEach((area: Area) => {
-          const areaMaterials = area.assessments.asbestosMaterials || [];
+          // Process asbestos materials
+          const asbestosMaterials = area.assessments.asbestosMaterials || [];
           
-          areaMaterials.forEach((material: any) => {
+          asbestosMaterials.forEach((material: any) => {
             if (material.sampleCollected === 'Yes') {
               const materialName = material.isCustomMaterial ? material.customMaterialName : material.materialType;
               
@@ -197,6 +227,69 @@ export const SamplesManagement: React.FC = () => {
                 squareFootage: material.squareFootage || '',
                 percentageAsbestos: material.percentageAsbestos,
                 asbestosType: material.asbestosType,
+                percentageLead: material.percentageLead,
+                sampleType: 'asbestos',
+                timestamp: material.timestamp || new Date().toISOString()
+              });
+            }
+          });
+
+          // Process lead materials
+          const leadMaterials = area.assessments.leadMaterials || [];
+          
+          leadMaterials.forEach((material: any) => {
+            if (material.sampleCollected === 'Yes') {
+              const materialName = material.isCustomMaterial ? material.customMaterialName : material.materialType;
+              
+              // Use existing sampleId if available, otherwise generate a unique one
+              let sampleId = material.sampleId;
+              if (!sampleId) {
+                // Find the next available sample ID
+                while (usedSampleIds.has(`S${nextSampleNumber.toString().padStart(5, '0')}`)) {
+                  nextSampleNumber++;
+                }
+                sampleId = `S${nextSampleNumber.toString().padStart(5, '0')}`;
+                usedSampleIds.add(sampleId);
+                nextSampleNumber++;
+              } else {
+                // If sampleId already exists, make sure it's unique
+                if (usedSampleIds.has(sampleId)) {
+                  // Generate a new unique ID
+                  while (usedSampleIds.has(`S${nextSampleNumber.toString().padStart(5, '0')}`)) {
+                    nextSampleNumber++;
+                  }
+                  sampleId = `S${nextSampleNumber.toString().padStart(5, '0')}`;
+                  usedSampleIds.add(sampleId);
+                  nextSampleNumber++;
+                } else {
+                  usedSampleIds.add(sampleId);
+                }
+              }
+
+              // Get the material order number (1 for first material added, 2 for second, etc.)
+              const materialOrderNumber = materialOrderMap.get(materialName) || 1;
+              
+              // Count how many samples of this material we've seen so far
+              const samplesOfThisMaterial = extractedSamples.filter(s => s.materialType === materialName).length;
+              const sampleLetter = String.fromCharCode(65 + samplesOfThisMaterial); // 65 is 'A' in ASCII
+              
+              const sampleNo = `${materialOrderNumber}${sampleLetter}`;
+              
+              console.log(`Sample: ${area.name} - ${materialName} -> ${sampleNo} (order: ${materialOrderNumber}, count: ${samplesOfThisMaterial})`);
+              
+              extractedSamples.push({
+                id: material.id,
+                sampleId: sampleId,
+                sampleNo: sampleNo, // Always use the calculated sample number
+                areaName: area.name,
+                materialType: materialName,
+                location: material.location || '',
+                description: material.description || '',
+                squareFootage: '', // Lead samples don't have square footage
+                percentageAsbestos: undefined, // Lead samples don't have asbestos percentage
+                asbestosType: undefined, // Lead samples don't have asbestos type
+                percentageLead: material.percentageLead,
+                sampleType: 'lead',
                 timestamp: material.timestamp || new Date().toISOString()
               });
             }
@@ -243,6 +336,22 @@ export const SamplesManagement: React.FC = () => {
     ));
   };
 
+  const toggleSection = (sectionType: string) => {
+    setCollapsedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionType)) {
+        newSet.delete(sectionType);
+      } else {
+        newSet.add(sectionType);
+      }
+      return newSet;
+    });
+  };
+
+  const isSectionCollapsed = (sectionType: string) => {
+    return collapsedSections.has(sectionType);
+  };
+
   const handleSaveResults = async () => {
     if (!reportId) return;
 
@@ -257,9 +366,10 @@ export const SamplesManagement: React.FC = () => {
       
       // Update the areas with the new sample data
       const updatedAreas = areas.map(area => {
-        const areaMaterials = area.assessments.asbestosMaterials || [];
-        const updatedMaterials = areaMaterials.map((material: any) => {
-          const sample = samples.find(s => s.id === material.id);
+        // Update asbestos materials
+        const asbestosMaterials = area.assessments.asbestosMaterials || [];
+        const updatedAsbestosMaterials = asbestosMaterials.map((material: any) => {
+          const sample = samples.find(s => s.id === material.id && s.sampleType === 'asbestos');
           if (sample) {
             return {
               ...material,
@@ -273,11 +383,28 @@ export const SamplesManagement: React.FC = () => {
           return material;
         });
 
+        // Update lead materials
+        const leadMaterials = area.assessments.leadMaterials || [];
+        const updatedLeadMaterials = leadMaterials.map((material: any) => {
+          const sample = samples.find(s => s.id === material.id && s.sampleType === 'lead');
+          if (sample) {
+            return {
+              ...material,
+              sampleId: sample.sampleId,
+              sampleNo: sample.sampleNo,
+              percentageLead: sample.percentageLead,
+              timestamp: sample.timestamp
+            };
+          }
+          return material;
+        });
+
         return {
           ...area,
           assessments: {
             ...area.assessments,
-            asbestosMaterials: updatedMaterials
+            asbestosMaterials: updatedAsbestosMaterials,
+            leadMaterials: updatedLeadMaterials
           }
         };
       });
@@ -314,24 +441,47 @@ export const SamplesManagement: React.FC = () => {
     }
   };
 
-  const exportToCSV = () => {
-    if (samples.length === 0) {
+  const exportToCSV = (sampleType?: 'asbestos' | 'lead') => {
+    const samplesToExport = sampleType 
+      ? samples.filter(s => s.sampleType === sampleType)
+      : samples;
+
+    if (samplesToExport.length === 0) {
       toast({
         title: "No Data",
-        description: "No samples to export",
+        description: `No ${sampleType || ''} samples to export`,
         variant: "destructive",
       });
       return;
     }
 
-    const csvData = samples.map(sample => ({
-      'SampleNo':sample.areaName + "-" + sample.sampleNo,
-      'Material Type': sample.materialType,
-      'Material Description': sample.description,
-      // 'Sample Location': sample.location
-    }));
+    const csvData = samplesToExport.map(sample => {
+      const baseData = {
+        'SampleNo': sample.areaName.replace(/\s+/g, '') + "-" + sample.sampleNo,
+        'Material Type': sample.materialType,
+        'Material Description': sample.description,
+        // 'Sample Location': sample.location
+      };
 
-    const headers = ['SampleNo', 'Material Type', 'Material Description'];
+      if (sample.sampleType === 'asbestos') {
+        return {
+          ...baseData,
+          'Square Footage': sample.squareFootage,
+          '% Asbestos': sample.percentageAsbestos || '',
+          'Asbestos Type': sample.asbestosType || ''
+        };
+      } else {
+        return {
+          ...baseData,
+          '%wt': sample.percentageLead || ''
+        };
+      }
+    });
+
+    const headers = sampleType === 'asbestos'
+      ? ['SampleNo', 'Material Type', 'Material Description', 'Square Footage', '% Asbestos', 'Asbestos Type']
+      : ['SampleNo', 'Material Type', 'Material Description', '%wt'];
+    
     const csvContent = [
       headers.join(','),
       ...csvData.map(row => headers.map(header => `"${row[header as keyof typeof row]}"`).join(','))
@@ -344,7 +494,8 @@ export const SamplesManagement: React.FC = () => {
     
     // Create filename with project name and ID
     const sanitizedProjectName = projectName.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-');
-    const filename = `${sanitizedProjectName}-${projectId}.csv`;
+    const materialType = sampleType || 'all';
+    const filename = `${sanitizedProjectName}-${materialType}-${projectId}.csv`;
     
     link.download = filename;
     document.body.appendChild(link);
@@ -354,11 +505,11 @@ export const SamplesManagement: React.FC = () => {
 
     toast({
       title: "Success",
-      description: "CSV file exported successfully",
+      description: `${sampleType ? sampleType.charAt(0).toUpperCase() + sampleType.slice(1) : 'All'} samples exported successfully`,
     });
   };
 
-  const importLabResults = async (file: File) => {
+  const importLabResults = async (file: File, sampleType?: 'asbestos' | 'lead') => {
     try {
       setIsImporting(true);
       const data = await readFileData(file);
@@ -367,6 +518,11 @@ export const SamplesManagement: React.FC = () => {
       
       // Match by Sample No. from Excel with Sample No. in the management screen
       const updatedSamples = samples.map(sample => {
+        // Only update samples of the specified type
+        if (sampleType && sample.sampleType !== sampleType) {
+          return sample;
+        }
+
         const result = results.find(r => {
           // Extract sample number from CSV sample name (e.g., "Main Roof-1A" -> "1A")
           const csvSampleName = r.sample?.toString() || '';
@@ -383,18 +539,25 @@ export const SamplesManagement: React.FC = () => {
         
         console.log(`Matching sample ${sample.sampleNo} with result:`, result);
         if (result) {
-          return {
-            ...sample,
-            percentageAsbestos: result.percentageAsbestos,
-            asbestosType: result.asbestosType
-          };
+          if (sample.sampleType === 'asbestos') {
+            return {
+              ...sample,
+              percentageAsbestos: result.percentageAsbestos,
+              asbestosType: result.asbestosType
+            };
+          } else {
+            return {
+              ...sample,
+              percentageLead: result.percentageLead
+            };
+          }
         }
         return sample;
       });
       setSamples(updatedSamples);
       toast({
         title: "Success",
-        description: `Imported results for ${results.length} samples`,
+        description: `Imported results for ${results.length} ${sampleType || ''} samples`,
       });
     } catch (error) {
       console.error("Error importing lab results:", error);
@@ -457,12 +620,13 @@ export const SamplesManagement: React.FC = () => {
     });
   };
 
-  const parseLabResults = (data: any[]): Array<{ sample: string; percentageAsbestos?: any; asbestosType?: string; location?: string; description?: string; areaName?: string; materialType?: string }> => {
-    const results: Array<{ sample: string; percentageAsbestos?: any; asbestosType?: string; location?: string; description?: string; areaName?: string; materialType?: string }> = [];
+  const parseLabResults = (data: any[]): Array<{ sample: string; percentageAsbestos?: any; asbestosType?: string; percentageLead?: any; location?: string; description?: string; areaName?: string; materialType?: string }> => {
+    const results: Array<{ sample: string; percentageAsbestos?: any; asbestosType?: string; percentageLead?: any; location?: string; description?: string; areaName?: string; materialType?: string }> = [];
     data.forEach(row => {
       const sample = row.Sample || row.Sample || row.sample || row.sample || row['Sample'] || '';
       const content1 = row.Content_1 || row.content_1 || row['Content 1'] || row['content 1'] || '';
       const type1 = row.Type_1 || row.type_1 || row['Type 1'] || row['type 1'] || '';
+      const percentageLead = row['%wt'] || row['%wt'] || row['%wt'] || '';
       const location = row.Location || row.location || row['Location'] || row['location'] || '';
       const description = row.Description || row.description || row['Description'] || row['description'] || '';
       const areaName = row.AreaName || row.areaName || row['Area Name'] || row['area name'] || row['Area'] || row.area || '';
@@ -473,6 +637,7 @@ export const SamplesManagement: React.FC = () => {
         sample: sample,
         percentageAsbestos,
         asbestosType: type1 || undefined,
+        percentageLead,
         location: location || undefined,
         description: description || undefined,
         areaName: areaName || undefined,
@@ -503,33 +668,6 @@ export const SamplesManagement: React.FC = () => {
         </div>
         <div className="flex items-center space-x-2">
           <Button
-            variant="outline"
-            onClick={exportToCSV}
-            disabled={samples.length === 0}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export to CSV
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => {
-              const input = document.createElement('input');
-              input.type = 'file';
-              input.accept = '.csv,.xls,.xlsx';
-              input.onchange = (e) => {
-                const file = (e.target as HTMLInputElement).files?.[0];
-                if (file) {
-                  importLabResults(file);
-                }
-              };
-              input.click();
-            }}
-            disabled={isImporting || samples.length === 0}
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            {isImporting ? "Importing..." : "Import Results"}
-          </Button>
-          <Button
             onClick={handleSaveResults}
             disabled={isSaving}
           >
@@ -550,86 +688,229 @@ export const SamplesManagement: React.FC = () => {
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Collected Samples ({samples.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {/* <TableHead>Sample ID</TableHead> */}
-                    <TableHead>Sample No.</TableHead>
-                    <TableHead>Area Name</TableHead>
-                    <TableHead>Material Type</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Square Footage</TableHead>
-                    <TableHead>% Asbestos</TableHead>
-                    <TableHead>Asbestos Type</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {samples.map((sample) => (
-                    <TableRow key={sample.id}>
-                      {/* <TableCell className="font-mono font-medium">
-                        <Input
-                          value={sample.sampleId}
-                          onChange={(e) => updateSample(sample.sampleId, 'sampleId', e.target.value)}
-                          className="w-24 font-mono text-sm"
-                          placeholder="sample id"
-                        />
-                      </TableCell> */}
-                      <TableCell className="font-mono font-medium">
-                        <Input
-                          value={sample.areaName + "-" + sample.sampleNo}
-                          onChange={(e) => updateSample(sample.sampleId, 'sampleNo', e.target.value)}
-                          className="w-32 font-mono text-sm"
-                          placeholder="Area-1A"
-                        />
-                      </TableCell>
-                      <TableCell>{sample.areaName}</TableCell>
-                      <TableCell>{sample.materialType}</TableCell>
-                      <TableCell>{sample.location}</TableCell>
-                      <TableCell>{sample.description}</TableCell>
-                      <TableCell>{sample.squareFootage}</TableCell>
-                      <TableCell>
-                        <Input
-                          type="text"
-                          // min="0"
-                          // max="100"
-                          // step="0.1"
-                          value={sample.percentageAsbestos || ''}
-                          onChange={(e) => updateSample(sample.sampleId, 'percentageAsbestos', e.target.value || undefined)}
-                          className="w-20"
-                          placeholder="%"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={sample.asbestosType || ''}
-                          onValueChange={(value) => updateSample(sample.sampleId, 'asbestosType', value)}
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ASBESTOS_TYPES.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          {/* Asbestos Samples Section */}
+          {samples.filter(s => s.sampleType === 'asbestos').length > 0 && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleSection('asbestos')}
+                      className="p-1 h-auto"
+                    >
+                      {isSectionCollapsed('asbestos') ? (
+                        <ChevronRight className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <CardTitle>Asbestos Samples ({samples.filter(s => s.sampleType === 'asbestos').length})</CardTitle>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => exportToCSV('asbestos')}
+                      disabled={samples.filter(s => s.sampleType === 'asbestos').length === 0}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Export
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = '.csv,.xls,.xlsx';
+                        input.onchange = (e) => {
+                          const file = (e.target as HTMLInputElement).files?.[0];
+                          if (file) {
+                            importLabResults(file, 'asbestos');
+                          }
+                        };
+                        input.click();
+                      }}
+                      disabled={isImporting}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      {isImporting ? "Importing..." : "Import"}
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              {!isSectionCollapsed('asbestos') && (
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Sample No.</TableHead>
+                          <TableHead>Area Name</TableHead>
+                          <TableHead>Material Type</TableHead>
+                          <TableHead>Location</TableHead>
+                          <TableHead>Description</TableHead>
+                          <TableHead>Square Footage</TableHead>
+                          <TableHead>% Asbestos</TableHead>
+                          <TableHead>Asbestos Type</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {samples.filter(s => s.sampleType === 'asbestos').map((sample) => (
+                          <TableRow key={sample.id}>
+                            <TableCell className="font-mono font-medium">
+                              <Input
+                                value={sample.areaName.replace(/\s+/g, '') + "-" + sample.sampleNo}
+                                onChange={(e) => updateSample(sample.sampleId, 'sampleNo', e.target.value)}
+                                className="w-32 font-mono text-sm"
+                                placeholder="Area-1A"
+                              />
+                            </TableCell>
+                            <TableCell>{sample.areaName}</TableCell>
+                            <TableCell>{sample.materialType}</TableCell>
+                            <TableCell>{sample.location}</TableCell>
+                            <TableCell>{sample.description}</TableCell>
+                            <TableCell>{sample.squareFootage}</TableCell>
+                            <TableCell>
+                              <Input
+                                type="text"
+                                value={sample.percentageAsbestos || ''}
+                                onChange={(e) => updateSample(sample.sampleId, 'percentageAsbestos', e.target.value || undefined)}
+                                className="w-20"
+                                placeholder="%"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Select
+                                value={sample.asbestosType || ''}
+                                onValueChange={(value) => updateSample(sample.sampleId, 'asbestosType', value)}
+                              >
+                                <SelectTrigger className="w-32">
+                                  <SelectValue placeholder="Select type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {ASBESTOS_TYPES.map((type) => (
+                                    <SelectItem key={type} value={type}>
+                                      {type}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+          )}
+
+          {/* Lead Samples Section */}
+          {samples.filter(s => s.sampleType === 'lead').length > 0 && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleSection('lead')}
+                      className="p-1 h-auto"
+                    >
+                      {isSectionCollapsed('lead') ? (
+                        <ChevronRight className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <CardTitle>Lead Samples ({samples.filter(s => s.sampleType === 'lead').length})</CardTitle>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => exportToCSV('lead')}
+                      disabled={samples.filter(s => s.sampleType === 'lead').length === 0}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Export
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = '.csv,.xls,.xlsx';
+                        input.onchange = (e) => {
+                          const file = (e.target as HTMLInputElement).files?.[0];
+                          if (file) {
+                            importLabResults(file, 'lead');
+                          }
+                        };
+                        input.click();
+                      }}
+                      disabled={isImporting}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      {isImporting ? "Importing..." : "Import"}
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              {!isSectionCollapsed('lead') && (
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Sample No.</TableHead>
+                          <TableHead>Area Name</TableHead>
+                          <TableHead>Material Type</TableHead>
+                          <TableHead>Location</TableHead>
+                          <TableHead>Description</TableHead>
+                          <TableHead>%wt</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {samples.filter(s => s.sampleType === 'lead').map((sample) => (
+                          <TableRow key={sample.id}>
+                            <TableCell className="font-mono font-medium">
+                              <Input
+                                value={sample.areaName.replace(/\s+/g, '') + "-" + sample.sampleNo}
+                                onChange={(e) => updateSample(sample.sampleId, 'sampleNo', e.target.value)}
+                                className="w-32 font-mono text-sm"
+                                placeholder="Area-1A"
+                              />
+                            </TableCell>
+                            <TableCell>{sample.areaName}</TableCell>
+                            <TableCell>{sample.materialType}</TableCell>
+                            <TableCell>{sample.location}</TableCell>
+                            <TableCell>{sample.description}</TableCell>
+                            <TableCell>
+                              <Input
+                                type="text"
+                                value={sample.percentageLead || ''}
+                                onChange={(e) => updateSample(sample.sampleId, 'percentageLead', e.target.value || undefined)}
+                                className="w-20"
+                                placeholder="%"
+                              />
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+          )}
+        </div>
       )}
     </div>
   );
