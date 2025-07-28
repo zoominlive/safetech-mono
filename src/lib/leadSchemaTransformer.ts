@@ -31,8 +31,16 @@ export const transformLeadSchema = (originalSchema: SchemaSection[]): SchemaSect
             label: "Lead-Containing Materials",
             name: "leadMaterials",
             showWhen: "isLeadAssessed=Yes"
+          },
+          {
+            id: "isThereEmergencyLighting",
+            type: "radio",
+            name: "isThereEmergencyLighting",
+            label: "Is there emergency lighting?",
+            showWhen: "isLeadAssessed=Yes",
+            options: ["Yes", "No"]
           }
-        ]
+        ] 
       };
     }
     
