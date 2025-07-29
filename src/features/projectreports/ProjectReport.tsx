@@ -39,11 +39,13 @@ import { LeadAssessmentForm } from "@/components/LeadAssessmentForm";
 import { MercuryAssessmentForm } from "@/components/MercuryAssessmentForm";
 import { SilicaAssessmentForm } from "@/components/SilicaAssessmentForm";
 import { MouldAssessmentForm } from "@/components/MouldAssessmentForm";
+import { PcbAssessmentForm } from "@/components/PcbAssessmentForm";
 import { transformAsbestosSchema, convertOldAsbestosDataToNew } from "@/lib/asbestosSchemaTransformer";
 import { transformLeadSchema, convertOldLeadDataToNew } from "@/lib/leadSchemaTransformer";
 import { transformMercurySchema, convertOldMercuryDataToNew } from "@/lib/mercurySchemaTransformer";
 import { transformSilicaSchema, convertOldSilicaDataToNew } from "@/lib/silicaSchemaTransformer";
 import { transformMouldSchema, convertOldMouldDataToNew } from "@/lib/mouldSchemaTransformer";
+import { transformPcbSchema, convertOldPcbDataToNew } from "@/lib/pcbSchemaTransformer";
 
 
 interface SchemaField {
@@ -537,16 +539,17 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               ? JSON.parse(response.data.template.schema)
               : response.data.template.schema;
             
-            // Transform the asbestos, lead, mercury, silica, and mould schemas to use the new simplified format
+            // Transform the asbestos, lead, mercury, silica, mould, and PCB schemas to use the new simplified format
             let transformedSchema = transformAsbestosSchema(parsedSchema.sections);
             transformedSchema = transformLeadSchema(transformedSchema);
             transformedSchema = transformMercurySchema(transformedSchema);
             transformedSchema = transformSilicaSchema(transformedSchema);
             transformedSchema = transformMouldSchema(transformedSchema);
+            transformedSchema = transformPcbSchema(transformedSchema);
             console.log('Transformed asbestos schema:', transformedSchema);
             setSchema(transformedSchema);
 
-            // Convert old asbestos, lead, mercury, silica, and mould data to new format for each area
+            // Convert old asbestos, lead, mercury, silica, mould, and PCB data to new format for each area
             const updatedAreas = initialAreas.map(area => {
               const oldAsbestosData = area.assessments;
               const newAsbestosMaterials = convertOldAsbestosDataToNew(oldAsbestosData);
@@ -554,6 +557,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               const newMercuryMaterials = convertOldMercuryDataToNew(oldAsbestosData);
               const newSilicaMaterials = convertOldSilicaDataToNew(oldAsbestosData);
               const newMouldMaterials = convertOldMouldDataToNew(oldAsbestosData);
+              const newPcbEquipment = convertOldPcbDataToNew(oldAsbestosData);
               
               return {
                 ...area,
@@ -564,6 +568,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                   mercuryMaterials: newMercuryMaterials,
                   silicaMaterials: newSilicaMaterials,
                   mouldMaterials: newMouldMaterials,
+                  additionalEquipmentType: newPcbEquipment,
                   // Keep the old data for backward compatibility
                   ...oldAsbestosData
                 }
@@ -1611,6 +1616,48 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               }}
               materialUsageStats={materialUsageStats}
               existingSampleIds={allExistingSampleIds}
+            />
+          </div>
+        );
+      }
+      case "pcbAssessment": {
+        // Calculate equipment usage statistics across all areas
+        const equipmentUsageStats: Record<string, { count: number }> = {};
+        
+        areas.forEach(area => {
+          const areaEquipment = Array.isArray(area.assessments.additionalEquipmentType) ? area.assessments.additionalEquipmentType : [];
+          areaEquipment.forEach((equipment: any) => {
+            const equipmentName = equipment.isCustomEquipment ? equipment.customEquipmentName : equipment.equipmentType;
+            if (equipmentName) {
+              if (!equipmentUsageStats[equipmentName]) {
+                equipmentUsageStats[equipmentName] = { count: 0 };
+              }
+              equipmentUsageStats[equipmentName].count++;
+            }
+          });
+        });
+        
+        return (
+          <div className="space-y-2">
+            <PcbAssessmentForm
+              value={value || []}
+              onChange={(equipment) => updateAreaAssessment(field.id, equipment)}
+              disabled={!isEditable}
+              projectId={projectId}
+              reportId={id}
+              onFileUpload={async (files) => {
+                if (!id) return [];
+                const formData = new FormData();
+                Array.from(files).forEach(file => {
+                  formData.append('files', file);
+                });
+                const response = await reportService.uploadReportFile(id, formData);
+                if (response.success) {
+                  return (response.data as { data: { urls: string[] } }).data.urls;
+                }
+                return [];
+              }}
+              equipmentUsageStats={equipmentUsageStats}
             />
           </div>
         );

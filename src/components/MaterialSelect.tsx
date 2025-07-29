@@ -17,6 +17,8 @@ interface MaterialSelectProps {
   placeholder?: string;
   disabled?: boolean;
   loading?: boolean;
+  customAddText?: string;
+  showOtherOnlyWhenHasItems?: boolean;
 }
 
 export const MaterialSelect: React.FC<MaterialSelectProps> = ({
@@ -25,7 +27,9 @@ export const MaterialSelect: React.FC<MaterialSelectProps> = ({
   options,
   placeholder = "Select material type",
   disabled = false,
-  loading = false
+  loading = false,
+  customAddText,
+  showOtherOnlyWhenHasItems = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -111,14 +115,16 @@ export const MaterialSelect: React.FC<MaterialSelectProps> = ({
                     {option.label}
                   </div>
                 ))}
-                <div className="border-t">
-                  <div
-                    className="px-3 py-2 text-sm cursor-pointer hover:bg-accent text-blue-600"
-                    onClick={handleCustomMaterial}
-                  >
-                    Add Other Material...
+                {(!showOtherOnlyWhenHasItems || filteredOptions.length > 0) && (
+                  <div className="border-t">
+                    <div
+                      className="px-3 py-2 text-sm cursor-pointer hover:bg-accent text-blue-600"
+                      onClick={handleCustomMaterial}
+                    >
+                      {customAddText || "Add Other Material..."}
+                    </div>
                   </div>
-                </div>
+                )}
               </>
             )}
           </div>
