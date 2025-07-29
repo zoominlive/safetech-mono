@@ -214,8 +214,15 @@ export const PcbAssessmentForm: React.FC<PcbAssessmentFormProps> = ({
   };
 
   const getEquipmentUsageInfo = (equipmentType: string) => {
+    // Add defensive check for equipmentUsageStats
+    if (!equipmentUsageStats || typeof equipmentUsageStats !== 'object') {
+      return null;
+    }
+    
     const stats = equipmentUsageStats[equipmentType];
-    if (!stats) return null;
+    if (!stats || typeof stats !== 'object' || typeof stats.count !== 'number') {
+      return null;
+    }
     
     return {
       usageCount: stats.count,
@@ -223,6 +230,11 @@ export const PcbAssessmentForm: React.FC<PcbAssessmentFormProps> = ({
   };
 
   const getDisplayEquipmentName = (equipment: PcbEquipment) => {
+    // Add defensive check for equipment parameter
+    if (!equipment || typeof equipment !== 'object') {
+      return 'Electrical Equipment';
+    }
+    
     console.log('getDisplayEquipmentName called with:', {
       equipmentType: equipment.equipmentType,
       isCustomEquipment: equipment.isCustomEquipment,
@@ -236,7 +248,7 @@ export const PcbAssessmentForm: React.FC<PcbAssessmentFormProps> = ({
     }
     
     console.log('Standard equipment, returning:', equipment.equipmentType);
-    return equipment.equipmentType;
+    return equipment.equipmentType || 'Electrical Equipment';
   };
 
   const createEquipmentOptions = (): MaterialOption[] => {
@@ -245,20 +257,30 @@ export const PcbAssessmentForm: React.FC<PcbAssessmentFormProps> = ({
     if (!materialsLoading) {
       const availableMaterials = getAvailableMaterials();
       
-      availableMaterials.forEach(material => {
-        const stats = equipmentUsageStats[material];
-        const usageText = stats ? ` (Used ${stats.count} times)` : '';
-        const isCustom = isCustomMaterial(material);
-        options.push({
-          value: material,
-          label: material + usageText,
-          isCustom: isCustom,
-          usageStats: stats ? { count: stats.count, samplesCollected: 0 } : undefined
+      // Add defensive check to ensure availableMaterials is an array
+      if (Array.isArray(availableMaterials)) {
+        availableMaterials.forEach(material => {
+          // Add defensive check for equipmentUsageStats
+          const stats = equipmentUsageStats && typeof equipmentUsageStats === 'object' 
+            ? equipmentUsageStats[material] 
+            : undefined;
+          const usageText = stats && typeof stats === 'object' && typeof stats.count === 'number' 
+            ? ` (Used ${stats.count} times)` 
+            : '';
+          const isCustom = isCustomMaterial(material);
+          options.push({
+            value: material,
+            label: material + usageText,
+            isCustom: isCustom,
+            usageStats: stats && typeof stats === 'object' && typeof stats.count === 'number' 
+              ? { count: stats.count, samplesCollected: 0 } 
+              : undefined
+          });
         });
-      });
+      }
       
       // If no materials are available from API, add some default PCB equipment types
-      if (availableMaterials.length === 0 && !materialsError) {
+      if ((!Array.isArray(availableMaterials) || availableMaterials.length === 0) && !materialsError) {
         console.log('No materials from API, adding default PCB equipment types');
         const defaultEquipment = [
           'Fluorescent Light Fixtures',
