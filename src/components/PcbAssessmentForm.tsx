@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MaterialSelect } from "@/components/MaterialSelect";
 import { Card, CardContent } from "@/components/ui/card";
 import { CirclePlus, CircleX, Upload, Info, ChevronDown, ChevronRight } from "lucide-react";
@@ -68,7 +67,6 @@ export const PcbAssessmentForm: React.FC<PcbAssessmentFormProps> = ({
 
   // Use the material store for equipment types
   const { 
-    materials,
     loading: materialsLoading,
     error: materialsError,
     getAvailableMaterials, 
@@ -169,25 +167,6 @@ export const PcbAssessmentForm: React.FC<PcbAssessmentFormProps> = ({
       }
       return newSet;
     });
-  };
-
-  const handleCustomEquipment = async (equipmentId: string, customName: string) => {
-    try {
-      await addCustomMaterial(customName);
-      handleEquipmentChange(equipmentId, 'equipmentType', customName);
-      handleEquipmentChange(equipmentId, 'isCustomEquipment', true);
-      toast({
-        title: "Success",
-        description: "Custom equipment added successfully",
-      });
-    } catch (error) {
-      console.error('Error adding custom equipment:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add custom equipment",
-        variant: "destructive",
-      });
-    }
   };
 
   const handleEquipmentTypeChange = (equipmentId: string, equipmentType: string) => {
