@@ -60,7 +60,9 @@ export const PcbAssessmentForm: React.FC<PcbAssessmentFormProps> = ({
   onFileUpload,
   equipmentUsageStats = {},
 }) => {
-  const [localEquipment, setLocalEquipment] = useState<PcbEquipment[]>(value);
+  // Ensure value is always an array for defensive programming
+  const safeValue = Array.isArray(value) ? value : [];
+  const [localEquipment, setLocalEquipment] = useState<PcbEquipment[]>(safeValue);
   const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
   const [expandedEquipment, setExpandedEquipment] = useState<Set<string>>(new Set());
   const [equipmentToDelete, setEquipmentToDelete] = useState<PcbEquipment | null>(null);
@@ -83,7 +85,9 @@ export const PcbAssessmentForm: React.FC<PcbAssessmentFormProps> = ({
   }, []);
 
   useEffect(() => {
-    setLocalEquipment(value);
+    // Ensure value is always an array for defensive programming
+    const safeValue = Array.isArray(value) ? value : [];
+    setLocalEquipment(safeValue);
   }, [value]);
 
   // Auto-add first equipment if none exist and form is enabled
@@ -319,7 +323,7 @@ export const PcbAssessmentForm: React.FC<PcbAssessmentFormProps> = ({
           )}
         </div>
 
-        {localEquipment.map((equipment, index) => {
+        {Array.isArray(localEquipment) ? localEquipment.map((equipment, index) => {
           const isExpanded = expandedEquipment.has(equipment.id);
           const isUploading = uploadingFiles[equipment.id];
           const displayName = getDisplayEquipmentName(equipment) || `Electrical Equipment ${index + 1}`;
@@ -538,7 +542,7 @@ export const PcbAssessmentForm: React.FC<PcbAssessmentFormProps> = ({
               </CardContent>
             </Card>
           );
-        })}
+        }) : null}
       </div>
 
       {/* Delete Confirmation Dialog */}
