@@ -723,9 +723,13 @@
             <h1 style="font-size: 18pt; font-family: Arial, sans-serif; font-weight: bold;">LIST OF TABLES</h1>
             <div style="font-size: 12pt; font-family: Arial, sans-serif;">
                 Table 1: Summary of Hazardous Materials and Designated Substances<br>
-                Table 3: Bulk Sample Analytical Results for Determination of Asbestos Content<br>
-                Table 4: Results of Assessment for Asbestos-Containing Materials<br>
-                Table 5: Results of Paint Condition and Lead Content Assessment
+                Table 2: Bulk Sample Analytical Results for Determination of Asbestos Content<br>
+                Table 3: Results of Assessment for Asbestos-Containing Materials<br>
+                Table 4: Results of Paint Condition and Lead Content Assessment<br>
+                Table 5: Results of Assessment for Lead-Containing Materials<br>
+                Table 6: Results of Assessment for Mould Contamination<br>
+                Table 7: Results of Assessment for PCB-Containing Electrical Equipment<br>
+                Table 8: Results of Assessment for Ozone-Depleting and Global Warming Substances
             </div>
         </div>
         <div style="margin-top: 40px;">
@@ -1204,6 +1208,22 @@
             
             <!-- Section 3.1.2 Lead -->
             <div style="font-weight: bold; margin-left: 16px;" id="lead-conclusions">3.1.2 Lead</div>
+            {{#if leadFound}}
+            <p style="margin-left: 16px;">Results of the assessment indicated that the following lead-containing materials are present in the project areas that may be disturbed as part of the construction project. Therefore, these materials are considered to be lead-containing and specific measures and procedures are required to be followed during renovation or demolition projects that have the potential to disturb this material.</p>
+            <ul style="margin-left: 32px;">
+                {{#each leadContainingMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            {{#if suspectLeadMaterials.length}}
+            <p style="margin-left: 16px;">The following building materials are suspected to be lead-containing but were not sampled as sampling would compromise the integrity of the material, lack of accessibility or potential hazards to the surveyor:</p>
+            <ul style="margin-left: 32px;">
+                {{#each suspectLeadMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            {{/if}}
+            {{/if}}
             {{#if lowLevelLeadPaint}}
             <p style="margin-left: 16px;">Results of paint chip analysis for the determination of lead content indicated in Samples {{lowLevelLeadSamples}} is/are considered a 'low-level lead paint' (≤0.1% based on requirements of the Environmental Abatement Council of Canada (EACC) Lead Guideline (2014)). If the 'low-level lead paint' is disturbed in a non-aggressive manner (no use of power tools/abrasive blasting, grinding, welding, heating, etc.), then respirators are not considered necessary. However, Class 1 measures and procedures should still be implemented during the non-aggressive disturbance of 'low-level lead paints', including, but not limited to, no smoking, eating, drinking and chewing gum in the work area; dust suppression methods must be implemented; and facilities must be made available so that workers can wash their hands and face.</p>
             {{/if}}
@@ -1263,23 +1283,42 @@
             
             <!-- Section 3.1.3 Mercury -->
             <div style="font-weight: bold; margin-left: 16px;" id="mercury-conclusions">3.1.3 Mercury</div>
-            {{#if mercuryLamps}}
-            <p style="margin-left: 16px;">Fluorescent and HID lamps that require removal should be handled with care and kept intact to avoid potential exposure to mercury vapour present within the lamps. To prevent the release of mercury into the environment, Safetech recommends that all waste lamps be sent to a lamp recycling facility and not disposed of in landfill.</p>
+            {{#if mercuryFound}}
+            <p style="margin-left: 16px;">Results of the assessment indicated that the following mercury-containing materials are present in the project areas that may be disturbed as part of the construction project. Therefore, these materials are considered to be mercury-containing and specific measures and procedures are required to be followed during renovation or demolition projects that have the potential to disturb this material.</p>
+            <ul style="margin-left: 32px;">
+                {{#each mercuryContainingMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            {{#if suspectMercuryMaterials.length}}
+            <p style="margin-left: 16px;">The following building materials are suspected to be mercury-containing but were not sampled as sampling would compromise the integrity of the material, lack of accessibility or potential hazards to the surveyor:</p>
+            <ul style="margin-left: 32px;">
+                {{#each suspectMercuryMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
             {{/if}}
-            
-            {{#if mercuryEquipmentNotRemoved}}
-            <p style="margin-left: 16px;">Mercury-containing thermostats, thermometers, barometers and other measuring devices (pressure gauges/sensors, vacuum gauges, manometers, etc.), and a variety of other electrical switches (temperature sensitive, tilt switches, float switches, etc.) associated with mechanical equipment were observed in the project areas. These items are not expected to be removed as part of the {{projectName}}. However, care should be taken not to disturb these items during the work as breakage could cause a spill of liquid mercury. If any of these items are to be removed it should be done so carefully to avoid spillage and stored/packaged in a manner that will prevent breakage or spillage. Any mercury-containing equipment that is to be removed is recommended to be recycled rather than disposed of in landfill.</p>
             {{/if}}
-            
-            {{#if mercuryEquipmentRemoved}}
-            <p style="margin-left: 16px;">Mercury-containing thermostats, thermometers, barometers and other measuring devices (pressure gauges/sensors, vacuum gauges, manometers, etc.), and a variety of other electrical switches (temperature sensitive, tilt switches, float switches, etc.) associated with mechanical equipment are expected to be removed as part of the {{projectName}}. Care should be taken not to disturb these items during the work as breakage could cause a spill of liquid mercury. If any of these items are to be removed it should be done so carefully to avoid spillage and stored/packaged in a manner that will prevent breakage or spillage. Any mercury-containing equipment that is to be removed is recommended to be recycled rather than disposed of in landfill.</p>
-            {{/if}}
-            
-            <p style="margin-left: 16px;">Although no mercury was visibly identified in other equipment, dismantling of equipment was not conducted to verify the presence/absence of mercury. It is cautioned that thermometers, barometers and other measuring devices (pressure gauges/sensors, vacuum gauges, manometers, etc.), thermostats and a variety of other electrical switches (temperature sensitive, tilt switches, float switches, etc.) may contain mercury that may not be visible without dismantling the equipment. Such devices should be assumed to contain mercury until proven otherwise and similar precautions to those outlined above should be taken if any of these items are to be disturbed or taken out of service in the future.</p>
             
             <!-- Section 3.1.4 Silica -->
             <div style="font-weight: bold; margin-left: 16px;" id="silica-conclusions">3.1.4 Silica</div>
-            <p style="margin-left: 16px;">Suspect silica-containing materials were identified to be present in the project areas. In their current state, building materials containing silica do not represent a risk to building occupants or construction workers. Risks associated with exposure to silica arise during demolition activities that cause silica dust to be created (particularly grinding, drilling or cutting operations and during major demolition), resulting in a crystalline silica inhalation hazard.</p>
+            {{#if silicaFound}}
+            <p style="margin-left: 16px;">Results of the assessment indicated that the following silica-containing materials are present in the project areas that may be disturbed as part of the construction project. Therefore, these materials are considered to be silica-containing and specific measures and procedures are required to be followed during renovation or demolition projects that have the potential to disturb this material.</p>
+            <ul style="margin-left: 32px;">
+                {{#each silicaContainingMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            {{#if suspectSilicaMaterials.length}}
+            <p style="margin-left: 16px;">The following building materials are suspected to be silica-containing but were not sampled as sampling would compromise the integrity of the material, lack of accessibility or potential hazards to the surveyor:</p>
+            <ul style="margin-left: 32px;">
+                {{#each suspectSilicaMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            {{/if}}
+            {{/if}}
+            <p style="margin-left: 16px;">In their current state, building materials containing silica do not represent a risk to building occupants or construction workers. Risks associated with exposure to silica arise during demolition activities that cause silica dust to be created (particularly grinding, drilling or cutting operations and during major demolition), resulting in a crystalline silica inhalation hazard.</p>
             <p style="margin-left: 16px;">If any materials suspected to contain silica are to be removed or otherwise disturbed as a result of renovation/demolition activities it is recommended that procedures be put in place to control the generation of dust (such as routine water misting) and thus reduce the potential for worker exposure. Workers that have the potential to be exposed to airborne silica should also wear appropriate protective clothing and respiratory protection.</p>
             <p style="margin-left: 16px;">Any work involving the disturbance of silica-containing materials should follow the procedures outlined in the Ontario MLITSD "Silica on Construction Projects" guideline (April 2011). The appropriate engineering controls, work practices, hygiene practices, personal protective measures and training necessary to conduct the work in a safe manner are provided in this guideline. The general measures and procedures (or Type of operation) necessary depends on the type of work to be conducted. The following table outlines the classification of silica disturbance based on the Ontario MLITSD guideline.</p>
             

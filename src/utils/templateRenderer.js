@@ -712,27 +712,213 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     { item: 'Regulatory Compliance Review', status: 'Completed', comments: 'All applicable regulations identified and compliance requirements documented' }
   ];
 
+  // Collect all asbestos materials from all areas with area names
+  const allAsbestosMaterials = [];
+  const allSuspectedAsbestosMaterials = [];
+  
+  // Prepare data for template variables
+  const asbestosContainingMaterials = [];
+  const suspectAsbestosMaterials = [];
+  
+  areaDetails.forEach(area => {
+    if (area.asbestosMaterials && Array.isArray(area.asbestosMaterials)) {
+      area.asbestosMaterials.forEach(material => {
+        const materialName = material.materialType || material.customMaterialName || 'Unknown Material';
+        const areaName = area.name || 'Unknown Area';
+        const materialWithArea = `${materialName} (${areaName})`;
+        
+        // Add to allAsbestosMaterials for Table 1
+        if (!allAsbestosMaterials.some(item => item.includes(materialName))) {
+          allAsbestosMaterials.push(materialWithArea);
+        }
+        
+        // Add to asbestosContainingMaterials for template
+        asbestosContainingMaterials.push(materialWithArea);
+        
+        // Check if material is suspected ACM
+        if (material.suspectedAcm === 'Yes') {
+          const suspectedMaterialWithArea = `${materialName} (${areaName})`;
+          if (!suspectAsbestosMaterials.some(item => item.includes(materialName))) {
+            suspectAsbestosMaterials.push(suspectedMaterialWithArea);
+          }
+        }
+      });
+    }
+    
+    if (area.suspectedAsbestosMaterials && Array.isArray(area.suspectedAsbestosMaterials)) {
+      area.suspectedAsbestosMaterials.forEach(material => {
+        const materialName = material.materialType || material.customMaterialName || 'Unknown Material';
+        const areaName = area.name || 'Unknown Area';
+        const materialWithArea = `${materialName} (${areaName})`;
+        
+        // Add to allSuspectedAsbestosMaterials for Table 1
+        if (!allSuspectedAsbestosMaterials.some(item => item.includes(materialName))) {
+          allSuspectedAsbestosMaterials.push(materialWithArea);
+        }
+        
+        // Add to suspectAsbestosMaterials for template
+        if (!suspectAsbestosMaterials.some(item => item.includes(materialName))) {
+          suspectAsbestosMaterials.push(materialWithArea);
+        }
+      });
+    }
+  });
+  console.log("suspectAsbestosMaterials=>", suspectAsbestosMaterials);
+  
+  // Collect all lead materials from all areas with area names
+  const allLeadMaterials = [];
+  const allSuspectedLeadMaterials = [];
+  
+  // Prepare data for template variables
+  const leadContainingMaterials = [];
+  const suspectLeadMaterials = [];
+  
+  areaDetails.forEach(area => {
+    if (area.leadMaterials && Array.isArray(area.leadMaterials)) {
+      area.leadMaterials.forEach(material => {
+        const materialName = material.materialType || material.customMaterialName || 'Unknown Material';
+        const areaName = area.name || 'Unknown Area';
+        const materialWithArea = `${materialName} (${areaName})`;
+        
+        // Add to allLeadMaterials for Table 1
+        if (!allLeadMaterials.some(item => item.includes(materialName))) {
+          allLeadMaterials.push(materialWithArea);
+        }
+        
+        // Add to leadContainingMaterials for template
+        leadContainingMaterials.push(materialWithArea);
+        
+        // Check if material is suspected lead
+        if (material.suspectedLead === 'Yes') {
+          const suspectedMaterialWithArea = `${materialName} (${areaName})`;
+          if (!suspectLeadMaterials.some(item => item.includes(materialName))) {
+            suspectLeadMaterials.push(suspectedMaterialWithArea);
+          }
+        }
+      });
+    }
+  });
+  
+  console.log("suspectLeadMaterials=>", suspectLeadMaterials);
+  
+  // Collect all mercury materials from all areas with area names
+  const allMercuryMaterials = [];
+  const allSuspectedMercuryMaterials = [];
+  
+  // Prepare data for template variables
+  const mercuryContainingMaterials = [];
+  const suspectMercuryMaterials = [];
+  
+  areaDetails.forEach(area => {
+    if (area.mercuryMaterials && Array.isArray(area.mercuryMaterials)) {
+      area.mercuryMaterials.forEach(material => {
+        const materialName = material.materialType || material.customMaterialName || 'Unknown Material';
+        const areaName = area.name || 'Unknown Area';
+        const materialWithArea = `${materialName} (${areaName})`;
+        
+        // Add to allMercuryMaterials for Table 1
+        if (!allMercuryMaterials.some(item => item.includes(materialName))) {
+          allMercuryMaterials.push(materialWithArea);
+        }
+        
+        // Add to mercuryContainingMaterials for template
+        mercuryContainingMaterials.push(materialWithArea);
+        
+        // Check if material is suspected mercury
+        if (material.suspectedMercury === 'Yes') {
+          const suspectedMaterialWithArea = `${materialName} (${areaName})`;
+          if (!suspectMercuryMaterials.some(item => item.includes(materialName))) {
+            suspectMercuryMaterials.push(suspectedMaterialWithArea);
+          }
+        }
+      });
+    }
+  });
+  
+  console.log("suspectMercuryMaterials=>", suspectMercuryMaterials);
+  
+    // Function to determine mercury recommendations based on area details
+  const getMercuryRecommendations = (areaDetails) => {
+    let hasLamps = false;
+    let areThereVials = false;
+
+    // Check all areas for hasLamps and areThereVials
+    areaDetails.forEach(area => {
+      if (area.hasLamps === 'Yes') {
+        hasLamps = true;
+      }
+      if (area.areThereVials === 'Yes') {
+        areThereVials = true;
+      }
+    });
+
+    if (hasLamps && areThereVials) {
+      return "If required, handle lamps and vials with care and keep intact. All waste lamps and vials are recommended to be sent to a recycling facility.";
+    } else if (hasLamps) {
+      return "If required, handle lamps with care and keep intact. All waste lamps are recommended to be sent to a lamp recycling facility.";
+    } else {
+      return "If required, handle mercury-containing materials with care and keep intact. All waste mercury-containing materials are recommended to be sent to a recycling facility.";
+    }
+  };
+
+  // Collect all silica materials from all areas with area names
+  const allSilicaMaterials = [];
+  const allSuspectedSilicaMaterials = [];
+
+  // Prepare data for template variables
+  const silicaContainingMaterials = [];
+  const suspectSilicaMaterials = [];
+
+  areaDetails.forEach(area => {
+    if (area.silicaMaterials && Array.isArray(area.silicaMaterials)) {
+      area.silicaMaterials.forEach(material => {
+        const materialName = material.materialType || material.customMaterialName || 'Unknown Material';
+        const areaName = area.name || 'Unknown Area';
+        const materialWithArea = `${materialName} (${areaName})`;
+
+        // Add to allSilicaMaterials for Table 1
+        if (!allSilicaMaterials.some(item => item.includes(materialName))) {
+          allSilicaMaterials.push(materialWithArea);
+        }
+
+        // Add to silicaContainingMaterials for template
+        silicaContainingMaterials.push(materialWithArea);
+
+        // Check if material is suspected silica
+        if (material.suspectedSilica === 'Yes') {
+          const suspectedMaterialWithArea = `${materialName} (${areaName})`;
+          if (!suspectSilicaMaterials.some(item => item.includes(materialName))) {
+            suspectSilicaMaterials.push(suspectedMaterialWithArea);
+          }
+        }
+      });
+    }
+  });
+  
   // Generate summary table for hazardous materials and designated substances
   const summaryTable = [
     {
       substance: 'Asbestos',
-      findings: `The following asbestos-containing materials were identified in the subject area that may be impacted during the project:<ul>${primaryArea.asbestosMaterials ? primaryArea.asbestosMaterials.map(item => `<li>${item}</li>`).join('') : '<li>N/A</li>'}</ul>
-      ${primaryArea.suspectedAsbestosMaterials ? 'The following building materials are suspected to be asbestos-containing:<ul>' + primaryArea.suspectedAsbestosMaterials.map(item => `<li>${item}</li>`).join('') + '</ul>' : ''}`,
+      findings: `The following asbestos-containing materials were identified in the subject area that may be impacted during the project:<ul>${allAsbestosMaterials.length > 0 ? allAsbestosMaterials.map(material => `<li>${material}</li>`).join('') : '<li>N/A</li>'}</ul>
+      ${suspectAsbestosMaterials.length > 0 ? 'The following building materials are suspected to be asbestos-containing:<ul>' + suspectAsbestosMaterials.map(material => `<li>${material}</li>`).join('') + '</ul>' : ''}`,
       recommendations: `Disturbance of asbestos-containing materials must be conducted in accordance with Ontario Regulation 278/05 <i>Designated Substance – Asbestos on Construction Projects and in Building and Repair Operations</i>. Refer to Table 3 (Results of Assessment for Asbestos-Containing Materials), Section 3.1.1 (Conclusions and Recommendations), Appendix A (Summary of ACM Occurrences) and Appendix B (Site Drawings). Asbestos-containing materials must be disposed of in accordance with R.R.O. 1990, Regulation 347, <i>General - Waste Management</i>.`
     },
     {
       substance: 'Lead',
-      findings: `White paint was confirmed to be a low-level lead-containing paint (&le;0.1% lead content).<br>Light blue and yellow paint was confirmed to be not lead-containing paint (&le;0.009% lead content).<br>The following materials are assumed to be lead-containing:<ul><li>paints and surface coatings (not sampled)</li><li>glazing associated with ceramic tiles</li><li>batteries associated with emergency lighting</li><li>solder in copper pipe fittings</li><li>solder in electrical components</li></ul>`,
+      findings: `The following materials are assumed  to be lead-containing: :<ul>${allLeadMaterials.length > 0 ? allLeadMaterials.map(material => `<li>${material}</li>`).join('') : '<li>N/A</li>'}</ul>
+      ${suspectLeadMaterials.length > 0 ? 'The following building materials are suspected to be lead-containing:<ul>' + suspectLeadMaterials.map(material => `<li>${material}</li>`).join('') + '</ul>' : ''}`,
       recommendations: `Disturbance of lead-containing materials must be conducted in accordance with the Ontario Ministry of Labour <i>Lead on Construction Projects</i> guideline (2011) and/or the Environmental Abatement Council of Ontario (EACO) <i>Lead Guideline</i> (October 2014). For additional details, refer to Section 2.1.2 (Results) and Section 3.1.2 (Conclusions and Recommendations). Lead-containing wastes should be recycled if practicable or handled and disposed of according to R.R.O. 1990, Regulation 347, <i>General - Waste Management</i>.`
     },
     {
       substance: 'Mercury',
-      findings: `Sources of mercury were observed in the subject area and include the following:<ul><li>vapour in fluorescent lamps</li><li>vapour in HID lamps</li><li>liquid in thermostats</li><li>thermometers associated with the boiler</li><li>thermometers associated with mechanical equipment</li></ul>`,
-      recommendations: `If required, handle lamps with care and keep intact. All waste lamps are recommended to be sent to a lamp recycling facility. If required, handle lamps and vials with care and keep intact. All waste lamps and vials are recommended to be sent to a lamp recycling facility.`
+      findings: `The following mercury-containing materials were identified in the subject area that may be impacted during the project:<ul>${allMercuryMaterials.length > 0 ? allMercuryMaterials.map(material => `<li>${material}</li>`).join('') : '<li>N/A</li>'}</ul>
+      ${suspectMercuryMaterials.length > 0 ? 'The following building materials are suspected to be mercury-containing:<ul>' + suspectMercuryMaterials.map(material => `<li>${material}</li>`).join('') + '</ul>' : ''}`,
+      recommendations: getMercuryRecommendations(areaDetails)
     },
     {
       substance: 'Silica',
-      findings: `Building materials identified that are suspected to contain crystalline silica and may be disturbed as part of the planned construction project include:<ul><li>drywall walls/drywall joint compound</li><li>concrete</li><li>mortar</li><li>refractory associated with the boiler</li></ul>`,
+      findings: `The following silica-containing materials were identified in the subject area that may be impacted during the project:<ul>${allSilicaMaterials.length > 0 ? allSilicaMaterials.map(material => `<li>${material}</li>`).join('') : '<li>N/A</li>'}</ul>
+      ${suspectSilicaMaterials.length > 0 ? 'The following building materials are suspected to be silica-containing:<ul>' + suspectSilicaMaterials.map(material => `<li>${material}</li>`).join('') + '</ul>' : ''}`,
       recommendations: `Any work involving the disturbance of silica-containing materials should follow the procedures outlined in the Ontario Ministry of Labour <i>Silica on Construction Projects</i> guideline. For additional information, refer to Section 2.1.4 (Results) and Section 3.1.4 (Conclusions and Recommendations).`
     },
     {
@@ -1426,7 +1612,27 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     // Area-specific sectioned output
     areaSections,
 
-    // Add hardcoded suspect mercury materials list for template
+    // Comprehensive Area Assessment Summary
+
+    // Asbestos data for template
+    asbestosFound: asbestosContainingMaterials.length > 0 || suspectAsbestosMaterials.length > 0,
+    asbestosContainingMaterials: asbestosContainingMaterials,
+    suspectAsbestosMaterials: suspectAsbestosMaterials,
+
+    // Lead data for template
+    leadFound: leadContainingMaterials.length > 0 || suspectLeadMaterials.length > 0,
+    leadContainingMaterials: leadContainingMaterials,
+    suspectLeadMaterials: suspectLeadMaterials,
+
+    // Mercury data for template
+    mercuryFound: mercuryContainingMaterials.length > 0 || suspectMercuryMaterials.length > 0,
+    mercuryContainingMaterials: mercuryContainingMaterials,
+    suspectMercuryMaterials: suspectMercuryMaterials,
+
+    // Silica data for template
+    silicaFound: silicaContainingMaterials.length > 0 || suspectSilicaMaterials.length > 0,
+    silicaContainingMaterials: silicaContainingMaterials,
+    suspectSilicaMaterials: suspectSilicaMaterials,
   };
 };
 
