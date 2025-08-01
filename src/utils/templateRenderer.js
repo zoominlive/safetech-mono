@@ -894,6 +894,228 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
       });
     }
   });
+
+  // Collect pest infestation data from all areas
+  const pestInfestationData = [];
+  const allInfestationTypes = [];
+
+  areaDetails.forEach(area => {
+    const areaName = area.name || 'Unknown Area';
+    
+    // Check for infestation type selections
+    if (area.infestationTypeSelect && Array.isArray(area.infestationTypeSelect) && area.infestationTypeSelect.length > 0) {
+      const sources = area.infestationTypeSelect.join(', ');
+      const location = area.droppingsLocation || 'unknown location';
+      
+      // Collect all infestation types for recommendations
+      area.infestationTypeSelect.forEach(type => {
+        if (!allInfestationTypes.includes(type)) {
+          allInfestationTypes.push(type);
+        }
+      });
+      
+      pestInfestationData.push({
+        type: 'droppings',
+        source: sources,
+        location: location,
+        areaName: areaName,
+        statement: `An area of ${sources} dropping accumulation was identified on ${location} in the ${areaName}.`
+      });
+    }
+    
+    // Check for dead animals
+    if (area.deadAnimals && Array.isArray(area.deadAnimals)) {
+      area.deadAnimals.forEach(animal => {
+        if (animal.animalName && animal.animalName.trim() !== '') {
+          const animalType = animal.animalName;
+          const animalLocation = animal.animalLocation || 'unknown location';
+          
+          pestInfestationData.push({
+            type: 'dead_animal',
+            animalType: animalType,
+            location: animalLocation,
+            areaName: areaName,
+            statement: `${animalType} was identified on/near ${animalLocation} in the ${areaName}.`
+          });
+        }
+      });
+    } 
+  });
+  
+    // Collect PCB data from all areas
+  const pcbData = {
+    pcbObserved: false,
+    pcbElectricalEquipmentTable: []
+  };
+
+  areaDetails.forEach(area => {
+    // Check if PCB was observed in any area
+    if (area.pcbObserved === 'Yes') {
+      pcbData.pcbObserved = true;
+    }
+
+    // Collect PCB electrical equipment data
+    if (area.pcbElectricalEquipmentTable && Array.isArray(area.pcbElectricalEquipmentTable)) {
+      area.pcbElectricalEquipmentTable.forEach(equipment => {
+        // Only add if equipment has meaningful data
+        if (equipment.tableLocation || equipment.tablePcbIdInfo || equipment.tablePcbContent ||
+            equipment.tableManufacturer || equipment.tableElectricalEquipment) {
+          pcbData.pcbElectricalEquipmentTable.push({
+            location: equipment.tableLocation || '',
+            pcbIdInfo: equipment.tablePcbIdInfo || '',
+            pcbContent: equipment.tablePcbContent || '',
+            manufacturer: equipment.tableManufacturer || '',
+            electricalEquipment: equipment.tableElectricalEquipment || ''
+          });
+        }
+      });
+    }
+  });
+
+  // Collect ODS/GWS data from all areas
+  const odsData = {
+    odsObserved: false,
+    odsGwsAssessmentTable: []
+  };
+
+  areaDetails.forEach(area => {
+    // Check if ODS was observed in any area
+    if (area.odsObserved === 'Yes') {
+      odsData.odsObserved = true;
+    }
+
+    // Collect ODS/GWS assessment data
+    if (area.odsGwsAssessmentTable && Array.isArray(area.odsGwsAssessmentTable)) {
+      area.odsGwsAssessmentTable.forEach(equipment => {
+        // Only add if equipment has meaningful data
+        if (equipment.tableLocation || equipment.tableOdsGwsClassification || 
+            equipment.tableRefrigerantTypeQuantity || equipment.tableEquipmentManufacturerType) {
+          odsData.odsGwsAssessmentTable.push({
+            location: equipment.tableLocation || '',
+            classification: equipment.tableOdsGwsClassification || '',
+            refrigerantType: equipment.tableRefrigerantTypeQuantity || '',
+            equipmentType: equipment.tableEquipmentManufacturerType || ''
+          });
+        }
+      });
+    }
+  });
+  
+    // Function to generate PCB findings and recommendations
+  const getPcbFindingsAndRecommendations = (pcbData) => {
+    let findings = '';
+    let recommendations = '';
+
+    // Check for general PCB observation
+    if (pcbData.pcbObserved) {
+      findings = 'Fluorescent light ballasts are assumed to contain PCB\'s.';
+      recommendations = 'PCB-containing ballasts should be removed, separated from other waste and disposed of as PCB waste at an authorized destruction facility.';
+    }
+
+    // Check for specific PCB electrical equipment
+    if (pcbData.pcbElectricalEquipmentTable.length > 0) {
+      if (findings) {
+        findings += ' ';
+      }
+      findings += 'The following PCB-containing electrical equipment was identified:<ul>';
+      pcbData.pcbElectricalEquipmentTable.forEach(equipment => {
+        const details = [
+          equipment.location && `Location: ${equipment.location}`,
+          equipment.pcbIdInfo && `PCB ID Info: ${equipment.pcbIdInfo}`,
+          equipment.pcbContent && `PCB Content: ${equipment.pcbContent}`,
+          equipment.manufacturer && `Manufacturer: ${equipment.manufacturer}`,
+          equipment.electricalEquipment && `Equipment: ${equipment.electricalEquipment}`
+        ].filter(Boolean).join(', ');
+
+        if (details) {
+          findings += `<li>${details}</li>`;
+        }
+      });
+      findings += '</ul>';
+
+      if (recommendations) {
+        recommendations += ' ';
+      }
+      recommendations += 'At the time of decommissioning any suspect PCB-containing equipment should be verified by referring to the Environment Canada document entitled "Handbook on PCB\'s in Electrical Equipment." Any PCB-containing equipment taken out of service should be properly handled and disposed of at an authorized destruction facility.';
+    }
+
+    // If no findings, set default message
+    if (!findings) {
+      findings = 'No equipment was observed that is suspected to contain PCBs.';
+      recommendations = 'No action required.';
+    }
+
+    return { findings, recommendations };
+  };
+
+  // Function to generate ODS/GWS findings and recommendations
+  const getOdsFindingsAndRecommendations = (odsData) => {
+    let findings = '';
+    let recommendations = '';
+
+    // Check for ODS observation
+    if (odsData.odsObserved) {
+      findings = 'Equipment containing ozone depleting substances (ODS) and/or global warming substances (GWS) was identified in the subject area.';
+    }
+
+    // Check for specific ODS/GWS equipment
+    if (odsData.odsGwsAssessmentTable.length > 0) {
+      if (findings) {
+        findings += ' ';
+      }
+      findings += 'The following ODS/GWS-containing equipment was identified:<ul>';
+      odsData.odsGwsAssessmentTable.forEach(equipment => {
+        const details = [
+          equipment.location && `Location: ${equipment.location}`,
+          equipment.classification && `Classification: ${equipment.classification}`,
+          equipment.refrigerantType && `Refrigerant: ${equipment.refrigerantType}`,
+          equipment.equipmentType && `Equipment: ${equipment.equipmentType}`
+        ].filter(Boolean).join(', ');
+
+        if (details) {
+          findings += `<li>${details}</li>`;
+        }
+      });
+      findings += '</ul>';
+    }
+
+                      // Generate recommendations based on findings
+                  if (odsData.odsObserved || odsData.odsGwsAssessmentTable.length > 0) {
+                    recommendations = 'Purge unit(s) of remaining refrigerant prior to removal and disposal. This should be conducted by a certified person who holds a valid Ozone Depletion Prevention Certificate. Servicing and testing of refrigeration equipment should be conducted in accordance with Environment Canada\'s "Environmental Code of Practice for Elimination of Fluorocarbon Emissions from Refrigeration and Air Conditioning Systems".';
+                  }
+
+    // If no findings, set default message
+    if (!findings) {
+      findings = 'No equipment was observed that is suspected to contain ozone depleting and/or global warming substances.';
+      recommendations = 'No action required.';
+    }
+
+    return { findings, recommendations };
+  };
+  
+    // Function to generate combined recommendations for Other Hazardous Materials
+  const getOtherHazardousMaterialsRecommendations = (pestInfestationData, allInfestationTypes, pcbData, odsData) => {
+    const recommendations = [];
+
+    // Add pest infestation recommendations if applicable
+    if (pestInfestationData.length > 0) {
+      recommendations.push(`<strong>Pest Infestation:</strong> Precautions should be taken to minimize worker exposure when disturbing/removing ${allInfestationTypes.join(', ')}. This includes measures to minimize dust generation and use of appropriate personal protection.`);
+    }
+
+    // Add PCB recommendations if applicable
+    const pcbRecommendations = getPcbFindingsAndRecommendations(pcbData).recommendations;
+    if (pcbRecommendations !== 'No action required.') {
+      recommendations.push(`<strong>Polychlorinated Biphenyls:</strong> ${pcbRecommendations}`);
+    }
+
+    // Add ODS recommendations if applicable
+    const odsRecommendations = getOdsFindingsAndRecommendations(odsData).recommendations;
+    if (odsRecommendations !== 'No action required.') {
+      recommendations.push(`<strong>Ozone Depleting and Global Warming Substances:</strong> ${odsRecommendations}`);
+    }
+
+    return recommendations.length > 0 ? recommendations.join('<br><br>') : 'No action required.';
+  };
   
   // Generate summary table for hazardous materials and designated substances
   const summaryTable = [
@@ -928,8 +1150,29 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     },
     {
       substance: 'Other Hazardous Materials',
-      findings: `<ul><li><b>Urea Formaldehyde Foam Insulation:</b> No UFFI was identified or is suspected in the subject area.</li><li><b>Mould Contamination:</b> No suspect mould contamination was observed on building finishes in the subject area.</li><li><b>Pest Infestation:</b> No pest infestations were observed in the areas assessed.</li><li><b>Polychlorinated Biphenyls:</b> No equipment was observed that is suspected to contain PCBs.</li><li><b>Ozone Depleting and Global Warming Substances:</b> No equipment was observed that is suspected to contain ozone depleting and/or global warming substances.</li></ul>`,
-      recommendations: `No action required.`
+      findings: `
+      <ul>
+        <li>
+          <b>Urea Formaldehyde Foam Insulation:</b> 
+          No UFFI was identified or is suspected in the subject area.
+        </li>
+        <li>
+          <b>Mould Contamination:</b> 
+          No suspect mould contamination was observed on building finishes in the subject area.
+        </li>
+        <li>
+          <b>Pest Infestation:</b> 
+          ${pestInfestationData.length > 0 ? pestInfestationData.map(item => item.statement).join(' ') : 'No pest infestations were observed in the areas assessed.'}
+        </li>
+        <li>
+          <b>Polychlorinated Biphenyls:</b> 
+          ${getPcbFindingsAndRecommendations(pcbData).findings}</li>
+        <li>
+          <b>Ozone Depleting and Global Warming Substances:</b> 
+          ${getOdsFindingsAndRecommendations(odsData).findings}
+        </li>
+      </ul>`,
+      recommendations: getOtherHazardousMaterialsRecommendations(pestInfestationData, allInfestationTypes, pcbData, odsData)
     }
   ];
 
@@ -1383,8 +1626,8 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
       if (Array.isArray(area.leadMaterials)) {
         areaLeadAssessment = area.leadMaterials.map((item, idx) => ({
           id: `Lead Material ${idx + 1}`,
-          locationAndDescription: [item.materialLocation, item.materialDescription].filter(Boolean).join(' - '),
-          photo: (Array.isArray(item.materialPhoto) && item.materialPhoto.length > 0) ? item.materialPhoto[0] : ''
+          locationAndDescription: `${item.location || ''} - ${item.description || ''} - ${item.materialType || item.customMaterialName || ''}`.replace(/^ - | - $/g, '').replace(/ - - /g, ' - '),
+          photo: (Array.isArray(item.photos) && item.photos.length > 0) ? item.photos[0] : ''
         }));
       }
       // Area-specific suspect lead materials (dynamic)
@@ -1424,11 +1667,11 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
       }
       // Area-specific mould assessment (dynamic)
       let areaMouldAssessment = [];
-      if (area.moldGrowth === 'Yes' && Array.isArray(area.mouldContaminationDetails)) {
-        areaMouldAssessment = area.mouldContaminationDetails.map((item, idx) => ({
-          id: `Mould Contamination ${idx + 1}`,
-          locationAndDescription: [item.mouldLocation, item.mouldDescription].filter(Boolean).join(' - '),
-          photo: (Array.isArray(item.mouldPhoto) && item.mouldPhoto.length > 0) ? item.mouldPhoto[0] : ''
+      if (Array.isArray(area.mouldMaterials)) {
+        areaMouldAssessment = area.mouldMaterials.map((item, idx) => ({
+          id: `Mould Material ${idx + 1}`,
+          locationAndDescription: `${item.location || ''} - ${item.description || ''} - ${item.materialType || item.customMaterialName || ''}`.replace(/^ - | - $/g, '').replace(/ - - /g, ' - '),
+          photo: (Array.isArray(item.photos) && item.photos.length > 0) ? item.photos[0] : ''
         }));
       }
       // Area-specific pest infestation (dynamic)
@@ -1633,6 +1876,9 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     silicaFound: silicaContainingMaterials.length > 0 || suspectSilicaMaterials.length > 0,
     silicaContainingMaterials: silicaContainingMaterials,
     suspectSilicaMaterials: suspectSilicaMaterials,
+
+    // Pest Infestation data for template
+    pestInfestationData: pestInfestationData,
   };
 };
 
