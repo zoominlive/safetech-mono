@@ -776,6 +776,24 @@
                 {{/each}}
             </tbody>
         </table>
+        
+        <!-- OHSA Compliance Statement and Contact Information -->
+        <div style="margin-top: 30px; margin-bottom: 30px; font-family: Arial, sans-serif; font-size: 12pt;">
+            <p>This assessment satisfies the Owner's requirements under Section 30 of the Ontario Occupational Health and Safety Act (OHSA), Revised Statutes of Ontario 1990, as amended.</p>
+            
+            <p>Should you have any questions regarding the information contained in the report, please contact our office.</p>
+            
+            <div style="margin-top: 40px;">
+                <p><strong>Safetech Environmental Limited</strong></p>
+                <div style="margin-top: 20px;">
+                    {{#if technicianSignature}}
+                    <img src="{{technicianSignature}}" alt="Technician Signature" style="width: 100px; height: 50px; display: block;" />
+                    {{/if}}
+                    <p style="margin-top: 10px;"><strong>{{technicianName}}</strong></p>
+                    <p>Occupational Health and Safety Technician</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- INTRO -->
