@@ -25,27 +25,26 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useMaterialStore } from "@/store";
 
-interface AsbestosMaterial {
+interface LeadMaterial {
   id: string;
   materialType: string;
   customMaterialName: string;
   location: string;
   description: string;
   photos: string[];
-  squareFootage: string;
   sampleCollected: 'Yes' | 'No';
-  suspectedAcm: 'Yes' | 'No';
+  suspectedLead: 'Yes' | 'No';
   isCustomMaterial: boolean;
   sampleId?: string;
   sampleNo?: string;
-  percentageAsbestos?: number;
-  asbestosType?: string;
+  percentageLead?: number;
+  leadType?: string;
   timestamp?: string;
 }
 
-interface AsbestosAssessmentFormProps {
-  value: AsbestosMaterial[];
-  onChange: (materials: AsbestosMaterial[]) => void;
+interface LeadAssessmentFormProps {
+  value: LeadMaterial[];
+  onChange: (materials: LeadMaterial[]) => void;
   disabled?: boolean;
   projectId?: string;
   reportId?: string;
@@ -55,7 +54,7 @@ interface AsbestosAssessmentFormProps {
   existingSampleIds?: string[]; // For tracking sample IDs across all areas
 }
 
-export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
+export const LeadAssessmentForm: React.FC<LeadAssessmentFormProps> = ({
   value = [],
   onChange,
   disabled = false,
@@ -63,10 +62,10 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
   materialUsageStats = {},
   existingSampleIds = [],
 }) => {
-  const [localMaterials, setLocalMaterials] = useState<AsbestosMaterial[]>(value);
+  const [localMaterials, setLocalMaterials] = useState<LeadMaterial[]>(value);
   const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
   const [expandedMaterials, setExpandedMaterials] = useState<Set<string>>(new Set());
-  const [materialToDelete, setMaterialToDelete] = useState<AsbestosMaterial | null>(null);
+  const [materialToDelete, setMaterialToDelete] = useState<LeadMaterial | null>(null);
 
   // Use the material store
   const { 
@@ -81,7 +80,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
 
   // Fetch materials on component mount
   useEffect(() => {
-    console.log('AsbestosAssessmentForm mounted, fetching materials...');
+    console.log('LeadAssessmentForm mounted, fetching materials...');
     // Call fetchMaterials directly from store state
     const store = useMaterialStore.getState();
     store.fetchMaterials();
@@ -109,16 +108,15 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
   }, [disabled]); // Only run when disabled state changes
 
   const handleAddMaterial = () => {
-    const newMaterial: AsbestosMaterial = {
+    const newMaterial: LeadMaterial = {
       id: `material-${Date.now()}`,
       materialType: '',
       customMaterialName: '',
       location: '',
       description: '',
       photos: [],
-      squareFootage: '',
       sampleCollected: 'No',
-      suspectedAcm: 'No',
+      suspectedLead: 'No',
       isCustomMaterial: false,
     };
     const updatedMaterials = [newMaterial, ...localMaterials];
@@ -157,7 +155,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
     });
   };
 
-  const handleMaterialChange = (id: string, field: keyof AsbestosMaterial, value: any) => {
+  const handleMaterialChange = (id: string, field: keyof LeadMaterial, value: any) => {
     const updatedMaterials = localMaterials.map(material => {
       if (material.id === id) {
         const updatedMaterial = { ...material, [field]: value };
@@ -299,7 +297,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
     };
   };
 
-  const getDisplayMaterialName = (material: AsbestosMaterial) => {
+  const getDisplayMaterialName = (material: LeadMaterial) => {
     console.log('getDisplayMaterialName called with:', {
       materialType: material.materialType,
       isCustomMaterial: material.isCustomMaterial,
@@ -356,22 +354,22 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
         });
       });
       
-      // If no materials are available from API, add some default materials
+      // If no materials are available from API, add some default lead materials
       if (availableMaterials.length === 0 && !materialsError) {
-        console.log('No materials from API, adding default materials');
+        console.log('No materials from API, adding default lead materials');
         const defaultMaterials = [
-          'Acoustic Ceiling Tiles',
-          'Asphalt Roofing',
-          'Cement Pipes',
-          'Floor Tiles',
-          'Insulation',
-          'Joint Compound',
-          'Pipe Insulation',
-          'Roofing Felt',
-          'Siding',
-          'Textured Paint',
-          'Vinyl Floor Tiles',
-          'Wallboard'
+          'Lead-Based Paint',
+          'Lead Dust',
+          'Lead Soil',
+          'Lead Water',
+          'Lead Paint Chips',
+          'Lead Paint Dust',
+          'Lead Paint Residue',
+          'Lead Paint Debris',
+          'Lead Paint Waste',
+          'Lead Paint Scrapings',
+          'Lead Paint Flakes',
+          'Lead Paint Particles'
         ];
         
         defaultMaterials.forEach(material => {
@@ -405,7 +403,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
       {/* Materials List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-            {/* <Label className="text-lg font-semibold">Asbestos-Containing Materials</Label> */}
+            {/* <Label className="text-lg font-semibold">Lead-Containing Materials</Label> */}
             {!disabled && (
               <Button onClick={handleAddMaterial} size="sm">
                 <CirclePlus className="h-4 w-4 mr-2" />
@@ -472,9 +470,6 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                                         <p className="font-medium">Material Usage Across Areas:</p>
                                         <p>• Used in {usageInfo.usageCount} area(s)</p>
                                         <p>• {usageInfo.samplesCollected} sample(s) collected</p>
-                                        {/* {usageInfo.samplesCollected > 0 && (
-                                          <p className="text-green-600 text-sm">✓ Samples available for testing</p>
-                                        )} */}
                                       </div>
                                     </TooltipContent>
                                   </Tooltip>
@@ -580,18 +575,6 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                           />
                         </div>
 
-                        {/* Square Footage */}
-                        <div className="space-y-2">
-                          <Label>Square Footage</Label>
-                          <Input
-                            type="number"
-                            value={material.squareFootage}
-                            onChange={(e) => handleMaterialChange(material.id, 'squareFootage', e.target.value)}
-                            placeholder="Enter square footage"
-                            disabled={disabled}
-                          />
-                        </div>
-
                         {/* Photos */}
                         <div className="space-y-2">
                           <Label>Photos</Label>
@@ -657,13 +640,13 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                           </RadioGroup>
                         </div>
 
-                        {/* Suspected ACM (only show if sample not collected) */}
+                        {/* Suspected Lead (only show if sample not collected) */}
                         {material.sampleCollected === 'No' && (
                           <div className="space-y-2">
-                            <Label>Is it a suspected ACM?</Label>
+                            <Label>Is it a suspected lead-containing material?</Label>
                             <RadioGroup
-                              value={material.suspectedAcm}
-                              onValueChange={(value) => handleMaterialChange(material.id, 'suspectedAcm', value)}
+                              value={material.suspectedLead}
+                              onValueChange={(value) => handleMaterialChange(material.id, 'suspectedLead', value)}
                               disabled={disabled}
                               className="flex space-x-4"
                             >

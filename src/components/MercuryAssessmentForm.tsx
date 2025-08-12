@@ -25,27 +25,26 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useMaterialStore } from "@/store";
 
-interface AsbestosMaterial {
+interface MercuryMaterial {
   id: string;
   materialType: string;
   customMaterialName: string;
   location: string;
   description: string;
   photos: string[];
-  squareFootage: string;
   sampleCollected: 'Yes' | 'No';
-  suspectedAcm: 'Yes' | 'No';
+  suspectedMercury: 'Yes' | 'No';
   isCustomMaterial: boolean;
   sampleId?: string;
   sampleNo?: string;
-  percentageAsbestos?: number;
-  asbestosType?: string;
+  percentageMercury?: number;
+  mercuryType?: string;
   timestamp?: string;
 }
 
-interface AsbestosAssessmentFormProps {
-  value: AsbestosMaterial[];
-  onChange: (materials: AsbestosMaterial[]) => void;
+interface MercuryAssessmentFormProps {
+  value: MercuryMaterial[];
+  onChange: (materials: MercuryMaterial[]) => void;
   disabled?: boolean;
   projectId?: string;
   reportId?: string;
@@ -55,18 +54,17 @@ interface AsbestosAssessmentFormProps {
   existingSampleIds?: string[]; // For tracking sample IDs across all areas
 }
 
-export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
+export const MercuryAssessmentForm: React.FC<MercuryAssessmentFormProps> = ({
   value = [],
   onChange,
   disabled = false,
   onFileUpload,
   materialUsageStats = {},
-  existingSampleIds = [],
 }) => {
-  const [localMaterials, setLocalMaterials] = useState<AsbestosMaterial[]>(value);
+  const [localMaterials, setLocalMaterials] = useState<MercuryMaterial[]>(value);
   const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
   const [expandedMaterials, setExpandedMaterials] = useState<Set<string>>(new Set());
-  const [materialToDelete, setMaterialToDelete] = useState<AsbestosMaterial | null>(null);
+  const [materialToDelete, setMaterialToDelete] = useState<MercuryMaterial | null>(null);
 
   // Use the material store
   const { 
@@ -81,7 +79,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
 
   // Fetch materials on component mount
   useEffect(() => {
-    console.log('AsbestosAssessmentForm mounted, fetching materials...');
+    console.log('MercuryAssessmentForm mounted, fetching materials...');
     // Call fetchMaterials directly from store state
     const store = useMaterialStore.getState();
     store.fetchMaterials();
@@ -106,27 +104,24 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
     if (localMaterials.length === 0 && !disabled) {
       handleAddMaterial();
     }
-  }, [disabled]); // Only run when disabled state changes
+  }, [disabled]);
 
   const handleAddMaterial = () => {
-    const newMaterial: AsbestosMaterial = {
-      id: `material-${Date.now()}`,
-      materialType: '',
-      customMaterialName: '',
-      location: '',
-      description: '',
+    const newMaterial: MercuryMaterial = {
+      id: `mercury-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      materialType: "",
+      customMaterialName: "",
+      location: "",
+      description: "",
       photos: [],
-      squareFootage: '',
       sampleCollected: 'No',
-      suspectedAcm: 'No',
+      suspectedMercury: 'No',
       isCustomMaterial: false,
+      timestamp: new Date().toISOString()
     };
     const updatedMaterials = [newMaterial, ...localMaterials];
     setLocalMaterials(updatedMaterials);
     onChange(updatedMaterials);
-    
-    // Automatically expand the new material
-    setExpandedMaterials(prev => new Set([...prev, newMaterial.id]));
   };
 
   const handleRemoveMaterial = (id: string) => {
@@ -138,7 +133,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
 
   const confirmRemoveMaterial = () => {
     if (materialToDelete) {
-      const updatedMaterials = localMaterials.filter(material => material.id !== materialToDelete.id);
+      const updatedMaterials = localMaterials.filter(m => m.id !== materialToDelete.id);
       setLocalMaterials(updatedMaterials);
       onChange(updatedMaterials);
       setMaterialToDelete(null);
@@ -146,48 +141,19 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
   };
 
   const toggleMaterialExpansion = (materialId: string) => {
-    setExpandedMaterials(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(materialId)) {
-        newSet.delete(materialId);
-      } else {
-        newSet.add(materialId);
-      }
-      return newSet;
-    });
+    const newExpanded = new Set(expandedMaterials);
+    if (newExpanded.has(materialId)) {
+      newExpanded.delete(materialId);
+    } else {
+      newExpanded.add(materialId);
+    }
+    setExpandedMaterials(newExpanded);
   };
 
-  const handleMaterialChange = (id: string, field: keyof AsbestosMaterial, value: any) => {
+  const handleMaterialChange = (id: string, field: keyof MercuryMaterial, value: any) => {
     const updatedMaterials = localMaterials.map(material => {
       if (material.id === id) {
-        const updatedMaterial = { ...material, [field]: value };
-        
-        // If sampleCollected is being set to 'Yes', add timestamp and generate sampleId
-        if (field === 'sampleCollected' && value === 'Yes') {
-          const timestamp = new Date().toISOString();
-          
-          // Find the highest existing sample ID across all areas and current materials
-          const allExistingSampleIds = [
-            ...existingSampleIds,
-            ...localMaterials.filter(m => m.sampleId).map(m => m.sampleId!)
-          ];
-          
-          const existingSampleNumbers = allExistingSampleIds
-            .map(sampleId => {
-              const match = sampleId.match(/S(\d+)/);
-              return match ? parseInt(match[1]) : 0;
-            });
-          
-          const nextSampleNumber = existingSampleNumbers.length > 0 
-            ? Math.max(...existingSampleNumbers) + 1 
-            : 10001;
-          
-          const sampleId = `S${nextSampleNumber.toString().padStart(5, '0')}`;
-          updatedMaterial.timestamp = timestamp;
-          updatedMaterial.sampleId = sampleId;
-        }
-        
-        return updatedMaterial;
+        return { ...material, [field]: value };
       }
       return material;
     });
@@ -196,12 +162,20 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
   };
 
   const handleFileUpload = async (materialId: string, files: FileList | null) => {
-    if (!files || !files.length || !onFileUpload) return;
+    if (!files || files.length === 0) return;
+
+    setUploadingFiles(prev => ({ ...prev, [materialId]: true }));
 
     try {
-      setUploadingFiles(prev => ({ ...prev, [materialId]: true }));
-      const uploadedUrls = await onFileUpload(files);
+      let uploadedUrls: string[] = [];
       
+      if (onFileUpload) {
+        uploadedUrls = await onFileUpload(files);
+      } else {
+        // Simulate file upload for demo purposes
+        uploadedUrls = Array.from(files).map(file => URL.createObjectURL(file));
+      }
+
       const updatedMaterials = localMaterials.map(material => {
         if (material.id === materialId) {
           return {
@@ -211,19 +185,19 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
         }
         return material;
       });
-      
+
       setLocalMaterials(updatedMaterials);
       onChange(updatedMaterials);
-      
+
       toast({
-        title: "Success",
-        description: "Files uploaded successfully",
+        title: "Files uploaded successfully",
+        description: `${files.length} file(s) uploaded.`,
       });
     } catch (error) {
-      console.error("Failed to upload files:", error);
+      console.error('Error uploading files:', error);
       toast({
         title: "Upload failed",
-        description: "An error occurred during upload",
+        description: "Failed to upload files. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -236,7 +210,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
       if (material.id === materialId) {
         return {
           ...material,
-          photos: material.photos.filter((url: string) => url !== photoUrl)
+          photos: material.photos.filter(photo => photo !== photoUrl)
         };
       }
       return material;
@@ -299,24 +273,14 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
     };
   };
 
-  const getDisplayMaterialName = (material: AsbestosMaterial) => {
-    console.log('getDisplayMaterialName called with:', {
-      materialType: material.materialType,
-      isCustomMaterial: material.isCustomMaterial,
-      customMaterialName: material.customMaterialName
-    });
-    
+  const getDisplayMaterialName = (material: MercuryMaterial) => {
     if (material.isCustomMaterial) {
       const result = material.customMaterialName || 'Custom Material';
-      console.log('Custom material, returning:', result);
       return result;
     }
-    
-    console.log('Standard material, returning:', material.materialType);
     return material.materialType;
   };
 
-  // Create material options with usage statistics
   interface MaterialOption {
     value: string;
     label: string;
@@ -356,22 +320,22 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
         });
       });
       
-      // If no materials are available from API, add some default materials
+      // If no materials are available from API, add some default mercury materials
       if (availableMaterials.length === 0 && !materialsError) {
-        console.log('No materials from API, adding default materials');
+        console.log('No materials from API, adding default mercury materials');
         const defaultMaterials = [
-          'Acoustic Ceiling Tiles',
-          'Asphalt Roofing',
-          'Cement Pipes',
-          'Floor Tiles',
-          'Insulation',
-          'Joint Compound',
-          'Pipe Insulation',
-          'Roofing Felt',
-          'Siding',
-          'Textured Paint',
-          'Vinyl Floor Tiles',
-          'Wallboard'
+          'Thermostat',
+          'Thermometers',
+          'Barometers',
+          'Mercury Switches',
+          'Mercury Relays',
+          'Mercury Vapor Lamps',
+          'Mercury Containing Equipment',
+          'Mercury Containing Devices',
+          'Mercury Containing Instruments',
+          'Mercury Containing Appliances',
+          'Mercury Containing Tools',
+          'Mercury Containing Components'
         ];
         
         defaultMaterials.forEach(material => {
@@ -384,28 +348,17 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
       }
     }
     
-    console.log('Created options:', options);
     return options;
   };
 
   const materialOptions = createMaterialOptions();
-  
-  // Debug material options
-  useEffect(() => {
-    console.log('Material options updated:', {
-      optionsCount: materialOptions.length,
-      options: materialOptions,
-      materialsLoading,
-      materialsError
-    });
-  }, [materialOptions, materialsLoading, materialsError]);
 
   return (
     <div className="space-y-6">
       {/* Materials List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-            {/* <Label className="text-lg font-semibold">Asbestos-Containing Materials</Label> */}
+            {/* <Label className="text-lg font-semibold">Mercury-Containing Materials</Label> */}
             {!disabled && (
               <Button onClick={handleAddMaterial} size="sm">
                 <CirclePlus className="h-4 w-4 mr-2" />
@@ -472,9 +425,6 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                                         <p className="font-medium">Material Usage Across Areas:</p>
                                         <p>• Used in {usageInfo.usageCount} area(s)</p>
                                         <p>• {usageInfo.samplesCollected} sample(s) collected</p>
-                                        {/* {usageInfo.samplesCollected > 0 && (
-                                          <p className="text-green-600 text-sm">✓ Samples available for testing</p>
-                                        )} */}
                                       </div>
                                     </TooltipContent>
                                   </Tooltip>
@@ -580,18 +530,6 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                           />
                         </div>
 
-                        {/* Square Footage */}
-                        <div className="space-y-2">
-                          <Label>Square Footage</Label>
-                          <Input
-                            type="number"
-                            value={material.squareFootage}
-                            onChange={(e) => handleMaterialChange(material.id, 'squareFootage', e.target.value)}
-                            placeholder="Enter square footage"
-                            disabled={disabled}
-                          />
-                        </div>
-
                         {/* Photos */}
                         <div className="space-y-2">
                           <Label>Photos</Label>
@@ -624,8 +562,9 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                                     />
                                     {!disabled && (
                                       <button
+                                        type="button"
                                         onClick={() => handleRemovePhoto(material.id, photoUrl)}
-                                        className="absolute top-2 right-2 z-10 p-2 bg-red-500 text-white rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-red-400"
+                                        className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                       >
                                         <CircleX className="h-4 w-4" />
                                       </button>
@@ -657,13 +596,13 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                           </RadioGroup>
                         </div>
 
-                        {/* Suspected ACM (only show if sample not collected) */}
+                        {/* Suspected Mercury (only show if sample not collected) */}
                         {material.sampleCollected === 'No' && (
                           <div className="space-y-2">
-                            <Label>Is it a suspected ACM?</Label>
+                            <Label>Is it a suspected mercury-containing material?</Label>
                             <RadioGroup
-                              value={material.suspectedAcm}
-                              onValueChange={(value) => handleMaterialChange(material.id, 'suspectedAcm', value)}
+                              value={material.suspectedMercury}
+                              onValueChange={(value) => handleMaterialChange(material.id, 'suspectedMercury', value)}
                               disabled={disabled}
                               className="flex space-x-4"
                             >
@@ -685,23 +624,20 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
               </Card>
             );
           })}
-        </div>
+      </div>
 
       {/* Confirmation Dialog for Material Removal */}
-      <AlertDialog open={!!materialToDelete} onOpenChange={(open) => !open && setMaterialToDelete(null)}>
+      <AlertDialog open={!!materialToDelete} onOpenChange={() => setMaterialToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remove Material</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove "{materialToDelete ? getDisplayMaterialName(materialToDelete) : ''}"? This action cannot be undone.
+              Are you sure you want to remove this material? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmRemoveMaterial}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
+            <AlertDialogAction onClick={confirmRemoveMaterial} className="bg-red-600 hover:bg-red-700">
               Remove
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -1,4 +1,4 @@
-import { CirclePlus, CircleX, Upload, List, Loader2, TestTube } from "lucide-react";
+import { CirclePlus, CircleX, Upload, List, Loader2, TestTube, StickyNote, Edit3, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -35,7 +35,18 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import LabImport from "@/components/LabImport";
 import { Textarea } from "@/components/ui/textarea";
 import { AsbestosAssessmentForm } from "@/components/AsbestosAssessmentForm";
+import { LeadAssessmentForm } from "@/components/LeadAssessmentForm";
+import { MercuryAssessmentForm } from "@/components/MercuryAssessmentForm";
+import { SilicaAssessmentForm } from "@/components/SilicaAssessmentForm";
+import { MouldAssessmentForm } from "@/components/MouldAssessmentForm";
+import { PcbAssessmentForm } from "@/components/PcbAssessmentForm";
 import { transformAsbestosSchema, convertOldAsbestosDataToNew } from "@/lib/asbestosSchemaTransformer";
+import { transformLeadSchema, convertOldLeadDataToNew } from "@/lib/leadSchemaTransformer";
+import { transformMercurySchema, convertOldMercuryDataToNew } from "@/lib/mercurySchemaTransformer";
+import { transformSilicaSchema, convertOldSilicaDataToNew } from "@/lib/silicaSchemaTransformer";
+import { transformMouldSchema, convertOldMouldDataToNew } from "@/lib/mouldSchemaTransformer";
+import { transformPcbSchema, convertOldPcbDataToNew } from "@/lib/pcbSchemaTransformer";
+
 
 interface SchemaField {
   type: string;
@@ -67,16 +78,68 @@ interface Area {
   assessments: Record<string, any>;
 }
 
+interface Note {
+  id: string;
+  content: string;
+  timestamp: string;
+  isEditing?: boolean;
+}
+
 export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = false }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { user } = useAuthStore();
+
   const userRole = user?.role;
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [drawerMode, setDrawerMode] = useState<'toc' | 'notes'>('toc');
   const [selectedArea, setSelectedArea] = useState<Area | null>(null);
   const [areas, setAreas] = useState<Area[]>([]);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [newNoteContent, setNewNoteContent] = useState('');
+
+  // Notes management functions
+  const addNote = () => {
+    if (newNoteContent.trim()) {
+      const newNote: Note = {
+        id: `note-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        content: newNoteContent.trim(),
+        timestamp: new Date().toISOString()
+      };
+      setNotes([newNote, ...notes]);
+      setNewNoteContent('');
+    }
+  };
+
+  const updateNote = (noteId: string, content: string) => {
+    setNotes(notes.map(note => 
+      note.id === noteId 
+        ? { ...note, content, isEditing: false }
+        : note
+    ));
+  };
+
+  const deleteNote = (noteId: string) => {
+    setNotes(notes.filter(note => note.id !== noteId));
+  };
+
+  const startEditingNote = (noteId: string) => {
+    setNotes(notes.map(note => 
+      note.id === noteId 
+        ? { ...note, isEditing: true }
+        : note
+    ));
+  };
+
+  const cancelEditingNote = (noteId: string) => {
+    setNotes(notes.map(note => 
+      note.id === noteId 
+        ? { ...note, isEditing: false }
+        : note
+    ));
+  };
 
   const [reportData, setReportData] = useState<Record<string, any>>({});
   const [schema, setSchema] = useState<SchemaSection[]>([]);
@@ -161,7 +224,8 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
           sprayedFireproofingPhoto: undefined,
           mechanicalPipeInsulationStraightsPhoto: undefined,
           haslooseFillOrvermiculiteInsulationPhoto: undefined,
-          areaDetails: areas
+          areaDetails: areas,
+          notes: notes
         }
       };
 
@@ -178,7 +242,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
         setAutoSaveStatus('saved');
         setLastSaved(new Date());
         setHasUnsavedChanges(false);
-        lastSavedDataRef.current = JSON.stringify({ areas, reportData });
+        lastSavedDataRef.current = JSON.stringify({ areas, reportData, notes });
         
         // Show success toast only if it's been a while since last save
         const timeSinceLastToast = lastSaved ? Date.now() - lastSaved.getTime() : 60000;
@@ -204,7 +268,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
 
   // Check for changes and trigger auto-save
   const checkForChanges = useCallback(() => {
-    const currentData = JSON.stringify({ areas, reportData });
+    const currentData = JSON.stringify({ areas, reportData, notes });
     const hasChanges = currentData !== lastSavedDataRef.current;
     
     if (hasChanges && !hasUnsavedChanges) {
@@ -216,7 +280,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     if (hasChanges) {
       debouncedAutoSave();
     }
-  }, [areas, reportData, hasUnsavedChanges, debouncedAutoSave]);
+  }, [areas, reportData, notes, hasUnsavedChanges, debouncedAutoSave]);
 
   // Set up periodic auto-save
   useEffect(() => {
@@ -247,12 +311,12 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     };
   }, []);
 
-  // Check for changes whenever areas or reportData changes
+  // Check for changes whenever areas, reportData, or notes changes
   useEffect(() => {
     if (areas.length > 0 && reportData) {
       checkForChanges();
     }
-  }, [areas, reportData, checkForChanges]);
+  }, [areas, reportData, notes, checkForChanges]);
 
   // Warn user before leaving with unsaved changes
   useEffect(() => {
@@ -314,7 +378,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
         setAutoSaveStatus('saved');
         setLastSaved(new Date());
         setHasUnsavedChanges(false);
-        lastSavedDataRef.current = JSON.stringify({ areas, reportData });
+        lastSavedDataRef.current = JSON.stringify({ areas, reportData, notes });
         toast({
           title: "Success",
           description: "Report saved successfully",
@@ -456,6 +520,10 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
         setAreas(initialAreas);
         setSelectedArea(initialAreas[0]);
 
+        // Load notes from the report data
+        const savedNotes = Array.isArray(answers?.notes) ? answers.notes : [];
+        setNotes(savedNotes);
+
         const mergedAnswers = {
           ...answers,
           areaDetails: initialAreas
@@ -463,7 +531,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
         setReportData(mergedAnswers);
 
         // Initialize last saved data reference
-        lastSavedDataRef.current = JSON.stringify({ areas: initialAreas, reportData: mergedAnswers });
+        lastSavedDataRef.current = JSON.stringify({ areas: initialAreas, reportData: mergedAnswers, notes: savedNotes });
 
         if (response.data.template?.schema) {
           try {
@@ -471,20 +539,36 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               ? JSON.parse(response.data.template.schema)
               : response.data.template.schema;
             
-            // Transform the asbestos schema to use the new simplified format
-            const transformedSchema = transformAsbestosSchema(parsedSchema.sections);
+            // Transform the asbestos, lead, mercury, silica, mould, and PCB schemas to use the new simplified format
+            let transformedSchema = transformAsbestosSchema(parsedSchema.sections);
+            transformedSchema = transformLeadSchema(transformedSchema);
+            transformedSchema = transformMercurySchema(transformedSchema);
+            transformedSchema = transformSilicaSchema(transformedSchema);
+            transformedSchema = transformMouldSchema(transformedSchema);
+            transformedSchema = transformPcbSchema(transformedSchema);
+            console.log('Transformed asbestos schema:', transformedSchema);
             setSchema(transformedSchema);
 
-            // Convert old asbestos data to new format for each area
+            // Convert old asbestos, lead, mercury, silica, mould, and PCB data to new format for each area
             const updatedAreas = initialAreas.map(area => {
               const oldAsbestosData = area.assessments;
               const newAsbestosMaterials = convertOldAsbestosDataToNew(oldAsbestosData);
+              const newLeadMaterials = convertOldLeadDataToNew(oldAsbestosData);
+              const newMercuryMaterials = convertOldMercuryDataToNew(oldAsbestosData);
+              const newSilicaMaterials = convertOldSilicaDataToNew(oldAsbestosData);
+              const newMouldMaterials = convertOldMouldDataToNew(oldAsbestosData);
+              const newPcbEquipment = convertOldPcbDataToNew(oldAsbestosData);
               
               return {
                 ...area,
                 assessments: {
                   ...area.assessments,
                   asbestosMaterials: newAsbestosMaterials,
+                  leadMaterials: newLeadMaterials,
+                  mercuryMaterials: newMercuryMaterials,
+                  silicaMaterials: newSilicaMaterials,
+                  mouldMaterials: newMouldMaterials,
+                  additionalEquipmentType: newPcbEquipment,
                   // Keep the old data for backward compatibility
                   ...oldAsbestosData
                 }
@@ -532,7 +616,8 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
           sprayedFireproofingPhoto: undefined,
           mechanicalPipeInsulationStraightsPhoto: undefined,
           haslooseFillOrvermiculiteInsulationPhoto: undefined,
-          areaDetails: areas
+          areaDetails: areas,
+          notes: notes
         }
       };
       // Remove undefined fields with type guard
@@ -545,7 +630,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
       if (response.success) {
         setHasUnsavedChanges(false);
         setLastSaved(new Date());
-        lastSavedDataRef.current = JSON.stringify({ areas, reportData });
+        lastSavedDataRef.current = JSON.stringify({ areas, reportData, notes });
         toast({
           title: "Success",
           description: "Report updated successfully",
@@ -666,7 +751,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     const technicianObj = projectObj?.technician || {};
 
     let fileUrls: string[] = [];
-
+    console.log("field.type==>", field.type);
     switch (field.type) {
       case "text":
         return (
@@ -699,6 +784,28 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                 </div>
               ))}
             </RadioGroup>
+            
+            {/* Render nested fields if they exist */}
+            {field.fields && field.fields.length > 0 && (
+              <div className="space-y-4 mt-4">
+                {field.fields.map((nestedField) => {
+                  let showNestedField = true;
+                  if (nestedField.showWhen) {
+                    const [depKey, depValue] = nestedField.showWhen.split('=');
+                    showNestedField = area.assessments[depKey] === depValue;
+                  }
+                  return showNestedField ? (
+                    <div key={nestedField.id} className="space-y-2">
+                      <Label>
+                        {nestedField.label}
+                        {nestedField.required && <span className="text-red-500 ml-1">*</span>}
+                      </Label>
+                      {renderField(nestedField, area)}
+                    </div>
+                  ) : null;
+                })}
+              </div>
+            )}
           </div>
         );
       case "multiselect":
@@ -1256,10 +1363,10 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
       case "asbestosAssessment": {
         // Calculate material usage statistics across all areas
         const materialUsageStats: Record<string, { count: number; samplesCollected: number }> = {};
-        const allCustomMaterials: string[] = [];
+        const allExistingSampleIds: string[] = [];
         
         areas.forEach(area => {
-          const areaMaterials = area.assessments.asbestosMaterials || [];
+          const areaMaterials = Array.isArray(area.assessments.asbestosMaterials) ? area.assessments.asbestosMaterials : [];
           areaMaterials.forEach((material: any) => {
             const materialName = material.isCustomMaterial ? material.customMaterialName : material.materialType;
             if (materialName) {
@@ -1271,9 +1378,9 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                 materialUsageStats[materialName].samplesCollected++;
               }
               
-              // Track custom materials for reuse
-              if (material.isCustomMaterial && material.customMaterialName && !allCustomMaterials.includes(material.customMaterialName)) {
-                allCustomMaterials.push(material.customMaterialName);
+              // Track existing sample IDs
+              if (material.sampleId) {
+                allExistingSampleIds.push(material.sampleId);
               }
             }
           });
@@ -1299,8 +1406,258 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                 }
                 return [];
               }}
-              existingMaterials={allCustomMaterials}
               materialUsageStats={materialUsageStats}
+              existingSampleIds={allExistingSampleIds}
+            />
+          </div>
+        );
+      }
+      case "leadAssessment": {
+        // Calculate material usage statistics across all areas
+        const materialUsageStats: Record<string, { count: number; samplesCollected: number }> = {};
+        const allExistingSampleIds: string[] = [];
+        
+        areas.forEach(area => {
+          const areaMaterials = Array.isArray(area.assessments.leadMaterials) ? area.assessments.leadMaterials : [];
+          areaMaterials.forEach((material: any) => {
+            const materialName = material.isCustomMaterial ? material.customMaterialName : material.materialType;
+            if (materialName) {
+              if (!materialUsageStats[materialName]) {
+                materialUsageStats[materialName] = { count: 0, samplesCollected: 0 };
+              }
+              materialUsageStats[materialName].count++;
+              if (material.sampleCollected === 'Yes') {
+                materialUsageStats[materialName].samplesCollected++;
+              }
+              
+              // Track existing sample IDs
+              if (material.sampleId) {
+                allExistingSampleIds.push(material.sampleId);
+              }
+            }
+          });
+        });
+        
+        return (
+          <div className="space-y-2">
+            <LeadAssessmentForm
+              value={value || []}
+              onChange={(materials) => updateAreaAssessment(field.id, materials)}
+              disabled={!isEditable}
+              projectId={projectId}
+              reportId={id}
+              onFileUpload={async (files) => {
+                if (!id) return [];
+                const formData = new FormData();
+                Array.from(files).forEach(file => {
+                  formData.append('files', file);
+                });
+                const response = await reportService.uploadReportFile(id, formData);
+                if (response.success) {
+                  return (response.data as { data: { urls: string[] } }).data.urls;
+                }
+                return [];
+              }}
+              materialUsageStats={materialUsageStats}
+              existingSampleIds={allExistingSampleIds}
+            />
+          </div>
+        );
+      }
+      case "mercuryAssessment": {
+        // Calculate material usage statistics across all areas
+        const materialUsageStats: Record<string, { count: number; samplesCollected: number }> = {};
+        const allExistingSampleIds: string[] = [];
+        
+        areas.forEach(area => {
+          const areaMaterials = Array.isArray(area.assessments.mercuryMaterials) ? area.assessments.mercuryMaterials : [];
+          areaMaterials.forEach((material: any) => {
+            const materialName = material.isCustomMaterial ? material.customMaterialName : material.materialType;
+            if (materialName) {
+              if (!materialUsageStats[materialName]) {
+                materialUsageStats[materialName] = { count: 0, samplesCollected: 0 };
+              }
+              materialUsageStats[materialName].count++;
+              if (material.sampleCollected === 'Yes') {
+                materialUsageStats[materialName].samplesCollected++;
+              }
+              
+              // Track existing sample IDs
+              if (material.sampleId) {
+                allExistingSampleIds.push(material.sampleId);
+              }
+            }
+          });
+        });
+        
+        return (
+          <div className="space-y-2">
+            <MercuryAssessmentForm
+              value={value || []}
+              onChange={(materials) => updateAreaAssessment(field.id, materials)}
+              disabled={!isEditable}
+              projectId={projectId}
+              reportId={id}
+              onFileUpload={async (files) => {
+                if (!id) return [];
+                const formData = new FormData();
+                Array.from(files).forEach(file => {
+                  formData.append('files', file);
+                });
+                const response = await reportService.uploadReportFile(id, formData);
+                if (response.success) {
+                  return (response.data as { data: { urls: string[] } }).data.urls;
+                }
+                return [];
+              }}
+              materialUsageStats={materialUsageStats}
+              existingSampleIds={allExistingSampleIds}
+            />
+          </div>
+        );
+      }
+      case "silicaAssessment": {
+        // Calculate material usage statistics across all areas
+        const materialUsageStats: Record<string, { count: number; samplesCollected: number }> = {};
+        const allExistingSampleIds: string[] = [];
+        
+        areas.forEach(area => {
+          const areaMaterials = Array.isArray(area.assessments.silicaMaterials) ? area.assessments.silicaMaterials : [];
+          areaMaterials.forEach((material: any) => {
+            const materialName = material.isCustomMaterial ? material.customMaterialName : material.materialType;
+            if (materialName) {
+              if (!materialUsageStats[materialName]) {
+                materialUsageStats[materialName] = { count: 0, samplesCollected: 0 };
+              }
+              materialUsageStats[materialName].count++;
+              if (material.sampleCollected === 'Yes') {
+                materialUsageStats[materialName].samplesCollected++;
+              }
+              
+              // Track existing sample IDs
+              if (material.sampleId) {
+                allExistingSampleIds.push(material.sampleId);
+              }
+            }
+          });
+        });
+        
+        return (
+          <div className="space-y-2">
+            <SilicaAssessmentForm
+              value={value || []}
+              onChange={(materials) => updateAreaAssessment(field.id, materials)}
+              disabled={!isEditable}
+              projectId={projectId}
+              reportId={id}
+              onFileUpload={async (files) => {
+                if (!id) return [];
+                const formData = new FormData();
+                Array.from(files).forEach(file => {
+                  formData.append('files', file);
+                });
+                const response = await reportService.uploadReportFile(id, formData);
+                if (response.success) {
+                  return (response.data as { data: { urls: string[] } }).data.urls;
+                }
+                return [];
+              }}
+              materialUsageStats={materialUsageStats}
+              existingSampleIds={allExistingSampleIds}
+            />
+          </div>
+        );
+      }
+      case "mouldAssessment": {
+        // Calculate material usage statistics across all areas
+        const materialUsageStats: Record<string, { count: number; samplesCollected: number }> = {};
+        const allExistingSampleIds: string[] = [];
+        
+        areas.forEach(area => {
+          const areaMaterials = Array.isArray(area.assessments.mouldMaterials) ? area.assessments.mouldMaterials : [];
+          areaMaterials.forEach((material: any) => {
+            const materialName = material.isCustomMaterial ? material.customMaterialName : material.materialType;
+            if (materialName) {
+              if (!materialUsageStats[materialName]) {
+                materialUsageStats[materialName] = { count: 0, samplesCollected: 0 };
+              }
+              materialUsageStats[materialName].count++;
+              if (material.sampleCollected === 'Yes') {
+                materialUsageStats[materialName].samplesCollected++;
+              }
+              
+              // Track existing sample IDs
+              if (material.sampleId) {
+                allExistingSampleIds.push(material.sampleId);
+              }
+            }
+          });
+        });
+        
+        return (
+          <div className="space-y-2">
+            <MouldAssessmentForm
+              value={value || []}
+              onChange={(materials) => updateAreaAssessment(field.id, materials)}
+              disabled={!isEditable}
+              projectId={projectId}
+              reportId={id}
+              onFileUpload={async (files) => {
+                if (!id) return [];
+                const formData = new FormData();
+                Array.from(files).forEach(file => {
+                  formData.append('files', file);
+                });
+                const response = await reportService.uploadReportFile(id, formData);
+                if (response.success) {
+                  return (response.data as { data: { urls: string[] } }).data.urls;
+                }
+                return [];
+              }}
+              materialUsageStats={materialUsageStats}
+              existingSampleIds={allExistingSampleIds}
+            />
+          </div>
+        );
+      }
+      case "pcbAssessment": {
+        // Calculate equipment usage statistics across all areas
+        const equipmentUsageStats: Record<string, { count: number }> = {};
+        
+        areas.forEach(area => {
+          const areaEquipment = Array.isArray(area.assessments.additionalEquipmentType) ? area.assessments.additionalEquipmentType : [];
+          areaEquipment.forEach((equipment: any) => {
+            const equipmentName = equipment.isCustomEquipment ? equipment.customEquipmentName : equipment.equipmentType;
+            if (equipmentName) {
+              if (!equipmentUsageStats[equipmentName]) {
+                equipmentUsageStats[equipmentName] = { count: 0 };
+              }
+              equipmentUsageStats[equipmentName].count++;
+            }
+          });
+        });
+        
+        return (
+          <div className="space-y-2">
+            <PcbAssessmentForm
+              value={value || []}
+              onChange={(equipment) => updateAreaAssessment(field.id, equipment)}
+              disabled={!isEditable}
+              projectId={projectId}
+              reportId={id}
+              onFileUpload={async (files) => {
+                if (!id) return [];
+                const formData = new FormData();
+                Array.from(files).forEach(file => {
+                  formData.append('files', file);
+                });
+                const response = await reportService.uploadReportFile(id, formData);
+                if (response.success) {
+                  return (response.data as { data: { urls: string[] } }).data.urls;
+                }
+                return [];
+              }}
+              equipmentUsageStats={equipmentUsageStats}
             />
           </div>
         );
@@ -1710,94 +2067,217 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
           <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" className="flex items-center space-x-2">
-                <List className="h-4 w-4" />
-                <span>Table of Contents</span>
+                {drawerMode === 'toc' ? <List className="h-4 w-4" /> : <StickyNote className="h-4 w-4" />}
+                <span>{drawerMode === 'toc' ? 'Table of Contents' : 'Notes'}</span>
               </Button>
             </SheetTrigger>
             <SheetContent className="flex flex-col h-full">
               <SheetHeader>
-                <SheetTitle className="text-2xl">Table of Contents</SheetTitle>
-              </SheetHeader>
-              {/* Table of Contents Links */}
-              <div className="mt-4 space-y-2">
-                <Button variant="ghost" className="w-full justify-start text-lg" onClick={() => {
-                  setScrollTarget('client-info-section');
-                  setOpenAccordionItems((prev) => prev.includes("client-info") ? prev : [...prev, "client-info"]);
-                  setIsDrawerOpen(false);
-                }}>
-                  Client Information
-                </Button>
-                <Button variant="ghost" className="w-full justify-start text-lg" onClick={() => {
-                  setScrollTarget('project-info-section');
-                  setOpenAccordionItems((prev) => prev.includes("project-info") ? prev : [...prev, "project-info"]);
-                  setIsDrawerOpen(false);
-                }}>
-                  Project Information
-                </Button>
-                <Button variant="ghost" className="w-full justify-start text-lg" onClick={() => {
-                  setScrollTarget('lab-results-section');
-                  setIsDrawerOpen(false);
-                }}>
-                  Insert Lab Results
-                </Button>
-              </div>
-              <div className="border-t border-gray-300" />
-              <div className="flex-1 overflow-y-auto mt-6 space-y-4 pr-2">
-                {areas.map((area) => {
-                  const areaPhotos = Array.isArray(area.assessments.areaPhoto) ? area.assessments.areaPhoto : [];
-                  const latestPhoto = areaPhotos.length > 0 ? areaPhotos[areaPhotos.length - 1] : null;
-                  
-                  return (
-                  <div key={area.id} className="flex items-center justify-between">
+                <SheetTitle className="text-2xl flex items-center justify-between">
+                  <span>{drawerMode === 'toc' ? 'Table of Contents' : 'Notes'}</span>
+                  <div className="flex space-x-2">
                     <Button
-                      variant={selectedArea?.id === area.id ? "default" : "outline"}
-                      className="flex-1 justify-start text-lg"
-                      onClick={() => {
-                        setSelectedArea(area);
-                        setIsDrawerOpen(false);
-                      }}
+                      variant={drawerMode === 'toc' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setDrawerMode('toc')}
                     >
-                        <div className="flex items-center space-x-3 w-full">
-                          {latestPhoto && (
-                            <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0">
-                              <img
-                                src={latestPhoto}
-                                alt={`${area.name} thumbnail`}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                          <span className="truncate">{area.areaNumber}. {area.name}</span>
-                        </div>
+                      <List className="h-4 w-4 mr-1" />
+                      TOC
                     </Button>
-                    {areas.length > 1 && !readOnly && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="ml-2"
-                        onClick={e => {
-                          e.stopPropagation();
-                          setAreaToDelete(area);
-                        }}
-                      >
-                        <CircleX className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <Button
+                      variant={drawerMode === 'notes' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setDrawerMode('notes')}
+                    >
+                      <StickyNote className="h-4 w-4 mr-1" />
+                      Notes
+                    </Button>
                   </div>
-                  );
-                })}
-              </div>
-              {!readOnly && (
-                <div className="pt-4 pb-2 bg-white sticky bottom-0">
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={openAddAreaDialog}
-                  >
-                    <CirclePlus className="h-4 w-4 mr-2" />
-                    Add New Area
-                  </Button>
-                </div>
+                </SheetTitle>
+              </SheetHeader>
+              
+              {drawerMode === 'toc' ? (
+                <>
+                  {/* Table of Contents Links */}
+                  <div className="mt-4 space-y-2">
+                    <Button variant="ghost" className="w-full justify-start text-lg" onClick={() => {
+                      setScrollTarget('client-info-section');
+                      setOpenAccordionItems((prev) => prev.includes("client-info") ? prev : [...prev, "client-info"]);
+                      setIsDrawerOpen(false);
+                    }}>
+                      Client Information
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-lg" onClick={() => {
+                      setScrollTarget('project-info-section');
+                      setOpenAccordionItems((prev) => prev.includes("project-info") ? prev : [...prev, "project-info"]);
+                      setIsDrawerOpen(false);
+                    }}>
+                      Project Information
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-lg" onClick={() => {
+                      setScrollTarget('lab-results-section');
+                      setIsDrawerOpen(false);
+                    }}>
+                      Insert Lab Results
+                    </Button>
+                  </div>
+                  <div className="border-t border-gray-300" />
+                  <div className="flex-1 overflow-y-auto mt-6 space-y-4 pr-2">
+                    {areas.map((area) => {
+                      const areaPhotos = Array.isArray(area.assessments.areaPhoto) ? area.assessments.areaPhoto : [];
+                      const latestPhoto = areaPhotos.length > 0 ? areaPhotos[areaPhotos.length - 1] : null;
+                      
+                      return (
+                      <div key={area.id} className="flex items-center justify-between">
+                        <Button
+                          variant={selectedArea?.id === area.id ? "default" : "outline"}
+                          className="flex-1 justify-start text-lg"
+                          onClick={() => {
+                            setSelectedArea(area);
+                            setIsDrawerOpen(false);
+                          }}
+                        >
+                            <div className="flex items-center space-x-3 w-full">
+                              {latestPhoto && (
+                                <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0">
+                                  <img
+                                    src={latestPhoto}
+                                    alt={`${area.name} thumbnail`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              )}
+                              <span className="truncate">{area.areaNumber}. {area.name}</span>
+                            </div>
+                        </Button>
+                        {areas.length > 1 && !readOnly && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="ml-2"
+                            onClick={e => {
+                              e.stopPropagation();
+                              setAreaToDelete(area);
+                            }}
+                          >
+                            <CircleX className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                      );
+                    })}
+                  </div>
+                  {!readOnly && (
+                    <div className="pt-4 pb-2 bg-white sticky bottom-0">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={openAddAreaDialog}
+                      >
+                        <CirclePlus className="h-4 w-4 mr-2" />
+                        Add New Area
+                      </Button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* Notes Section */}
+                  <div className="flex-1 flex flex-col mt-4">
+                    {/* Add new note */}
+                    <div className="mb-4">
+                      <div className="flex space-x-2">
+                        <Textarea
+                          value={newNoteContent}
+                          onChange={(e) => setNewNoteContent(e.target.value)}
+                          placeholder="Add a new note..."
+                          className="flex-1"
+                          rows={3}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault();
+                              addNote();
+                            }
+                          }}
+                        />
+                        <Button
+                          onClick={addNote}
+                          disabled={!newNoteContent.trim()}
+                          size="sm"
+                          className="self-end"
+                        >
+                          Add
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {/* Notes list */}
+                    <div className="flex-1 overflow-y-auto space-y-3">
+                      {notes.length === 0 ? (
+                        <div className="text-center text-gray-500 py-8">
+                          <StickyNote className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                          <p>No notes yet. Add your first note above.</p>
+                        </div>
+                      ) : (
+                        notes.map((note) => (
+                          <div key={note.id} className="bg-gray-50 rounded-lg p-3 border">
+                            {note.isEditing ? (
+                              <div className="space-y-2">
+                                <Textarea
+                                  value={note.content}
+                                  onChange={(e) => updateNote(note.id, e.target.value)}
+                                  className="w-full"
+                                  rows={3}
+                                  autoFocus
+                                />
+                                <div className="flex space-x-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => updateNote(note.id, note.content)}
+                                  >
+                                    Save
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => cancelEditingNote(note.id)}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div>
+                                <div className="flex items-start justify-between mb-2">
+                                  <p className="text-sm text-gray-600">
+                                    {new Date(note.timestamp).toLocaleString()}
+                                  </p>
+                                  <div className="flex space-x-1">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => startEditingNote(note.id)}
+                                    >
+                                      <Edit3 className="h-3 w-3" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => deleteNote(note.id)}
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                </div>
+                                <p className="text-sm whitespace-pre-wrap">{note.content}</p>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </>
               )}
             </SheetContent>
           </Sheet>
