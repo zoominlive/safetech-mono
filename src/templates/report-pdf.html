@@ -871,6 +871,7 @@
                 <thead>
                     <tr>
                         <th>Sample No.</th>
+                        <th>Area</th>
                         <th>Material Description</th>
                         <th>Sample Location</th>
                         <th>Asbestos Content</th>
@@ -881,6 +882,7 @@
                     {{#each asbestosSamples}}
                     <tr>
                         <td>{{this.sampleNo}}</td>
+                        <td>{{this.areaName}}</td>
                         <td>{{this.materialDescription}}</td>
                         <td>{{this.sampleLocation}}</td>
                         <td>{{this.asbestosContent}}</td>
@@ -892,27 +894,26 @@
             <p>Materials assessed for asbestos content are summarized in the following table based on the type/use of the material.</p>
             <!-- Table 3: Results of Assessment for Asbestos-Containing Materials -->
             <h2 style="margin-top: 30px;">Table 3: Results of Assessment for Asbestos-Containing Materials</h2>
-            {{#each areaSections}}
-              <h3>Area: {{this.areaName}}</h3>
-              <table>
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>Location/Description</th>
-                    <th>Photo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {{#each this.asbestosAssessment}}
-                  <tr>
-                    <td>{{this.id}}</td>
-                    <td>{{this.locationAndDescription}}</td>
-                    <td>{{#if this.photo}}<img src="{{this.photo}}" alt="Photo" style="max-width: 100px;" />{{/if}}</td>
-                  </tr>
-                  {{/each}}
-                </tbody>
-              </table>
-            {{/each}}
+            <table>
+              <thead>
+                <tr>
+                  <th>Material</th>
+                  <th>Area(s)</th>
+                  <th>Location/Description</th>
+                  <th>Photo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each asbestosAssessmentTable}}
+                <tr>
+                  <td>{{this.material}}</td>
+                  <td>{{{this.areas}}}</td>
+                  <td>{{{this.locationAndDescription}}}</td>
+                  <td>{{#if this.photo}}<img src="{{this.photo}}" alt="Photo" style="max-width: 100px;" />{{/if}}</td>
+                </tr>
+                {{/each}}
+              </tbody>
+            </table>
             <!-- Additional asbestos findings and recommendations can be inserted here as needed -->
         
             <!-- Section 2.1.2 Lead -->

@@ -1042,7 +1042,7 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     // If no findings, set default message
     if (!findings) {
       findings = 'No equipment was observed that is suspected to contain PCBs.';
-      recommendations = 'No action required.';
+      recommendations = 'No Action Required';
     }
 
     return { findings, recommendations };
@@ -1087,7 +1087,7 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     // If no findings, set default message
     if (!findings) {
       findings = 'No equipment was observed that is suspected to contain ozone depleting and/or global warming substances.';
-      recommendations = 'No action required.';
+      recommendations = 'No Action Required';
     }
 
     return { findings, recommendations };
@@ -1104,17 +1104,17 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
 
     // Add PCB recommendations if applicable
     const pcbRecommendations = getPcbFindingsAndRecommendations(pcbData).recommendations;
-    if (pcbRecommendations !== 'No action required.') {
+    if (pcbRecommendations !== 'No Action Required') {
       recommendations.push(`<strong>Polychlorinated Biphenyls:</strong> ${pcbRecommendations}`);
     }
 
     // Add ODS recommendations if applicable
     const odsRecommendations = getOdsFindingsAndRecommendations(odsData).recommendations;
-    if (odsRecommendations !== 'No action required.') {
+    if (odsRecommendations !== 'No Action Required') {
       recommendations.push(`<strong>Ozone Depleting and Global Warming Substances:</strong> ${odsRecommendations}`);
     }
 
-    return recommendations.length > 0 ? recommendations.join('<br><br>') : 'No action required.';
+    return recommendations.length > 0 ? recommendations.join('<br><br>') : 'No Action Required';
   };
   
   // Generate summary table for hazardous materials and designated substances
@@ -1129,50 +1129,51 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
       substance: 'Lead',
       findings: `The following materials are assumed  to be lead-containing: :<ul>${allLeadMaterials.length > 0 ? allLeadMaterials.map(material => `<li>${material}</li>`).join('') : '<li>N/A</li>'}</ul>
       ${suspectLeadMaterials.length > 0 ? 'The following building materials are suspected to be lead-containing:<ul>' + suspectLeadMaterials.map(material => `<li>${material}</li>`).join('') + '</ul>' : ''}`,
-      recommendations: `Disturbance of lead-containing materials must be conducted in accordance with the Ontario Ministry of Labour <i>Lead on Construction Projects</i> guideline (2011) and/or the Environmental Abatement Council of Ontario (EACO) <i>Lead Guideline</i> (October 2014). For additional details, refer to Section 2.1.2 (Results) and Section 3.1.2 (Conclusions and Recommendations). Lead-containing wastes should be recycled if practicable or handled and disposed of according to R.R.O. 1990, Regulation 347, <i>General - Waste Management</i>.`
+      recommendations: `Disturbance of lead-containing materials must be conducted in accordance with the Ontario Ministry of Labour, Immigration, Training and Skills Development (MLITSD) Lead on Construction Projects guideline (2011) and/or the Environmental Abatement Council of Canada (EACC) Lead Guideline (October 2014). For additional details, refer to Section 2.1.2 (Results) and Section 3.1.2 (Conclusions and Recommendations). Lead-containing wastes should be recycled if practicable or handled and disposed of according to R.R.O. 1990, Regulation 347, General-Waste Management.`
     },
     {
       substance: 'Mercury',
       findings: `The following mercury-containing materials were identified in the subject area that may be impacted during the project:<ul>${allMercuryMaterials.length > 0 ? allMercuryMaterials.map(material => `<li>${material}</li>`).join('') : '<li>N/A</li>'}</ul>
       ${suspectMercuryMaterials.length > 0 ? 'The following building materials are suspected to be mercury-containing:<ul>' + suspectMercuryMaterials.map(material => `<li>${material}</li>`).join('') + '</ul>' : ''}`,
-      recommendations: getMercuryRecommendations(areaDetails)
+      // recommendations: getMercuryRecommendations(areaDetails),
+      recommendations: `If required, handle mercury-containing materials with care and keep intact. All waste lamps and vials are recommended to be sent to a recycling facility according to R.R.O. 1990, Regulation 347, General-Waste Management.`,
     },
     {
       substance: 'Silica',
       findings: `The following silica-containing materials were identified in the subject area that may be impacted during the project:<ul>${allSilicaMaterials.length > 0 ? allSilicaMaterials.map(material => `<li>${material}</li>`).join('') : '<li>N/A</li>'}</ul>
       ${suspectSilicaMaterials.length > 0 ? 'The following building materials are suspected to be silica-containing:<ul>' + suspectSilicaMaterials.map(material => `<li>${material}</li>`).join('') + '</ul>' : ''}`,
-      recommendations: `Any work involving the disturbance of silica-containing materials should follow the procedures outlined in the Ontario Ministry of Labour <i>Silica on Construction Projects</i> guideline. For additional information, refer to Section 2.1.4 (Results) and Section 3.1.4 (Conclusions and Recommendations).`
+      recommendations: `Any work involving the disturbance of silica-containing materials should follow the procedures outlined in the Ontario MLITSD “Silica on Construction Projects” guideline. For additional information, refer to Section 2.1.4 (Results) and Section 3.1.4 (Conclusions and Recommendations).`
     },
     {
       substance: 'Other Designated Substances',
       findings: `No other designated substances are expected to be present in any significant quantities or in a form that would represent an exposure concern.`,
       recommendations: `No protective measures or procedures specific to acrylonitrile, arsenic, benzene, coke oven emissions, ethylene oxide, isocyanates, and vinyl chloride are considered necessary.`
     },
+    // Split Other Hazardous Materials into individual rows
     {
-      substance: 'Other Hazardous Materials',
-      findings: `
-      <ul>
-        <li>
-          <b>Urea Formaldehyde Foam Insulation:</b> 
-          No UFFI was identified or is suspected in the subject area.
-        </li>
-        <li>
-          <b>Mould Contamination:</b> 
-          No suspect mould contamination was observed on building finishes in the subject area.
-        </li>
-        <li>
-          <b>Pest Infestation:</b> 
-          ${pestInfestationData.length > 0 ? pestInfestationData.map(item => item.statement).join(' ') : 'No pest infestations were observed in the areas assessed.'}
-        </li>
-        <li>
-          <b>Polychlorinated Biphenyls:</b> 
-          ${getPcbFindingsAndRecommendations(pcbData).findings}</li>
-        <li>
-          <b>Ozone Depleting and Global Warming Substances:</b> 
-          ${getOdsFindingsAndRecommendations(odsData).findings}
-        </li>
-      </ul>`,
-      recommendations: getOtherHazardousMaterialsRecommendations(pestInfestationData, allInfestationTypes, pcbData, odsData)
+      substance: 'Urea Formaldehyde Foam Insulation (UFFI)',
+      findings: 'No UFFI was identified or is suspected in the subject area.',
+      recommendations: 'No Action Required'
+    },
+    {
+      substance: 'Mould Contamination',
+      findings: 'No suspect mould contamination was observed on building finishes in the subject area.',
+      recommendations: 'No Action Required'
+    },
+    {
+      substance: 'Pest Infestation',
+      findings: `${pestInfestationData.length > 0 ? pestInfestationData.map(item => item.statement).join(' ') : 'No pest infestations were observed in the areas assessed.'}`,
+      recommendations: `${pestInfestationData.length > 0 ? 'Precautions should be taken to minimize worker exposure when disturbing/removing ' + allInfestationTypes.join(', ') + '. This includes measures to minimize dust generation and use of appropriate personal protection.' : 'No Action Required'}`
+    },
+    {
+      substance: 'Polychlorinated Biphenyls (PCB)',
+      findings: `${getPcbFindingsAndRecommendations(pcbData).findings}`,
+      recommendations: `${getPcbFindingsAndRecommendations(pcbData).recommendations}`
+    },
+    {
+      substance: 'Ozone Depleting and Global Warming Substances (ODS/GWS)',
+      findings: `${getOdsFindingsAndRecommendations(odsData).findings}`,
+      recommendations: `${getOdsFindingsAndRecommendations(odsData).recommendations}`
     }
   ];
 
@@ -1462,7 +1463,8 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
           return /\d/.test(str);
         }
         asbestosSamples.push({
-          sampleNo: sampleNo,
+          sampleNo: material.sampleNo || `A${index + 1}`,
+          areaName: area.name || 'Area',
           materialDescription: material.materialType || material.customMaterialName || 'Unknown Material',
           sampleLocation: material.location || 'Unknown Location',
           asbestosContent: material.percentageAsbestos && containsNumber(material.percentageAsbestos) ? `${material.percentageAsbestos}%` : material.percentageAsbestos,
@@ -1471,6 +1473,51 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
       });
     }
   });
+
+  // Build consolidated Table 3 (Asbestos-Containing Materials) from asbestosMaterials across all areas
+  // - Single table (not per-area)
+  // - One row per material (aggregated across areas)
+  // - Add an Area(s) column (bullet list)
+  // - Max one photo per row (first available)
+  // - Location/Description aggregated as bullet list of unique entries
+  const asbestosMaterialAggregation = new Map();
+  areaDetails.forEach(area => {
+    if (!Array.isArray(area.asbestosMaterials)) return;
+    const areaName = area.name || 'Unknown Area';
+    area.asbestosMaterials.forEach(material => {
+      const materialName = material.materialType || material.customMaterialName || 'Unknown Material';
+      const location = material.location || '';
+      const description = material.description || '';
+      const combinedLocDesc = [location, description].filter(Boolean).join(' - ');
+      const firstPhoto = Array.isArray(material.photos) && material.photos.length > 0 ? material.photos[0] : '';
+
+      if (!asbestosMaterialAggregation.has(materialName)) {
+        asbestosMaterialAggregation.set(materialName, {
+          material: materialName,
+          areaSet: new Set(),
+          locDescSet: new Set(),
+          photo: firstPhoto || ''
+        });
+      }
+      const entry = asbestosMaterialAggregation.get(materialName);
+      entry.areaSet.add(areaName);
+      if (combinedLocDesc) entry.locDescSet.add(combinedLocDesc);
+      if (!entry.photo && firstPhoto) entry.photo = firstPhoto; // keep first available photo only
+    });
+  });
+
+  const asbestosAssessmentTable = Array.from(asbestosMaterialAggregation.values()).map(entry => ({
+    material: entry.material,
+    // Bullet list of areas
+    areas: entry.areaSet.size > 0
+      ? `<ul>${Array.from(entry.areaSet).map(a => `<li>${a}</li>`).join('')}</ul>`
+      : '',
+    // Bullet list of unique Location - Description combinations
+    locationAndDescription: entry.locDescSet.size > 0
+      ? `<ul>${Array.from(entry.locDescSet).map(v => `<li>${v}</li>`).join('')}</ul>`
+      : '',
+    photo: entry.photo || ''
+  }));
   // Process lead samples for Table 4
   let leadSamples = [];
   areaDetails.forEach(area => {
@@ -1846,6 +1893,8 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     asbestosSamples,
     // Add dynamic Table 3 mapping
     asbestosAssessment,
+    // New consolidated Table 3 mapping from asbestosMaterials
+    asbestosAssessmentTable,
     // Add dynamic Table 4 mapping for lead samples
     leadSamples,
     // Add dynamic Table 4 mapping    
