@@ -8,6 +8,47 @@ export const transformMouldSchema = (originalSchema: SchemaSection[]): SchemaSec
         title: "Assessment for Mould Contamination",
         fields: [
           {
+            id: "moldGrowth",
+            type: "radio",
+            label: "Visible evidence of obvious mould growth on building finishes?",
+            options: ["Yes", "No"],
+            name: "moldGrowth",
+            fields: [
+                {
+                  id: "moldGrowthPhoto",
+                  type: "file",
+                  label: "Add Photo",
+                  name: "moldGrowthPhoto",
+                  showWhen: "moldGrowth=Yes"
+                }
+            ]
+          },
+          {
+            id: "waterStaining",
+            type: "radio",
+            showWhen: "moldGrowth=Yes",
+            label: "Visible evidence of any significant water staining or discolouration to building finishes?",
+            options: ["Yes", "No"],
+            name: "waterStaining",
+            fields: [
+              {
+                id: "waterStrainingPhoto",
+                type: "file",
+                label: "Add Photo",
+                name: "waterStrainingPhoto",
+                showWhen: "waterStaining=Yes"
+              }
+            ]
+          },
+          {
+            id: "moldImpact",
+            type: "radio",
+            label: "Will the mould be impacted/removed/is within scope?",
+            options: ["Yes", "No"],
+            name: "moldImpact",
+            showWhen: "moldGrowth=Yes"
+          },
+          {
             id: "mouldMaterials",
             type: "mouldAssessment",
             label: "Mould-Containing Materials",
