@@ -899,7 +899,8 @@
                 <tr>
                   <th>Material</th>
                   <th>Area(s)</th>
-                  <th>Location/Description</th>
+                  <th>Location(s)</th>
+                  <th>Description</th>
                   <th>Photo</th>
                 </tr>
               </thead>
@@ -908,7 +909,8 @@
                 <tr>
                   <td>{{this.material}}</td>
                   <td>{{{this.areas}}}</td>
-                  <td>{{{this.locationAndDescription}}}</td>
+                  <td>{{{this.locations}}}</td>
+                  <td>{{{this.descriptions}}}</td>
                   <td>{{#if this.photo}}<img src="{{this.photo}}" alt="Photo" style="max-width: 100px;" />{{/if}}</td>
                 </tr>
                 {{/each}}
@@ -948,72 +950,66 @@
             </table>
             <p>LCP: Lead-Containing Paint (&gt;0.1% Lead Content); LLLP: Low-Level Lead Paint (0.1% Lead Content); Non-LCP: Not Lead-containing Paint</p>
             <p><strong><em>Suspect lead-containing materials</em></strong> observed in the subject building included the following:</p>
-            {{#each areaSections}}
-            <h3>Area: {{this.areaName}}</h3>
-            {{#if this.suspectLeadMaterials.length}}
-                <ul>
-                {{#each this.suspectLeadMaterials}}
+            {{#if suspectLeadMaterialList.length}}
+            <ul>
+              {{#each suspectLeadMaterialList}}
                 <li>{{this}}</li>
-                {{/each}}
-                </ul>
+              {{/each}}
+            </ul>
+            {{else}}
+            <p>None identified.</p>
             {{/if}}
-            {{/each}}
             <h2 style="margin-top: 30px;">Table 5: Results of Assessment for Lead-Containing Materials</h2>
-            {{#each areaSections}}
-              <h3>Area: {{this.areaName}}</h3>
-              <table>
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>Location/Description</th>
-                    <th>Photo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {{#each this.leadAssessment}}
-                  <tr>
-                    <td>{{this.id}}</td>
-                    <td>{{this.locationAndDescription}}</td>
-                    <td>{{#if this.photo}}<img src="{{this.photo}}" alt="Photo" style="max-width: 100px;" />{{/if}}</td>
-                  </tr>
-                  {{/each}}
-                </tbody>
-              </table>
-            {{/each}}
+            <table>
+              <thead>
+                <tr>
+                  <th>Material</th>
+                  <th>Area(s)</th>
+                  <th>Location(s)</th>
+                  <th>Description</th>
+                  <th>Photo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each leadAssessmentTable}}
+                <tr>
+                  <td>{{this.material}}</td>
+                  <td>{{this.areas}}</td>
+                  <td>{{{this.locations}}}</td>
+                  <td>{{{this.descriptions}}}</td>
+                  <td>{{#if this.photo}}<img src="{{this.photo}}" alt="Photo" style="max-width: 100px;" />{{/if}}</td>
+                </tr>
+                {{/each}}
+              </tbody>
+            </table>
             <!-- End Section 2.1.2 Lead -->
 
             <!-- Section 2.1.3 Mercury -->
             <div style="font-weight: bold;" id="mercury">2.1.3 Mercury</div>
-            <p>Mercury is present in the subject building in the form of:</p>
-            {{#each areaSections}}
-              <h3>Area: {{this.areaName}}</h3>
-              {{#if this.mercuryPresent}}
-                <ul>
-                  {{#each this.mercurySourcesMaterials}}
-                  <li>{{this}}</li>
-                  {{/each}}
-                </ul>
-              {{else}}
-                <p>No sources of mercury were observed in this area.</p>
-              {{/if}}
-            {{/each}}
+            {{#if mercuryMaterialList.length}}
+            <p>Mercury is present in the project areas in the form of:</p>
+            <ul>
+              {{#each mercuryMaterialList}}
+              <li>{{this}}</li>
+              {{/each}}
+            </ul>
+            {{else}}
+            <p>No sources of mercury were observed in the project areas.</p>
+            {{/if}}
             <!-- End Section 2.1.3 Mercury -->
 
             <!-- Section 2.1.4 Silica -->
             <div style="font-weight: bold;" id="silica">2.1.4 Silica</div>
-            {{#each areaSections}}
-            <h3>Area: {{this.areaName}}</h3>
-            {{#if silicaObserved}}
+            {{#if silicaMaterialList.length}}
             <p>A number of building materials were identified in the subject building that are suspected to contain crystalline silica. This includes the following materials:</p>
             <ul>
-                {{#each silicaMaterials}}
-                <li>{{this}}</li>
-                {{/each}}
+              {{#each silicaMaterialList}}
+              <li>{{this}}</li>
+              {{/each}}
             </ul>
             {{else}}
-            <p>No silica-containing materials were identified in the project areas.</p>
+            <p>No sources of silica were observed in the project areas.</p>
             {{/if}}
-            {{/each}}
             <div style="font-weight: bold;" id="other-designated-substances">2.1.5 Other Designated Substances</div>
             <p>Acrylonitrile, arsenic, benzene, coke oven emissions, ethylene oxide, isocyanates, and vinyl chloride were not included in the assessment as these substances are not expected to be a significant component of building materials or present in a form that would represent an exposure concern. Additionally, no specific information regarding their use was provided to us.</p>
             <!-- End Section 2.1 Designated Substances -->
@@ -1025,124 +1021,117 @@
         
             <div style="font-weight: bold;" id="biological-hazards">2.2.2 Biological Hazards</div>
             <div style="font-weight: bold;">2.2.2.1 Mould Contamination</div>
-            {{#each areaSections}}
-              <h3>Area: {{this.areaName}}</h3>
-              {{#if this.mouldAssessment.length}}
-              <h2 style="margin-top: 30px;">Table 6: Results of Assessment for Mould Contamination</h2>
-              <table>
-                  <thead>
-                    <tr>
-                      <th></th>
-                      <th>Location/Description</th>
-                      <th>Photo</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {{#each this.mouldAssessment}}
-                    <tr>
-                      <td>{{this.id}}</td>
-                      <td>{{this.locationAndDescription}}</td>
-                      <td>{{#if this.photo}}<img src="{{this.photo}}" alt="Photo" style="max-width: 100px;" />{{/if}}</td>
-                    </tr>
-                    {{/each}}
-                  </tbody>
-                </table>
-              {{else}}
-                <p>There was no visible evidence of obvious mould growth on building finishes in the subject building at the time of the assessment. In addition, there was no visible evidence of any significant water staining or discolouration to building finishes in the subject building that would suggest the potential for hidden mould growth behind these finishes.</p>
-              {{/if}}
-            {{/each}}
+            {{#if isMouldGrowthObserved}}
+            <p>Findings from our assessment for the presence of mould growth in subject areas of the building are provided in the following table.</p>
+            {{/if}}
+            <h2 style="margin-top: 30px;">Table 6: Results of Assessment for Mould Contamination</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Material</th>
+                  <th>Area(s)</th>
+                  <th>Location(s)</th>
+                  <th>Description</th>
+                  <th>Photo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#if mouldAssessmentTable.length}}
+                  {{#each mouldAssessmentTable}}
+                  <tr>
+                    <td>{{this.material}}</td>
+                    <td>{{this.areas}}</td>
+                    <td>{{{this.locations}}}</td>
+                    <td>{{{this.descriptions}}}</td>
+                    <td>{{#if this.photo}}<img src="{{this.photo}}" alt="Photo" style="max-width: 100px;" />{{/if}}</td>
+                  </tr>
+                  {{/each}}
+                {{else}}
+                  <tr>
+                    <td colspan="5">
+                      There was no visible evidence of obvious mould growth on building finishes in the subject building at the time of the assessment. In addition, there was no visible evidence of any significant water staining or discolouration to building finishes in the subject building that would suggest the potential for hidden mould growth behind these finishes.
+                    </td>
+                  </tr>
+                {{/if}}
+              </tbody>
+            </table>
             <!-- End Section 2.1.4 Silica -->
 
             <!-- Section 2.1.5 Other Designated Substances -->
             <div style="font-weight: bold;">2.2.2.2 Pest Infestation</div>
-            {{#each areaSections}}
-              <h3>Area: {{this.areaName}}</h3>
-              {{#if this.pestInfestationObserved}}
-                <p>Evidence of {{this.infestationType}} was observed{{#if this.droppingsLocation}} at {{this.droppingsLocation}}{{/if}}.</p>
-                {{#if this.droppingsObserved}}
-                  <p>Droppings were observed{{#if this.droppingsLocation}} at {{this.droppingsLocation}}{{/if}}.</p>
-                {{/if}}
-              {{else}}
-                <p>There was no visible evidence of a pest infestation in this area.</p>
-              {{/if}}
-            {{/each}}
+            {{#if pestInfestationData.length}}
+              <ul>
+                {{#each pestInfestationData}}
+                <li>{{this.statement}}</li>
+                {{/each}}
+              </ul>
+            {{else}}
+              <p>There was no visible evidence of a pest infestation observed in the surveyed areas of the subject building.</p>
+            {{/if}}
         
             <div style="font-weight: bold;" id="environmental-hazards">2.2.3 Environmental Hazards</div>
             <div style="font-weight: bold;">2.2.3.1 Polychlorinated Biphenyls (PCBs)</div>
-            {{#each areaSections}}
-              <h3>Area: {{this.areaName}}</h3>
-              {{#if this.pcbObserved}}
-              <p>The assessment for potential PCB-containing electrical equipment is summarized in the following table. Equipment where the presence/absence of PCBs could be verified are indicated as such in the table. Equipment where the absence of PCBs could not be verified based on the information available are assumed to contain PCBs.</p>
-              <h2 style="margin-top: 30px;">Table 7: Results of Assessment for PCB-Containing Electrical Equipment</h2>
+            {{#if pcbData.pcbObserved}}
+            <p>The assessment for potential PCB-containing electrical equipment is summarized in the following table. Equipment where the presence/absence of PCBs could be verified are indicated as such in the table. Equipment where the absence of PCBs could not be verified based on the information available are assumed to contain PCBs.</p>
+            <h2 style="margin-top: 30px;">Table 7: Results of Assessment for PCB-Containing Electrical Equipment</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Location</th>
+                  <th>Electrical Equipment</th>
+                  <th>Manufacturer</th>
+                  <th>PCB Identification Information</th>
+                  <th>PCB Content</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each pcbData.pcbElectricalEquipmentTable}}
+                <tr>
+                  <td>{{this.location}}</td>
+                  <td>{{this.electricalEquipment}}</td>
+                  <td>{{this.manufacturer}}</td>
+                  <td>{{this.pcbIdInfo}}</td>
+                  <td>{{this.pcbContent}}</td>
+                </tr>
+                {{/each}}
+              </tbody>
+            </table>
+            {{else}}
+            <p>No sources of polychlorinated biphenyls (PCBs) were observed in the surveyed areas of the subject building.</p>
+            {{/if}}
+        
+            <div style="font-weight: bold;">2.2.3.2 Ozone Depleting and Global Warming Substances</div>
+            {{#if odsData.odsObserved}}
+              <p>
+                Equipment identified in the subject building that are suspected to contain ozone
+                depleting substances (ODS) and/or global warming substances (GWS) are summarized
+                in the following table.
+              </p>
               <table>
                 <thead>
                   <tr>
                     <th>Location</th>
-                    <th>Electrical Equipment</th>
-                    <th>Manufacturer</th>
-                    <th>PCB Identification Information</th>
-                    <th>PCB Content</th>
+                    <th>Equipment Manufacturer and Type</th>
+                    <th>Type and Quantity of Refrigerant or Fire Extinguishing Agent</th>
+                    <th>ODS/GWS Classification</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {{#each this.pcbAssessment}}
+                  {{#each odsData.odsGwsAssessmentTable}}
                   <tr>
                     <td>{{this.location}}</td>
-                    <td>{{this.equipment}}</td>
-                    <td>{{this.manufacturer}}</td>
-                    <td>{{this.pcbInfo}}</td>
-                    <td>{{this.pcbContent}}</td>
+                    <td>{{this.equipmentType}}</td>
+                    <td>{{this.refrigerantType}}</td>
+                    <td>{{this.classification}}</td>
                   </tr>
                   {{/each}}
                 </tbody>
               </table>
-              {{#each pcbSummaryParagraphs}}
-              <p>{{this}}</p>
-              {{/each}}
-              {{else}}
-              <p>No sources of polychlorinated biphenyls (PCBs) were observed in this area.</p>
-              {{/if}}
-            {{/each}}
-        
-            <div style="font-weight: bold;">2.2.3.2 Ozone Depleting and Global Warming Substances</div>
-            {{#each areaSections}}
-              <h3>Area: {{this.areaName}}</h3>
-              {{#if this.odsObserved}}
-                <p>
-                  Equipment identified in the subject building that are suspected to contain ozone
-                  depleting substances (ODS) and/or global warming substances (GWS) are summarized
-                  in the following table.
-                </p>
-                {{#each this.odsSummaryParagraphs}}
-                  <p>{{this}}</p>
-                {{/each}}
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Location</th>
-                      <th>Equipment Manufacturer and Type</th>
-                      <th>Type and Quantity of Refrigerant or Fire Extinguishing Agent</th>
-                      <th>ODS/GWS Classification</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {{#each this.odsAssessment}}
-                    <tr>
-                      <td>{{this.location}}</td>
-                      <td>{{this.equipmentType}}</td>
-                      <td>{{this.refrigerantType}}</td>
-                      <td>{{this.classification}}</td>
-                    </tr>
-                    {{/each}}
-                  </tbody>
-                </table>
-              {{else}}
-                <p>
-                  No fixed equipment suspected to contain ODS/GWS was observed in the subject
-                  building.
-                </p>
-              {{/if}}
-            {{/each}}
+            {{else}}
+              <p>
+                No sources of ODS/GWS were obsereved in the surveyred areas of the subject building.
+              </p>
+            {{/if}}
             <!-- End Section 2.2 Other Hazardous Materials -->
         </div>
     </div>    

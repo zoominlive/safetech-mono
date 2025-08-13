@@ -1488,36 +1488,47 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
       const materialName = material.materialType || material.customMaterialName || 'Unknown Material';
       const location = material.location || '';
       const description = material.description || '';
-      const combinedLocDesc = [location, description].filter(Boolean).join(' - ');
       const firstPhoto = Array.isArray(material.photos) && material.photos.length > 0 ? material.photos[0] : '';
 
       if (!asbestosMaterialAggregation.has(materialName)) {
         asbestosMaterialAggregation.set(materialName, {
           material: materialName,
           areaSet: new Set(),
-          locDescSet: new Set(),
+          locationSet: new Set(),
+          descriptionSet: new Set(),
           photo: firstPhoto || ''
         });
       }
       const entry = asbestosMaterialAggregation.get(materialName);
       entry.areaSet.add(areaName);
-      if (combinedLocDesc) entry.locDescSet.add(combinedLocDesc);
+      if (location) entry.locationSet.add(location);
+      if (description) entry.descriptionSet.add(description);
       if (!entry.photo && firstPhoto) entry.photo = firstPhoto; // keep first available photo only
     });
   });
 
-  const asbestosAssessmentTable = Array.from(asbestosMaterialAggregation.values()).map(entry => ({
-    material: entry.material,
-    // Bullet list of areas
-    areas: entry.areaSet.size > 0
-      ? `<ul>${Array.from(entry.areaSet).map(a => `<li>${a}</li>`).join('')}</ul>`
-      : '',
-    // Bullet list of unique Location - Description combinations
-    locationAndDescription: entry.locDescSet.size > 0
-      ? `<ul>${Array.from(entry.locDescSet).map(v => `<li>${v}</li>`).join('')}</ul>`
-      : '',
-    photo: entry.photo || ''
-  }));
+  const asbestosAssessmentTable = Array.from(asbestosMaterialAggregation.values()).map(entry => {
+    let areasDisplay = '';
+    if (entry.areaSet.size === 1) {
+      areasDisplay = Array.from(entry.areaSet)[0];
+    } else if (entry.areaSet.size > 1) {
+      areasDisplay = 'See Appendix';
+    }
+
+    return {
+      material: entry.material,
+      areas: areasDisplay,
+      // Bullet list of unique Locations
+      locations: entry.locationSet.size > 0
+        ? `<ul>${Array.from(entry.locationSet).map(v => `<li>${v}</li>`).join('')}</ul>`
+        : '',
+      // Bullet list of unique Descriptions
+      descriptions: entry.descriptionSet.size > 0
+        ? `<ul>${Array.from(entry.descriptionSet).map(v => `<li>${v}</li>`).join('')}</ul>`
+        : '',
+      photo: entry.photo || ''
+    };
+  });
   // Process lead samples for Table 4
   let leadSamples = [];
   areaDetails.forEach(area => {
@@ -1542,6 +1553,155 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
         });
       });
     }
+  });
+
+  // Consolidated suspect lead-containing materials list (unique by materialType, no areas)
+  const suspectLeadMaterialListSet = new Set();
+  areaDetails.forEach(area => {
+    if (!Array.isArray(area.leadMaterials)) return;
+    area.leadMaterials.forEach(material => {
+      if (material && material.suspectedLead === 'Yes' && material.materialType) {
+        suspectLeadMaterialListSet.add(material.materialType);
+      }
+    });
+  });
+  const suspectLeadMaterialList = Array.from(suspectLeadMaterialListSet);
+
+  // Consolidated mercury materials (unique by material name, no areas)
+  const mercuryMaterialListSet = new Set();
+  areaDetails.forEach(area => {
+    if (!Array.isArray(area.mercuryMaterials)) return;
+    area.mercuryMaterials.forEach(material => {
+      const name = material?.materialType || material?.customMaterialName;
+      if (name && name.trim() !== '') {
+        mercuryMaterialListSet.add(name);
+      }
+    });
+  });
+  const mercuryMaterialList = Array.from(mercuryMaterialListSet);
+
+  // Consolidated silica materials (unique by material name, no areas)
+  const silicaMaterialListSet = new Set();
+  areaDetails.forEach(area => {
+    if (!Array.isArray(area.silicaMaterials)) return;
+    area.silicaMaterials.forEach(material => {
+      const name = material?.materialType || material?.customMaterialName;
+      if (name && name.trim() !== '') {
+        silicaMaterialListSet.add(name);
+      }
+    });
+  });
+  const silicaMaterialList = Array.from(silicaMaterialListSet);
+
+  // Build consolidated Table 6 (Mould Contamination) from mouldMaterials across all areas
+  // - Single table (not per-area)
+  // - One row per material (aggregated across areas)
+  // - Area(s): single area name if one, else "See Appendix"
+  // - Separate Location(s) and Description (bullet lists)
+  // - Max one photo per row (first available)
+  const mouldMaterialAggregation = new Map();
+  areaDetails.forEach(area => {
+    if (!Array.isArray(area.mouldMaterials)) return;
+    const areaName = area.name || 'Unknown Area';
+    area.mouldMaterials.forEach(material => {
+      const materialName = material.materialType || material.customMaterialName || 'Unknown Material';
+      const location = material.location || '';
+      const description = material.description || '';
+      const firstPhoto = Array.isArray(material.photos) && material.photos.length > 0 ? material.photos[0] : '';
+
+      if (!mouldMaterialAggregation.has(materialName)) {
+        mouldMaterialAggregation.set(materialName, {
+          material: materialName,
+          areaSet: new Set(),
+          locationSet: new Set(),
+          descriptionSet: new Set(),
+          photo: firstPhoto || ''
+        });
+      }
+      const entry = mouldMaterialAggregation.get(materialName);
+      entry.areaSet.add(areaName);
+      if (location) entry.locationSet.add(location);
+      if (description) entry.descriptionSet.add(description);
+      if (!entry.photo && firstPhoto) entry.photo = firstPhoto; // keep first available
+    });
+  });
+
+  const mouldAssessmentTable = Array.from(mouldMaterialAggregation.values()).map(entry => {
+    let areasDisplay = '';
+    if (entry.areaSet.size === 1) {
+      areasDisplay = Array.from(entry.areaSet)[0];
+    } else if (entry.areaSet.size > 1) {
+      areasDisplay = 'See Appendix';
+    }
+
+    return {
+      material: entry.material,
+      areas: areasDisplay,
+      locations: entry.locationSet.size > 0
+        ? `<ul>${Array.from(entry.locationSet).map(v => `<li>${v}</li>`).join('')}</ul>`
+        : '',
+      descriptions: entry.descriptionSet.size > 0
+        ? `<ul>${Array.from(entry.descriptionSet).map(v => `<li>${v}</li>`).join('')}</ul>`
+        : '',
+      photo: entry.photo || ''
+    };
+  });
+
+  // Flag if any area reported mould growth explicitly
+  const isMouldGrowthObserved = areaDetails.some(area => area.moldGrowth === 'Yes');
+
+  // Build consolidated Table 5 (Lead-Containing Materials) from leadMaterials across all areas
+  // - Single table (not per-area)
+  // - One row per material (aggregated across areas)
+  // - Area(s) column: single area name if one, else "See Appendix"
+  // - Separate columns for Location(s) and Description (bullet lists)
+  // - Max one photo per row (first available)
+  const leadMaterialAggregation = new Map();
+  areaDetails.forEach(area => {
+    if (!Array.isArray(area.leadMaterials)) return;
+    const areaName = area.name || 'Unknown Area';
+    area.leadMaterials.forEach(material => {
+      const materialName = material.materialType || material.customMaterialName || 'Unknown Material';
+      const location = material.location || '';
+      const description = material.description || '';
+      const firstPhoto = Array.isArray(material.photos) && material.photos.length > 0 ? material.photos[0] : '';
+
+      if (!leadMaterialAggregation.has(materialName)) {
+        leadMaterialAggregation.set(materialName, {
+          material: materialName,
+          areaSet: new Set(),
+          locationSet: new Set(),
+          descriptionSet: new Set(),
+          photo: firstPhoto || ''
+        });
+      }
+      const entry = leadMaterialAggregation.get(materialName);
+      entry.areaSet.add(areaName);
+      if (location) entry.locationSet.add(location);
+      if (description) entry.descriptionSet.add(description);
+      if (!entry.photo && firstPhoto) entry.photo = firstPhoto;
+    });
+  });
+
+  const leadAssessmentTable = Array.from(leadMaterialAggregation.values()).map(entry => {
+    let areasDisplay = '';
+    if (entry.areaSet.size === 1) {
+      areasDisplay = Array.from(entry.areaSet)[0];
+    } else if (entry.areaSet.size > 1) {
+      areasDisplay = 'See Appendix';
+    }
+
+    return {
+      material: entry.material,
+      areas: areasDisplay,
+      locations: entry.locationSet.size > 0
+        ? `<ul>${Array.from(entry.locationSet).map(v => `<li>${v}</li>`).join('')}</ul>`
+        : '',
+      descriptions: entry.descriptionSet.size > 0
+        ? `<ul>${Array.from(entry.descriptionSet).map(v => `<li>${v}</li>`).join('')}</ul>`
+        : '',
+      photo: entry.photo || ''
+    };
   });
 
   // Area-specific sectioned output for clarity
@@ -1899,6 +2059,10 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     leadSamples,
     // Add dynamic Table 4 mapping    
     leadAssessment,
+    // New consolidated Table 5 mapping from leadMaterials
+    leadAssessmentTable,
+    // Consolidated suspect lead-containing materials (unique, by materialType)
+    suspectLeadMaterialList,
     // Add dynamic Table 5 mapping
     pcbAssessment,
     // Area-specific sectioned output
@@ -1920,14 +2084,23 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     mercuryFound: mercuryContainingMaterials.length > 0 || suspectMercuryMaterials.length > 0,
     mercuryContainingMaterials: mercuryContainingMaterials,
     suspectMercuryMaterials: suspectMercuryMaterials,
+    mercuryMaterialList,
 
     // Silica data for template
     silicaFound: silicaContainingMaterials.length > 0 || suspectSilicaMaterials.length > 0,
     silicaContainingMaterials: silicaContainingMaterials,
     suspectSilicaMaterials: suspectSilicaMaterials,
+    silicaMaterialList,
+
+    // Consolidated Table 6 mapping
+    mouldAssessmentTable,
+    isMouldGrowthObserved,
 
     // Pest Infestation data for template
     pestInfestationData: pestInfestationData,
+    // Consolidated environmental hazard data
+    pcbData,
+    odsData,
   };
 };
 
