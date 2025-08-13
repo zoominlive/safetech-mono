@@ -2291,6 +2291,13 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
           </Button>
           <Button
             variant="outline"
+            onClick={() => navigate(`/project-reports/${id}/materials`)}
+            disabled={isSaving}
+          >
+            Materials
+          </Button>
+          <Button
+            variant="outline"
             onClick={handleCancel}
             disabled={isSaving}
           >
