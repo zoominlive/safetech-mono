@@ -763,6 +763,7 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
       });
     }
   });
+  const isPestInfestationObserved = areaDetails.some(area => area.pestInfestationObserved === 'Yes');
   console.log("suspectAsbestosMaterials=>", suspectAsbestosMaterials);
   
   // Collect all lead materials from all areas with area names
@@ -2098,6 +2099,7 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
 
     // Pest Infestation data for template
     pestInfestationData: pestInfestationData,
+    isPestInfestationObserved,
     // Consolidated environmental hazard data
     pcbData,
     odsData,
