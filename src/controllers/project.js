@@ -29,6 +29,7 @@ exports.createProject = async (req, res, next) => {
       site_name,
       site_contact_name,
       site_contact_title,
+      project_type,
       report_template_id,
       site_email,
       location_id,
@@ -53,6 +54,7 @@ exports.createProject = async (req, res, next) => {
         site_name: site_name,
         site_contact_name,
         site_contact_title,
+        project_type,
         report_template_id,
         status: "New", // Always set to 'New' on creation
         site_email: site_email,
@@ -216,6 +218,7 @@ exports.updateProject = async (req, res, next) => {
       site_name,
       site_contact_name,
       site_contact_title,
+      project_type,
       report_template_id,
       site_email,
       location_id,
@@ -251,6 +254,7 @@ exports.updateProject = async (req, res, next) => {
           site_name: site_name,
           site_contact_name,
           site_contact_title,
+          project_type,
           report_template_id,
           // status: status, // Do not allow direct status update
           site_email: site_email,

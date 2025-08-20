@@ -1096,6 +1096,22 @@
                 {{/each}}
               </tbody>
             </table>
+
+            {{#if fluorescentFixturesYes}}
+            <p>Fluorescent light fixtures were identified in the project areas. These were noted to be {{fixtureType}}-lamp fixtures. Most of the lamps were noted to be {{fixtureSize}}.</p>
+            {{/if}}
+
+            {{#if hidLightsPresentYes}}
+            <p>A total of approximately {{hidLightsCount}} HID lights were also present throughout the project areas.  These lights could not be accessed for further evaluation to determine the type(s) of ballasts present and therefore the ballasts within these lights are assumed to contain PCBs.</p>
+            {{/if}}
+
+            {{#if liquidFilledTransformerYes}}
+            <p>liquid-filled transformers were identified in {{transformerLeakageLocation}} of the project areas that was identified to be PCB-containing.  No significant staining or discolouration of the concrete floor was noted beneath the transformer that may be suggestive of previous leakage. The transformer itself was observed to be in good condition and did not exhibit any signs of leakage.</p>
+            {{/if}}
+
+            {{#if wallMountedCapacitorYes}}
+            <p>wall-mounted capacitors were identified in the project areas. Based on the nameplate information obtained, {{capacitorVerifiedNotPcbText}} of these capacitors was verified to not contain PCBs while the second capacitor is assumed to be PCB-containing.  No suspect leakage was observed on the exterior casing of these capacitors.</p>
+            {{/if}}
             {{else}}
             <p>No sources of polychlorinated biphenyls (PCBs) were observed in the surveyed areas of the subject building.</p>
             {{/if}}

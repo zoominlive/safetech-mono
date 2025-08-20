@@ -763,6 +763,47 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
       });
     }
   });
+  
+  // Aggregated Environmental Hazards (PCBs) helpers for conditional text in template
+  let fluorescentFixturesYes = false;
+  let aggregatedFixtureType = '';
+  let aggregatedFixtureSize = '';
+  let hidLightsPresentYes = false;
+  let aggregatedHidLightsCount = 0;
+  let liquidFilledTransformerYes = false;
+  let transformerLeakageLocation = '';
+  let wallMountedCapacitorYes = false;
+  // Defaults for wording when detailed counts are not captured
+  let capacitorVerifiedNotPcbText = 'one (1)';
+
+  areaDetails.forEach(area => {
+    if (area.fluorescentFixtures === 'Yes') {
+      fluorescentFixturesYes = true;
+      if (!aggregatedFixtureType && area.fixtureType) aggregatedFixtureType = area.fixtureType;
+      if (!aggregatedFixtureSize && area.fixtureSize) aggregatedFixtureSize = area.fixtureSize;
+    }
+    if (area.hidLightsPresent === 'Yes') {
+      hidLightsPresentYes = true;
+      const count = parseInt(area.hidLightsCount, 10);
+      if (!isNaN(count)) aggregatedHidLightsCount += count;
+    }
+    if (area.liquidFilledTransformer === 'Yes') {
+      liquidFilledTransformerYes = true;
+      if (!transformerLeakageLocation && area.transformerLocation) {
+        transformerLeakageLocation = area.transformerLocation;
+      }
+    }
+    if (area.wallMountedCapacitor === 'Yes') {
+      wallMountedCapacitorYes = true;
+      if (area.capacitorVerifiedNotPcbText && typeof area.capacitorVerifiedNotPcbText === 'string') {
+        capacitorVerifiedNotPcbText = area.capacitorVerifiedNotPcbText;
+      }
+    }
+  });
+  if (!aggregatedFixtureType) aggregatedFixtureType = 'N/A';
+  if (!aggregatedFixtureSize) aggregatedFixtureSize = 'N/A';
+  if (!transformerLeakageLocation) transformerLeakageLocation = 'the project areas';
+  if (hidLightsPresentYes && aggregatedHidLightsCount === 0) aggregatedHidLightsCount = 'N/A';
   const isPestInfestationObserved = areaDetails.some(area => area.pestInfestationObserved === 'Yes');
   console.log("suspectAsbestosMaterials=>", suspectAsbestosMaterials);
   
@@ -1997,6 +2038,11 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     });
   }
   
+  // Project type flags for Section 3.1.1 conditional statements
+  const normalizedProjectType = (project?.project_type || '').toString().trim().toLowerCase();
+  const isRenovation = normalizedProjectType === 'renovations or building demolition';
+  const isDemolition = normalizedProjectType === 'demolition';
+
   return {
     // Basic report information
     reportName: report.name || 'Comprehensive Designated Substances and Hazardous Materials Assessment Report',
@@ -2103,6 +2149,20 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     // Consolidated environmental hazard data
     pcbData,
     odsData,
+    // Aggregated PCB flags and values for conditional narrative
+    fluorescentFixturesYes,
+    fixtureType: aggregatedFixtureType,
+    fixtureSize: aggregatedFixtureSize,
+    hidLightsPresentYes,
+    hidLightsCount: aggregatedHidLightsCount,
+    liquidFilledTransformerYes,
+    transformerLeakageLocation,
+    wallMountedCapacitorYes,
+    capacitorVerifiedNotPcbText,
+
+    // Section 3.1.1 conditional flags derived from project_type
+    isRenovation,
+    isDemolition,
   };
 };
 
