@@ -124,6 +124,7 @@ const ProjectForm: React.FC = () => {
     start_date: "",
     end_date: "",
     report_id: "",
+    project_type: "",
   });
 
   // Form validation schema
@@ -324,6 +325,7 @@ const ProjectForm: React.FC = () => {
               start_date: projectDetails.start_date,
               end_date: projectDetails.end_date,
               report_id: projectDetails.reports[0].id,
+              project_type: projectDetails.project_type || "",
             });
           }
         }
@@ -489,6 +491,29 @@ const ProjectForm: React.FC = () => {
                   <div className="min-h-[20px] relative">
                     {errors.name && touched.name && (
                       <div className="text-red-500 text-sm absolute left-0 top-0">{errors.name}</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid w-full items-center gap-3 relative">
+                  <Label htmlFor="project_type">Type Of Project</Label>
+                  <Select
+                    value={values.project_type || ""}
+                    onValueChange={(value) => setFieldValue("project_type", value)}
+                  >
+                    <SelectTrigger className="w-full py-7.5">
+                      <SelectValue placeholder="Select project type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="Renovations or Building Demolition">Renovations or Building Demolition</SelectItem>
+                        <SelectItem value="Demolition">Demolition</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <div className="min-h-[20px] relative">
+                    {errors.project_type && touched.project_type && (
+                      <div className="text-red-500 text-sm absolute left-0 top-0">{errors.project_type}</div>
                     )}
                   </div>
                 </div>

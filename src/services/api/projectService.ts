@@ -36,6 +36,7 @@ interface ProjectsResponse {
       customer_id: string,
       start_date: string,
       end_date: string,
+      project_type?: string,
       created_at: string,
       updated_at: string,
       deleted_at: string,
@@ -84,6 +85,7 @@ export interface ProjectData {
   end_date: string;
   project_number?: string;
   report_id?: string;
+  project_type?: string;
 }
 
 export interface ProjectResponse {
@@ -145,6 +147,7 @@ export interface ProjectResponse {
     customer_id: string,
     start_date: string,
     end_date: string,
+    project_type?: string,
     created_at: string,
     updated_at: string,
     deleted_at: string | null,

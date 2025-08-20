@@ -16,9 +16,10 @@ export const transformPcbSchema = (originalSchema: SchemaSection[]): SchemaSecti
           },
           {
             id: "fluorescentFixtures",
-            type: "number",
-            label: "How many flourescent light fixtures present?",
+            type: "radio",
+            label: "Are there fluorescent light fixtures present?",
             name: "fluorescentFixtures",
+            options: ["Yes", "No"],
             showWhen: "pcbObserved=Yes"
           },
           {
@@ -37,20 +38,6 @@ export const transformPcbSchema = (originalSchema: SchemaSection[]): SchemaSecti
             showWhen: "pcbObserved=Yes"
           },
           {
-            id: "ballastPcbPercentage",
-            type: "number",
-            label: "What % is estimated to have ballasts that contain PCBs?",
-            name: "ballastPcbPercentage",
-            showWhen: "pcbObserved=Yes"
-          },
-          {
-            id: "assumedPcbBallastsCount",
-            type: "number",
-            label: "How many \"assumed PCB-containing\" light ballasts are there?",
-            name: "assumedPcbBallastsCount",
-            showWhen: "pcbObserved=Yes"
-          },
-          {
             id: "hidLightsPresent",
             type: "radio",
             label: "Was there HID lights?",
@@ -63,7 +50,7 @@ export const transformPcbSchema = (originalSchema: SchemaSection[]): SchemaSecti
             type: "number",
             label: "How many?",
             name: "hidLightsCount",
-            showWhen: "pcbObserved=Yes"
+            showWhen: "hidLightsPresent=Yes"
           },
           {
             id: "liquidFilledTransformer",
@@ -80,6 +67,13 @@ export const transformPcbSchema = (originalSchema: SchemaSection[]): SchemaSecti
             name: "transformerLeakageSigns",
             options: ["Yes", "No"],
             showWhen: "pcbObserved=Yes"
+          },
+          {
+            id: "transformerLeakageLocation",
+            type: "text",
+            label: "If yes to previous question, where was the leakage?",
+            name: "transformerLeakageLocation",
+            showWhen: "transformerLeakageSigns=Yes"
           },
           {
             id: "wallMountedCapacitor",
@@ -103,61 +97,6 @@ export const transformPcbSchema = (originalSchema: SchemaSection[]): SchemaSecti
             label: "Has the project area/building had a recent lighting retrofit?",
             name: "recentLightingRetrofit",
             options: ["Yes", "No"],
-            showWhen: "pcbObserved=Yes"
-          },
-          {
-            id: "additionalPcbEquipment",
-            type: "radio",
-            label: "Was there additional PCB containing electrical equipment?",
-            name: "additionalPcbEquipment",
-            options: ["Yes", "No"],
-            showWhen: "pcbObserved=Yes"
-          },
-          {
-            id: "additionalEquipmentType",
-            type: "pcbAssessment",
-            label: "If yes to previous question, what type of equipment?",
-            name: "additionalEquipmentType",
-            showWhen: "additionalPcbEquipment=Yes"
-          },
-          {
-            id: "additionalEquipmentLocation",
-            type: "repeater",
-            label: "Location of additional electrical equipment?",
-            name: "additionalEquipmentLocation",
-            showWhen: "pcbObserved=Yes",
-            fields: [
-              {
-                id: "ElectricalEquipment",
-                type: "text",
-                label: "Electrical Equipment",
-                name: "ElectricalEquipment"
-              },
-              { 
-                id: "ElectricalEquipmentLocation", 
-                type: "text", 
-                label: "Location",
-                name: "ElectricalEquipmentLocation"
-              },
-              { 
-                id: "ElectricalEquipmentDescription", 
-                type: "text", 
-                label: "Description",
-                name: "ElectricalEquipmentDescription"
-              },
-              { 
-                id: "ElectricalEquipmentPhoto", 
-                type: "file", 
-                label: "Photo",
-                name: "ElectricalEquipmentPhoto"
-              }
-            ]
-          },
-          {
-            id: "additionalEquipmentPcbType",
-            type: "text",
-            label: "Additional electrical equipment: Type of PCB",
-            name: "additionalEquipmentPcbType",
             showWhen: "pcbObserved=Yes"
           },
           {
