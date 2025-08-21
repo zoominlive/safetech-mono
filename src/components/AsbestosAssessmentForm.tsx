@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MaterialSelect } from "@/components/MaterialSelect";
 import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CirclePlus, CircleX, Upload, Info, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import {
@@ -32,7 +33,8 @@ interface AsbestosMaterial {
   location: string;
   description: string;
   photos: string[];
-  squareFootage: string;
+  quantity: string;
+  quantityType: 'Square/ft' | 'Linear/Ft' | 'Each';
   sampleCollected: 'Yes' | 'No';
   suspectedAcm: 'Yes' | 'No';
   isCustomMaterial: boolean;
@@ -41,6 +43,8 @@ interface AsbestosMaterial {
   percentageAsbestos?: number;
   asbestosType?: string;
   timestamp?: string;
+  condition: 'Good' | 'Fair' | 'Poor' | 'Unknown'; // Add condition field
+  friability: 'Friable' | 'Non-Friable'; // Add friability field
 }
 
 interface AsbestosAssessmentFormProps {
@@ -116,10 +120,13 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
       location: '',
       description: '',
       photos: [],
-      squareFootage: '',
+      quantity: '',
+      quantityType: 'Square/ft',
       sampleCollected: 'No',
       suspectedAcm: 'No',
       isCustomMaterial: false,
+      condition: 'Unknown', // Default value for condition
+      friability: 'Non-Friable', // Default value for friability
     };
     const updatedMaterials = [newMaterial, ...localMaterials];
     setLocalMaterials(updatedMaterials);
@@ -343,18 +350,50 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
       console.log('Materials error:', materialsError);
       console.log('Store materials:', materials);
       
-      // Add all available materials (both standard and custom)
+      // Define the priority materials that should appear at the top
+      const priorityMaterials = [
+        'Sprayed Texture / Stucco Finishes',
+        'Plaster Finishes',
+        'Sprayed Fireproofing',
+        'Lay-in Acoustic Ceiling Tiles',
+        'Glued-on Acoustic Ceiling Tiles',
+        'Cement Ceiling Panels',
+        'Drywall Joint Compound',
+        'Refractory Associated with the Boiler'
+      ];
+      
+      // Separate priority and regular materials
+      const priorityOptions: MaterialOption[] = [];
+      const regularOptions: MaterialOption[] = [];
+      
       availableMaterials.forEach(material => {
         const stats = materialUsageStats[material];
         const usageText = stats ? ` (Used ${stats.count} times, ${stats.samplesCollected} samples)` : '';
         const isCustom = isCustomMaterial(material);
-        options.push({
+        const option = {
           value: material,
           label: material + usageText,
           isCustom: isCustom,
           usageStats: stats
-        });
+        };
+        
+        // Check if this material is in the priority list
+        if (priorityMaterials.includes(material)) {
+          priorityOptions.push(option);
+        } else {
+          regularOptions.push(option);
+        }
       });
+      
+      // Sort priority options to maintain the specified order
+      priorityOptions.sort((a, b) => {
+        const aIndex = priorityMaterials.indexOf(a.value);
+        const bIndex = priorityMaterials.indexOf(b.value);
+        return aIndex - bIndex;
+      });
+      
+      // Combine priority options first, then regular options
+      options.push(...priorityOptions, ...regularOptions);
       
       // If no materials are available from API, add some default materials
       if (availableMaterials.length === 0 && !materialsError) {
@@ -560,13 +599,23 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
 
                         {/* Location */}
                         <div className="space-y-2">
-                          <Label>Location *</Label>
-                          <Input
+                          <Label>Location/System *</Label>
+                          <Select
                             value={material.location}
-                            onChange={(e) => handleMaterialChange(material.id, 'location', e.target.value)}
-                            placeholder="Describe the location"
+                            onValueChange={(value) => handleMaterialChange(material.id, 'location', value)}
                             disabled={disabled}
-                          />
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select location" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Ceiling">Ceiling</SelectItem>
+                              <SelectItem value="Wall">Wall</SelectItem>
+                              <SelectItem value="Pipe">Pipe</SelectItem>
+                              <SelectItem value="Floor">Floor</SelectItem>
+                              <SelectItem value="Mechanical">Mechanical</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
 
                         {/* Description */}
@@ -580,16 +629,81 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                           />
                         </div>
 
-                        {/* Square Footage */}
+                        {/* Quantity */}
                         <div className="space-y-2">
-                          <Label>Square Footage</Label>
-                          <Input
-                            type="number"
-                            value={material.squareFootage}
-                            onChange={(e) => handleMaterialChange(material.id, 'squareFootage', e.target.value)}
-                            placeholder="Enter square footage"
+                          <Label>Quantity</Label>
+                          <div className="flex space-x-2">
+                            <Input
+                              type="number"
+                              value={material.quantity}
+                              onChange={(e) => handleMaterialChange(material.id, 'quantity', e.target.value)}
+                              placeholder="Enter quantity"
+                              disabled={disabled}
+                              className="flex-1"
+                            />
+                            <Select
+                              value={material.quantityType}
+                              onValueChange={(value) => handleMaterialChange(material.id, 'quantityType', value)}
+                              disabled={disabled}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Square/ft">Square/ft</SelectItem>
+                                <SelectItem value="Linear/Ft">Linear/Ft</SelectItem>
+                                <SelectItem value="Each">Each</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        {/* Condition - Required */}
+                        <div className="space-y-2">
+                          <Label>Condition *</Label>
+                          <RadioGroup
+                            value={material.condition}
+                            onValueChange={(value) => handleMaterialChange(material.id, 'condition', value)}
                             disabled={disabled}
-                          />
+                            className="flex space-x-4"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="Good" id={`condition-good-${material.id}`} />
+                              <Label htmlFor={`condition-good-${material.id}`}>Good</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="Fair" id={`condition-fair-${material.id}`} />
+                              <Label htmlFor={`condition-fair-${material.id}`}>Fair</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="Poor" id={`condition-poor-${material.id}`} />
+                              <Label htmlFor={`condition-poor-${material.id}`}>Poor</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="Unknown" id={`condition-unknown-${material.id}`} />
+                              <Label htmlFor={`condition-unknown-${material.id}`}>Unknown</Label>
+                            </div>
+                          </RadioGroup>
+                        </div>
+
+                        {/* Friability */}
+                        <div className="space-y-2">
+                          <Label>Friability</Label>
+                          <RadioGroup
+                            value={material.friability}
+                            onValueChange={(value) => handleMaterialChange(material.id, 'friability', value)}
+                            disabled={disabled}
+                            className="flex space-x-4"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="Friable" id={`friable-yes-${material.id}`} />
+                              <Label htmlFor={`friable-yes-${material.id}`}>Friable</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="Non-Friable" id={`friable-no-${material.id}`} />
+                              <Label htmlFor={`friable-no-${material.id}`}>Non-Friable</Label>
+                            </div>
+                          </RadioGroup>
                         </div>
 
                         {/* Photos */}

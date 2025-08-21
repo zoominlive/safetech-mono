@@ -6,7 +6,8 @@ interface AsbestosMaterial {
   location: string;
   description: string;
   photos: string[];
-  squareFootage: string;
+  quantity: string;
+  quantityType: 'Square/ft' | 'Linear/Ft' | 'Each';
   sampleCollected: 'Yes' | 'No';
   suspectedAcm: 'Yes' | 'No';
   isCustomMaterial: boolean;
@@ -51,7 +52,7 @@ export const convertOldAsbestosDataToNew = (oldData: Record<string, any>): Asbes
     locationKey: string,
     descriptionKey: string,
     photoKey: string,
-    squareFootageKey?: string
+    quantityKey?: string
   ): AsbestosMaterial | null => {
     const location = oldData[locationKey];
     const description = oldData[descriptionKey];
@@ -60,7 +61,7 @@ export const convertOldAsbestosDataToNew = (oldData: Record<string, any>): Asbes
       : (photoKey && typeof oldData[photoKey] === 'string' && oldData[photoKey].startsWith('http'))
         ? [oldData[photoKey]]
         : [];
-    const squareFootage = squareFootageKey ? (oldData[squareFootageKey] || '') : '';
+    const quantity = quantityKey ? (oldData[quantityKey] || '') : '';
     
     if (location || description || photos.length > 0) {
       return {
@@ -69,7 +70,8 @@ export const convertOldAsbestosDataToNew = (oldData: Record<string, any>): Asbes
         location: location || '',
         description: description || '',
         photos,
-        squareFootage,
+        quantity,
+        quantityType: 'Square/ft', // Default to Square/ft for backward compatibility
         sampleCollected: 'No', // Default, would need to be determined from lab results
         suspectedAcm: 'No', // Default
         isCustomMaterial: false,
@@ -290,7 +292,8 @@ export const convertOldAsbestosDataToNew = (oldData: Record<string, any>): Asbes
         description: suspectAcm.miscMaterialsSuspectAcmDescriptionDetails || '',
         photos: Array.isArray(suspectAcm.miscMaterialsSuspectAcmPhoto) ? suspectAcm.miscMaterialsSuspectAcmPhoto : 
                 (typeof suspectAcm.miscMaterialsSuspectAcmPhoto === 'string' && suspectAcm.miscMaterialsSuspectAcmPhoto.startsWith('http')) ? [suspectAcm.miscMaterialsSuspectAcmPhoto] : [],
-        squareFootage: '',
+        quantity: '',
+        quantityType: 'Square/ft',
         sampleCollected: 'No',
         suspectedAcm: 'Yes',
         isCustomMaterial: true,
@@ -326,9 +329,10 @@ export const convertNewAsbestosDataToOld = (materials: AsbestosMaterial[]): Reco
     setOldField(`${materialType}DescriptionDetails`, material.description);
     setOldField(`${materialType}Photo`, material.photos);
     
-    // Set square footage if available
-    if (material.squareFootage) {
-      setOldField(`${materialType}SquareFootage`, material.squareFootage);
+    // Set quantity if available
+    if (material.quantity) {
+      setOldField(`${materialType}Quantity`, material.quantity);
+      setOldField(`${materialType}QuantityType`, material.quantityType);
     }
   });
 

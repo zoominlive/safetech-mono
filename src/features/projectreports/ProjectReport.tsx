@@ -161,6 +161,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   const [isAddAreaDialogOpen, setIsAddAreaDialogOpen] = useState(false);
   const [newAreaName, setNewAreaName] = useState("");
   const [newAreaDescription, setNewAreaDescription] = useState("");
+  const [newAreaFloor, setNewAreaFloor] = useState("");
   const [newAreaSqft, setNewAreaSqft] = useState("");
   const areaNameInputRef = useRef<HTMLInputElement>(null);
 
@@ -1093,6 +1094,13 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                     }}
                   />
                   <Input
+                    placeholder="Floor"
+                    value={selectedArea?.assessments.floor || ""}
+                    onChange={e => {
+                      updateAreaAssessment("floor", e.target.value);
+                    }}
+                  />
+                  <Input
                     placeholder="Area Square Feet"
                     type="number"
                     value={selectedArea?.assessments.areaSquareFeet || ""}
@@ -1164,6 +1172,11 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                   <Input
                     placeholder="Area Description"
                     value={selectedArea?.assessments.areaDescription || ""}
+                    disabled
+                  />
+                  <Input
+                    placeholder="Floor"
+                    value={selectedArea?.assessments.floor || ""}
                     disabled
                   />
                   <Input
@@ -1724,6 +1737,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   const openAddAreaDialog = () => {
     setNewAreaName("");
     setNewAreaDescription("");
+    setNewAreaFloor("");
     setNewAreaSqft("");
     setDialogUploadedPhotos([]); // Reset uploaded photos
     setIsAddAreaDialogOpen(true);
@@ -1762,6 +1776,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
         // Reset area-specific fields
         areaName: newAreaName,
         areaDescription: newAreaDescription,
+        floor: newAreaFloor,
         areaSquareFeet: newAreaSqft,
         areaPhoto: dialogUploadedPhotos, // Include uploaded photos
         // Remove any other fields that may have been present in the previous area
@@ -2678,6 +2693,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               <div className="space-y-4">
                 <Input ref={areaNameInputRef} placeholder="Area Name" value={newAreaName} onChange={e => setNewAreaName(e.target.value)} />
                 <Input placeholder="Area Description" value={newAreaDescription} onChange={e => setNewAreaDescription(e.target.value)} />
+                <Input placeholder="Floor" value={newAreaFloor} onChange={e => setNewAreaFloor(e.target.value)} />
                 <Input placeholder="Area Square Feet" type="number" value={newAreaSqft} onChange={e => setNewAreaSqft(e.target.value)} />
                 <div className="space-y-2">
                   <Label>Area Photo</Label>
