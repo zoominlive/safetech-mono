@@ -1192,18 +1192,22 @@
             {{/if}}
             
             {{#if textureCoatAsbestos}}
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">Texture Coat/Plaster</p>
             <p style="margin-left: 16px;">Texture Coat/ Plaster identified to be asbestos-containing is recommended to be treated as friable ACM since disturbance of this material typically results in significant degradation and subsequent dust/debris generation that cannot be adequately controlled through wetting. Therefore, removal or disturbance of 1 square metre or less of texture coat should be conducted following Type 2 operations. If more than 1 square metre of texture coat is to be removed or disturbed then work should be conducted following Type 3 operations.</p>
             {{/if}}
             
             {{#if nonFriableMaterials}}
-            <p style="margin-left: 16px;">{{nonFriableMaterials}} is/are considered to be a non-friable ACM. As per O. Reg. 278/05, removal of non-friable ACM can be conducted following Type 1 operations; as long as the material can be removed without being broken, cut, drilled or otherwise similarly disturbed. If the material cannot be removed without it breaking or being similarly disturbed then the work should be conducted using non-powered hand tools and the material should be wetted to control the spread of dust. If the material cannot be wetted or if power tools attached to dust-collecting devices equipped with HEPA (high efficiency particulate aerosol) filters are used during removal or disturbance, then work should be performed following Type 2 operations. If non-friable materials are removed or disturbed using power tools that are not attached to dust-collecting devices that are equipped with HEPA filters then work should be conducted following Type 3 operations.</p>
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">Non-Friables:</p>
+            <p style="margin-left: 16px;"><strong>{{nonFriableMaterials}}</strong> is/are considered to be a non-friable ACM. As per O. Reg. 278/05, removal of non-friable ACM can be conducted following Type 1 operations; as long as the material can be removed without being broken, cut, drilled or otherwise similarly disturbed. If the material cannot be removed without it breaking or being similarly disturbed then the work should be conducted using non-powered hand tools and the material should be wetted to control the spread of dust. If the material cannot be wetted or if power tools attached to dust-collecting devices equipped with HEPA (high efficiency particulate aerosol) filters are used during removal or disturbance, then work should be performed following Type 2 operations. If non-friable materials are removed or disturbed using power tools that are not attached to dust-collecting devices that are equipped with HEPA filters then work should be conducted following Type 3 operations.</p>
             {{/if}}
             
             {{#if friableMaterials}}
-            <p style="margin-left: 16px;">{{friableMaterials}} is/are considered to be a friable ACM. As per O. Reg. 278/05, removal or disturbance of 1 square metre or less of friable ACM is classified as a Type 2 operation. If more than 1 square metre of friable ACM is to be removed or disturbed then work should be conducted following Type 3 operations; unless the material is removed using a glove bag, in which case Type 2 operations are applicable.</p>
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">Friables:</p>
+            <p style="margin-left: 16px;"><strong>{{friableMaterials}}</strong> is/are considered to be a friable ACM. As per O. Reg. 278/05, removal or disturbance of 1 square metre or less of friable ACM is classified as a Type 2 operation. If more than 1 square metre of friable ACM is to be removed or disturbed then work should be conducted following Type 3 operations; unless the material is removed using a glove bag, in which case Type 2 operations are applicable.</p>
             {{/if}}
             
             {{#if sprayedFireproofing}}
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">Sprayed Fireproofing:</p>
             <p style="margin-left: 16px;">Sprayed fireproofing is considered to be a friable ACM. As per O. Reg. 278/05, removal or disturbance of 1.0 m2 or less of friable ACM is classified as a Type 2 operation. If more than 1.0 m2 of friable ACM is to be removed or disturbed, then work should be conducted following Type 3 operations.</p>
             <p style="margin-left: 16px;">Given the presence of asbestos-containing sprayed fireproofing, it is cautioned that this material or related debris may be concealed on the surface of false ceilings. As such, access above a false ceiling where asbestos-containing sprayed fireproofing is present is classified as a Type 2 operation (full enclosure method for access).</p>
             <p style="margin-left: 16px;">Similarly, asbestos-containing sprayed fireproofing debris may be present within wall cavities. Therefore, access within these spaces is recommended to be conducted following Type 2 operations as a precautionary measure.</p>
@@ -1211,24 +1215,27 @@
             {{/if}}
             
             {{#if ceilingTilesAsbestos}}
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">Ceiling Tiles:</p>
             <p style="margin-left: 16px;">In accordance with O. Reg. 278/05, removal of 7.5 m2 or more of asbestos-containing ceiling tiles (i.e. ten or more 2′x4′ tiles) should be conducted following Type 2 operations. However, care should be taken when removing the ceiling tiles to ensure they are removed without being broken, cut, abraded or otherwise handled in a manner that can cause an excessive release of ceiling tile debris. Otherwise, Type 3 operations are recommended to be followed. If less than 7.5 m2 of asbestos-containing ceiling tiles are removed and they can be removed in the manner indicated above, removal can be conducted following Type 1 operations.</p>
             {{/if}}
             
             {{#if drywallJointCompoundAsbestos}}
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">Drywall Joint Compound:</p>
             <p style="margin-left: 16px;">In accordance with O. Reg. 278/05, removal of less than 1 m2 of drywall where asbestos-containing drywall joint compound has been used can be conducted following Type 1 operations. If 1 square metre or more of drywall is removed where asbestos-containing drywall joint compound has been used then work should be conducted following Type 2 operations.</p>
             {{/if}}
             
             {{#if refractoryNotSampled}}
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">Refractory:</p>
             <p style="margin-left: 16px;">The boiler units were in operation at the time of the assessment and internal refractory materials could not be accessed for sampling. As such, refractory is assumed to be asbestos-containing. If refractory materials are found once the units are opened, Safetech should be contacted to conduct bulk sampling of the material to determine if it asbestos-containing. If samples of refractory are not collected, removal must be conducted following Type 3 procedures outlined in O.Reg. 278/05.</p>
             {{/if}}
             
             {{#if refractorySampled}}
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">Refractory:</p>
             <p style="margin-left: 16px;">Removal of refractory materials must be conducted following Type 3 procedures outlined in O.Reg. 278/05.</p>
             {{/if}}
             
-            {{#if generalAsbestosRecommendations}}
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">General Asbestos Recommendations:</p>
             <p style="margin-left: 16px;">The removal or disturbance of ACM must follow the measures and procedures indicated in O. Reg. 278/05. This work should be conducted by workers who have received proper training by a "competent person" in the hazards of asbestos exposure, personal hygiene and work practices, and the use and care of respirators and protective clothing. Any worker/supervisor who works in a Type 3 operation must successfully complete the Asbestos Abatement Worker or Supervisor Training Program approved by the Ministry of Labour, Immigration, Training and Skills Development. It is recommended that all work involving the removal or disturbance of ACM be subject to inspection and testing to document conformance with O. Reg. 278/05 requirements. The degree of inspection and testing is dependent on site-specific conditions such as the type, duration, size and location of the work. In most circumstances Type 3 operations require a visual inspection and clearance air testing to be conducted by a competent worker on completion of the work. The inspection should be conducted to ensure that the enclosure and the work area inside the enclosure are free from visible dust, debris or residue that may contain asbestos. Clearance air testing for Type 3 operations requires a minimum number of air samples to be taken (depending on the size of the work area) following specific sampling and analytical procedures and all samples taken must meet the clearance criteria set out in O. Reg. 278/05.</p>
-            {{/if}}
             
             <!-- Section 3.1.2 Lead -->
             <div style="font-weight: bold; margin-left: 16px;" id="lead-conclusions">3.1.2 Lead</div>
@@ -1248,6 +1255,11 @@
             </ul>
             {{/if}}
             {{/if}}
+            {{#if leadUnknownDisturbance}}
+            <p style="margin-left: 16px;">At this time the method of disturbance, if any, of lead-containing materials is unknown. It is recommended that any contractor whose work requires lead-containing materials to be disturbed consult the EACC or Ontario MLITSD guidelines prior to the start of work to determine the Class/Type of operation(s) and the corresponding control measures (engineering controls, work/hygiene practices, protective clothing and equipment and worker training) necessary to conduct the work in a manner that will prevent worker overexposure to lead. The following table outlines the classification of lead disturbance based on the EACC guideline.</p>
+            {{else}}
+            <p style="margin-left: 16px;">Any disturbance of the lead-containing materials should be conducted in accordance with the procedures outlined in the Environmental Abatement Council of Canada (EACC) “Lead Guideline” (October 2014) and/or the Ontario Ministry of Labour, Immigration, Training and Skills Development (MLITSD) “Lead on Construction Projects” guideline (April 2011). The extent of procedures required depends on the type of work to be conducted.</p>
+            {{/if}}
             {{#if lowLevelLeadPaint}}
             <p style="margin-left: 16px;">Results of paint chip analysis for the determination of lead content indicated in Samples {{lowLevelLeadSamples}} is/are considered a 'low-level lead paint' (≤0.1% based on requirements of the Environmental Abatement Council of Canada (EACC) Lead Guideline (2014)). If the 'low-level lead paint' is disturbed in a non-aggressive manner (no use of power tools/abrasive blasting, grinding, welding, heating, etc.), then respirators are not considered necessary. However, Class 1 measures and procedures should still be implemented during the non-aggressive disturbance of 'low-level lead paints', including, but not limited to, no smoking, eating, drinking and chewing gum in the work area; dust suppression methods must be implemented; and facilities must be made available so that workers can wash their hands and face.</p>
             {{/if}}
@@ -1262,8 +1274,14 @@
             <p style="margin-left: 16px;">Emergency lighting is present {{emergencyLightingLocation}} in the project areas and are suspected to contain lead-acid batteries. If emergency lighting is removed/replaced as part of the scheduled work activities, the batteries are recommended to be sent to a recycling facility for proper treatment.</p>
             {{/if}}
             
-            {{#if suspectLeadMaterials}}
-            <p style="margin-left: 16px;">Additional suspect lead-containing products includes {{suspectLeadMaterials}}. Future testing of these materials and specific handling/disposal requirements may be necessary if/when these materials are to be disturbed.</p>
+            {{#if suspectLeadMaterials.length}}
+            <p style="margin-left: 16px;">Additional suspect lead-containing products include:</p>
+            <ul style="margin-left: 32px;">
+                {{#each suspectLeadMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            <p style="margin-left: 16px;">Future testing of these materials and specific handling/disposal requirements may be necessary if/when these materials are to be disturbed.</p>
             {{/if}}
             
             {{#if leadDisturbanceRequired}}
@@ -1468,6 +1486,49 @@
             <!-- End Section 4.0 Limitations -->
         </div>
     </div>    
+
+    <!-- APPENDIX A: Summary of ACM Occurrences -->
+    <div class="section appendix" id="appendix-a">
+        <h3>Appendix A: Summary of ACM Occurrences</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Floor</th>
+                    <th>Location</th>
+                    <th>System</th>
+                    <th>Material</th>
+                    <th>Description</th>
+                    <th>Classification</th>
+                    <th>Friable/Non-Friable</th>
+                    <th>Condition</th>
+                    <th>Est. Quantity</th>
+                    <th>Unit</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#if appendixASummaryTable.length}}
+                {{#each appendixASummaryTable}}
+                <tr>
+                    <td>{{this.floor}}</td>
+                    <td>{{this.location}}</td>
+                    <td>{{this.system}}</td>
+                    <td>{{this.material}}</td>
+                    <td>{{this.description}}</td>
+                    <td>{{this.classification}}</td>
+                    <td>{{this.friability}}</td>
+                    <td>{{this.condition}}</td>
+                    <td>{{this.estQuantity}}</td>
+                    <td>{{this.unit}}</td>
+                </tr>
+                {{/each}}
+                {{else}}
+                <tr>
+                    <td colspan="10">No asbestos-containing materials data available for summary.</td>
+                </tr>
+                {{/if}}
+            </tbody>
+        </table>
+    </div>
 
 </body>
 </html> 

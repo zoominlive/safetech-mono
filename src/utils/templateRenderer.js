@@ -842,6 +842,26 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
   });
   
   console.log("suspectLeadMaterials=>", suspectLeadMaterials);
+
+  // Lead disturbance guidance selector
+  let hasSampledOrSuspectedLead = false;
+  let hasUnsampledNotSuspected = false;
+  areaDetails.forEach(area => {
+    if (!Array.isArray(area.leadMaterials)) return;
+    area.leadMaterials.forEach(material => {
+      const sampleCollectedRaw = (material?.sampleCollected ?? '').toString().trim().toLowerCase();
+      const sampleYes = sampleCollectedRaw === 'yes' || sampleCollectedRaw === 'true';
+      const sampleNo = sampleCollectedRaw === 'no' || sampleCollectedRaw === 'false';
+      const suspectedYes = (material?.suspectedLead || '').toString().trim().toLowerCase() === 'yes';
+
+      if (sampleYes || suspectedYes) {
+        hasSampledOrSuspectedLead = true;
+      } else if (sampleNo && !suspectedYes) {
+        hasUnsampledNotSuspected = true;
+      }
+    });
+  });
+  const leadUnknownDisturbance = hasUnsampledNotSuspected && !hasSampledOrSuspectedLead;
   
   // Collect all mercury materials from all areas with area names
   const allMercuryMaterials = [];
@@ -1746,6 +1766,48 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     };
   });
 
+  // Appendix A: Summary of ACM Occurrences (per-material rows consolidated across areas)
+  const mapUnit = (quantityType) => {
+    const t = (quantityType || '').toString().toLowerCase();
+    if (t.includes('square')) return 'SF';
+    if (t.includes('linear')) return 'LF';
+    if (t.includes('each')) return 'EA';
+    return '';
+  };
+
+  const appendixASummaryTable = [];
+  areaDetails.forEach(area => {
+    const floorValue = area.floor || '';
+    const locationName = area.name || area.id || '';
+    if (Array.isArray(area.asbestosMaterials)) {
+      area.asbestosMaterials.forEach(material => {
+        const system = material.location || '';
+        const materialName = material.materialType || material.customMaterialName || '';
+        const description = material.description || '';
+        const classification = material.suspectedAcm === 'Yes' ? 'ACM' : '';
+        const friability = material.friability || '';
+        const condition = material.condition || '';
+        const estQuantity = material.quantity || material.squareFootage || '';
+        // Prefer explicit quantityType mapping; fallback to inferred based on field used
+        let unit = mapUnit(material.quantityType);
+        if (!unit && material.squareFootage) unit = 'SF';
+
+        appendixASummaryTable.push({
+          floor: floorValue,
+          location: locationName,
+          system: system,
+          material: materialName,
+          description: description,
+          classification: classification,
+          friability: friability,
+          condition: condition,
+          estQuantity: estQuantity,
+          unit: unit
+        });
+      });
+    }
+  });
+
   // Area-specific sectioned output for clarity
   let areaSections = [];
   if (templateSchema && templateSchema.sections && areaDetails.length > 0) {
@@ -2043,6 +2105,100 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
   const isRenovation = normalizedProjectType === 'renovations or building demolition';
   const isDemolition = normalizedProjectType === 'demolition';
 
+  // Section 3.1.1 material-specific flags derived from asbestos materials (found or suspected)
+  let textureCoatAsbestos = false; // Covers Texture/Stucco and Plaster Finishes
+  let sprayedFireproofing = false;
+  let ceilingTilesAsbestos = false;
+  let drywallJointCompoundAsbestos = false;
+  let refractorySampled = false;
+  let refractoryNotSampled = false;
+
+  const getLowerName = (name) => (name ? name.toString().trim().toLowerCase() : '');
+
+  areaDetails.forEach(area => {
+    const processList = (list, isSuspected = false) => {
+      if (!Array.isArray(list)) return;
+      list.forEach(material => {
+        const materialTypeLower = getLowerName(material?.materialType || material?.customMaterialName);
+        if (!materialTypeLower) return;
+
+        // Texture/Stucco/Plaster
+        if (
+          materialTypeLower.includes('texture') ||
+          materialTypeLower.includes('stucco') ||
+          materialTypeLower.includes('plaster')
+        ) {
+          textureCoatAsbestos = true;
+        }
+
+        // Sprayed Fireproofing
+        if (materialTypeLower.includes('fireproofing')) {
+          sprayedFireproofing = true;
+        }
+
+        // Ceiling tiles
+        if (materialTypeLower.includes('ceiling tile')) {
+          ceilingTilesAsbestos = true;
+        }
+
+        // Drywall joint compound / taping compound
+        if (
+          materialTypeLower.includes('joint compound') ||
+          materialTypeLower.includes('drywall joint') ||
+          materialTypeLower.includes('taping compound')
+        ) {
+          drywallJointCompoundAsbestos = true;
+        }
+
+        // Refractory — determine if sampled or not (prefer explicit sampleCollected Yes/No)
+        if (materialTypeLower.includes('refractory')) {
+          const sampleCollectedRaw = (material?.sampleCollected ?? '').toString().trim().toLowerCase();
+          const sampleCollectedYes = sampleCollectedRaw === 'yes' || sampleCollectedRaw === 'true';
+          const sampleCollectedNo = sampleCollectedRaw === 'no' || sampleCollectedRaw === 'false';
+
+          // Fallback indicators if sampleCollected not provided
+          const hasSampleFallback = Boolean(material?.sampleNo || material?.sampleId) || (
+            material?.percentageAsbestos !== undefined &&
+            material?.percentageAsbestos !== null &&
+            material?.percentageAsbestos !== ''
+          );
+
+          if (sampleCollectedYes || (!isSuspected && !sampleCollectedNo && hasSampleFallback)) {
+            refractorySampled = true;
+          } else {
+            refractoryNotSampled = true;
+          }
+        }
+      });
+    };
+
+    processList(area.asbestosMaterials, false);
+    processList(area.suspectedAsbestosMaterials, true);
+  });
+
+  // When both states are triggered across entries, render both paragraphs in template
+
+  // Emergency Lighting evaluation for Section 3.1.2 Lead
+  let emergencyLighting = false;
+  let emergencyLightingLocation = '';
+
+  areaDetails.forEach(area => {
+    if (area.isThereEmergencyLighting === 'Yes') {
+      emergencyLighting = true;
+      // Try to get location from area name or specific location
+      if (area.specificLocation && area.specificLocation.trim() !== '') {
+        emergencyLightingLocation = area.specificLocation;
+      } else if (area.name && area.name.trim() !== '') {
+        emergencyLightingLocation = area.name;
+      }
+    }
+  });
+
+  // If no specific location found, use a generic description
+  if (emergencyLighting && !emergencyLightingLocation) {
+    emergencyLightingLocation = 'throughout the project areas';
+  }
+
   return {
     // Basic report information
     reportName: report.name || 'Comprehensive Designated Substances and Hazardous Materials Assessment Report',
@@ -2114,6 +2270,8 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     pcbAssessment,
     // Area-specific sectioned output
     areaSections,
+    // Lead guidance selector flag
+    leadUnknownDisturbance,
 
     // Comprehensive Area Assessment Summary
 
@@ -2143,6 +2301,9 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     mouldAssessmentTable,
     isMouldGrowthObserved,
 
+    // Appendix A data
+    appendixASummaryTable,
+
     // Pest Infestation data for template
     pestInfestationData: pestInfestationData,
     isPestInfestationObserved,
@@ -2160,10 +2321,84 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     wallMountedCapacitorYes,
     capacitorVerifiedNotPcbText,
 
-    // Section 3.1.1 conditional flags derived from project_type
+      // Section 3.1.1 conditional flags derived from project_type
     isRenovation,
     isDemolition,
-  };
+
+      // Section 3.1.1 material-specific flags for conditional paragraphs
+    textureCoatAsbestos,
+    sprayedFireproofing,
+    ceilingTilesAsbestos,
+    drywallJointCompoundAsbestos,
+    refractorySampled,
+    refractoryNotSampled,
+
+    // Emergency Lighting flags for Section 3.1.2 Lead
+    emergencyLighting,
+    emergencyLightingLocation,
+
+    // Friable and Non-Friable Materials for Section 3.1.1
+    friableMaterials: (() => {
+      const friableMaterialTypes = [];
+      areaDetails.forEach(area => {
+        if (Array.isArray(area.asbestosMaterials)) {
+          area.asbestosMaterials.forEach(material => {
+            const materialType = material.materialType || material.customMaterialName || '';
+            // Common friable asbestos materials
+            if (materialType && (
+              materialType.toLowerCase().includes('sprayed') ||
+              materialType.toLowerCase().includes('fireproofing') ||
+              materialType.toLowerCase().includes('insulation') ||
+              materialType.toLowerCase().includes('texture') ||
+              materialType.toLowerCase().includes('stucco') ||
+              materialType.toLowerCase().includes('acoustic') ||
+              materialType.toLowerCase().includes('ceiling') ||
+              materialType.toLowerCase().includes('plaster') ||
+              materialType.toLowerCase().includes('joint compound') ||
+              materialType.toLowerCase().includes('mastic') ||
+              materialType.toLowerCase().includes('caulking')
+            )) {
+              if (!friableMaterialTypes.includes(materialType)) {
+                friableMaterialTypes.push(materialType);
+              }
+            }
+          });
+        }
+      });
+      return friableMaterialTypes.length > 0 ? friableMaterialTypes.join(', ') : null;
+    })(),
+
+    nonFriableMaterials: (() => {
+      const nonFriableMaterialTypes = [];
+      areaDetails.forEach(area => {
+        if (Array.isArray(area.asbestosMaterials)) {
+          area.asbestosMaterials.forEach(material => {
+            const materialType = material.materialType || material.customMaterialName || '';
+            // Common non-friable asbestos materials
+            if (materialType && (
+              materialType.toLowerCase().includes('vinyl') ||
+              materialType.toLowerCase().includes('floor tile') ||
+              materialType.toLowerCase().includes('roofing') ||
+              materialType.toLowerCase().includes('siding') ||
+              materialType.toLowerCase().includes('wallboard') ||
+              materialType.toLowerCase().includes('cement') ||
+              materialType.toLowerCase().includes('pipe') ||
+              materialType.toLowerCase().includes('duct') ||
+              materialType.toLowerCase().includes('transite') ||
+              materialType.toLowerCase().includes('drywall') ||
+              materialType.toLowerCase().includes('sheet') ||
+              materialType.toLowerCase().includes('panel')
+            )) {
+              if (!nonFriableMaterialTypes.includes(materialType)) {
+                nonFriableMaterialTypes.push(materialType);
+              }
+            }
+          });
+        }
+      });
+      return nonFriableMaterialTypes.length > 0 ? nonFriableMaterialTypes.join(', ') : null;
+    })(),
+};
 };
 
 // Header template for PDF reports
