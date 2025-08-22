@@ -44,6 +44,38 @@ const safeJsonParse = (jsonString) => {
 };
 
 /**
+ * Parse lead concentration value that may contain comparison operators
+ * @param {string} leadValue - Lead concentration value (e.g., "0.044", "<0.0080", ">0.1")
+ * @returns {object} - Object with numeric value and comparison info
+ */
+const parseLeadConcentration = (leadValue) => {
+  if (!leadValue || typeof leadValue !== 'string') {
+    return { value: 0, operator: null, original: leadValue };
+  }
+  
+  const trimmed = leadValue.trim();
+  
+  // Handle comparison operators
+  if (trimmed.startsWith('<')) {
+    const numericValue = parseFloat(trimmed.substring(1));
+    return { value: numericValue, operator: '<', original: trimmed };
+  } else if (trimmed.startsWith('>')) {
+    const numericValue = parseFloat(trimmed.substring(1));
+    return { value: numericValue, operator: '>', original: trimmed };
+  } else if (trimmed.startsWith('<=')) {
+    const numericValue = parseFloat(trimmed.substring(2));
+    return { value: numericValue, operator: '<=', original: trimmed };
+  } else if (trimmed.startsWith('>=')) {
+    const numericValue = parseFloat(trimmed.substring(2));
+    return { value: numericValue, operator: '>=', original: trimmed };
+  } else {
+    // No operator, just a number
+    const numericValue = parseFloat(trimmed);
+    return { value: numericValue, operator: null, original: trimmed };
+  }
+};
+
+/**
  * Extract area details from answers
  * @param {object} answers - Parsed answers object
  * @returns {array} - Array of area details (with assessments merged)
@@ -1593,24 +1625,100 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
   });
   // Process lead samples for Table 4
   let leadSamples = [];
+  let lowLevelLeadSamples = [];
+  let highLevelLeadSamples = [];
+  
   areaDetails.forEach(area => {
     if (Array.isArray(area.leadMaterials)) {
       area.leadMaterials.forEach((material, index) => {
+        // Parse lead concentration with proper handling of comparison operators
+        const leadData = parseLeadConcentration(material.percentageLead);
+        const leadPercentage = leadData.value;
+        
         // Determine material classification based on lead concentration
         let materialClassification = 'Non-LCP';
-        if (material.leadConcentration && parseFloat(material.leadConcentration) > 0.1) {
-          materialClassification = 'LCP';
-        } else if (material.leadConcentration && parseFloat(material.leadConcentration) === 0.1) {
-          materialClassification = 'LLLP';
+        
+        // Handle different comparison operators for classification
+        if (leadData.operator === '<') {
+          // For values like "<0.0080", we know it's less than the stated value
+          if (leadData.value <= 0.1) {
+            materialClassification = 'LLLP';
+          }
+        } else if (leadData.operator === '>') {
+          // For values like ">0.1", we know it's greater than the stated value
+          if (leadData.value > 0.1) {
+            materialClassification = 'LCP';
+          }
+        } else if (leadData.operator === '<=') {
+          // For values like "<=0.1"
+          if (leadData.value <= 0.1) {
+            materialClassification = 'LLLP';
+          }
+        } else if (leadData.operator === '>=') {
+          // For values like ">=0.1"
+          if (leadData.value >= 0.1) {
+            materialClassification = leadData.value > 0.1 ? 'LCP' : 'LLLP';
+          }
+        } else {
+          // No operator, direct comparison
+          if (leadPercentage > 0.1) {
+            materialClassification = 'LCP';
+          } else if (leadPercentage === 0.1) {
+            materialClassification = 'LLLP';
+          }
+        }
+        
+        // Create sample description for the lists
+        const sampleDescription = `Sample ${material.sampleNo || `L${index + 1}`} - ${material.location || 'Unknown Location'} - ${material.description || 'Unknown Surface'} - ${material.materialType || 'Unknown'} - ${material.percentageLead ? `${material.percentageLead}%` : 'N/A'}`;
+        
+        // Categorize samples based on lead percentage and operators
+        let shouldIncludeInLowLevel = false;
+        let shouldIncludeInHighLevel = false;
+        
+        if (leadData.operator === '<') {
+          // For "<0.0080", if the value is <= 0.1, it's low level
+          if (leadData.value <= 0.1) {
+            shouldIncludeInLowLevel = true;
+          }
+        } else if (leadData.operator === '>') {
+          // For ">0.1", it's high level
+          if (leadData.value > 0.1) {
+            shouldIncludeInHighLevel = true;
+          }
+        } else if (leadData.operator === '<=') {
+          // For "<=0.1", it's low level
+          if (leadData.value <= 0.1) {
+            shouldIncludeInLowLevel = true;
+          }
+        } else if (leadData.operator === '>=') {
+          // For ">=0.1", check the actual value
+          if (leadData.value > 0.1) {
+            shouldIncludeInHighLevel = true;
+          } else if (leadData.value === 0.1) {
+            shouldIncludeInLowLevel = true;
+          }
+        } else {
+          // No operator, direct comparison
+          if (leadPercentage <= 0.1 && leadPercentage > 0) {
+            shouldIncludeInLowLevel = true;
+          } else if (leadPercentage > 0.1) {
+            shouldIncludeInHighLevel = true;
+          }
+        }
+        
+        if (shouldIncludeInLowLevel) {
+          lowLevelLeadSamples.push(sampleDescription);
+        } else if (shouldIncludeInHighLevel) {
+          highLevelLeadSamples.push(sampleDescription);
         }
         
         leadSamples.push({
           sampleNo: material.sampleNo || `L${index + 1}`,
-          location: material.materialLocation || 'Unknown Location',
-          surface: material.materialDescription || 'Unknown Surface',
-          paintColour: material.paintColour || 'Unknown',
+          location: material.location || 'Unknown Location',
+          surface: material.description || 'Unknown Surface',
+          paintColour: material.materialType || 'Unknown',
           condition: material.condition || 'Unknown',
-          leadConcentration: material.leadConcentration ? `${material.leadConcentration}%` : 'N/A',
+          leadConcentration: material.percentageLead ? `${material.percentageLead}%` : 'N/A',
           materialClassification: materialClassification
         });
       });
@@ -2260,6 +2368,9 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     asbestosAssessmentTable,
     // Add dynamic Table 4 mapping for lead samples
     leadSamples,
+    // Lead sample categorization for Section 3.1.2
+    lowLevelLeadSamples,
+    highLevelLeadSamples,
     // Add dynamic Table 4 mapping    
     leadAssessment,
     // New consolidated Table 5 mapping from leadMaterials

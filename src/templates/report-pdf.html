@@ -1239,35 +1239,26 @@
             
             <!-- Section 3.1.2 Lead -->
             <div style="font-weight: bold; margin-left: 16px;" id="lead-conclusions">3.1.2 Lead</div>
-            {{#if leadFound}}
-            <p style="margin-left: 16px;">Results of the assessment indicated that the following lead-containing materials are present in the project areas that may be disturbed as part of the construction project. Therefore, these materials are considered to be lead-containing and specific measures and procedures are required to be followed during renovation or demolition projects that have the potential to disturb this material.</p>
+
+            {{#if lowLevelLeadSamples.length}}
+            <p style="margin-left: 16px;">Results of bulk sample analysis for the determination of lead content indicated in the following samples is/are considered a 'low-level lead-containing materials' (≤0.1% based on requirements of the Environmental Abatement Council of Canada (EACC) Lead Guideline (2014)):</p>
             <ul style="margin-left: 32px;">
-                {{#each leadContainingMaterials}}
+                {{#each lowLevelLeadSamples}}
                 <li>{{this}}</li>
                 {{/each}}
             </ul>
-            {{#if suspectLeadMaterials.length}}
-            <p style="margin-left: 16px;">The following building materials are suspected to be lead-containing but were not sampled as sampling would compromise the integrity of the material, lack of accessibility or potential hazards to the surveyor:</p>
+            <p style="margin-left: 16px;">If the 'low-level lead-containing material' is disturbed in a non-aggressive manner (no use of power tools/abrasive blasting, grinding, welding, heating, etc.), then respirators are not considered necessary. However, Class 1 measures and procedures should still be implemented during the non-aggressive disturbance, including, but not limited to, no smoking, eating, drinking and chewing gum in the work area; dust suppression methods must be implemented; and facilities must be made available so that workers can wash their hands and face.</p>
+            {{/if}}
+
+            {{#if highLevelLeadSamples.length}}
+            <p style="margin-left: 16px;">Result of bulk sample analysis for the determination of lead content indicated the following samples is/are confirmed to be lead-containing (>0.1% lead content based on required of Environmental Abatement Council of Canada (EACC) "Lead Guideline" (October 2014)):</p>
             <ul style="margin-left: 32px;">
-                {{#each suspectLeadMaterials}}
+                {{#each highLevelLeadSamples}}
                 <li>{{this}}</li>
                 {{/each}}
             </ul>
             {{/if}}
-            {{/if}}
-            {{#if leadUnknownDisturbance}}
-            <p style="margin-left: 16px;">At this time the method of disturbance, if any, of lead-containing materials is unknown. It is recommended that any contractor whose work requires lead-containing materials to be disturbed consult the EACC or Ontario MLITSD guidelines prior to the start of work to determine the Class/Type of operation(s) and the corresponding control measures (engineering controls, work/hygiene practices, protective clothing and equipment and worker training) necessary to conduct the work in a manner that will prevent worker overexposure to lead. The following table outlines the classification of lead disturbance based on the EACC guideline.</p>
-            {{else}}
-            <p style="margin-left: 16px;">Any disturbance of the lead-containing materials should be conducted in accordance with the procedures outlined in the Environmental Abatement Council of Canada (EACC) “Lead Guideline” (October 2014) and/or the Ontario Ministry of Labour, Immigration, Training and Skills Development (MLITSD) “Lead on Construction Projects” guideline (April 2011). The extent of procedures required depends on the type of work to be conducted.</p>
-            {{/if}}
-            {{#if lowLevelLeadPaint}}
-            <p style="margin-left: 16px;">Results of paint chip analysis for the determination of lead content indicated in Samples {{lowLevelLeadSamples}} is/are considered a 'low-level lead paint' (≤0.1% based on requirements of the Environmental Abatement Council of Canada (EACC) Lead Guideline (2014)). If the 'low-level lead paint' is disturbed in a non-aggressive manner (no use of power tools/abrasive blasting, grinding, welding, heating, etc.), then respirators are not considered necessary. However, Class 1 measures and procedures should still be implemented during the non-aggressive disturbance of 'low-level lead paints', including, but not limited to, no smoking, eating, drinking and chewing gum in the work area; dust suppression methods must be implemented; and facilities must be made available so that workers can wash their hands and face.</p>
-            {{/if}}
-            
-            {{#if leadContainingPaint}}
-            <p style="margin-left: 16px;">Result of paint chip analysis for the determination of lead content indicated Samples {{leadContainingSamples}} is/are confirmed to be lead-containing (>0.1% lead content based on required of Environmental Abatement Council of Canada (EACC) "Lead Guideline" (October 2014)).</p>
-            {{/if}}
-            
+
             <p style="margin-left: 16px;">Paints and surface coatings not sampled are assumed to be lead-containing. Any disturbance of the lead-containing paint should be conducted in accordance the procedures outlined in the Environmental Abatement Council of Canada (EACC) "Lead Guideline" (October 2014) and/or the Ontario Ministry of Labour, Immigration, Training and Skills Development (MLITSD) "Lead on Construction Projects" guideline (April 2011). The extent of procedures (Class or Type of operation) necessary depends on the type of work to be conducted.</p>
             
             {{#if emergencyLighting}}
