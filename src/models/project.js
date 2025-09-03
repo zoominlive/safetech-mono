@@ -100,7 +100,15 @@ module.exports = (sequelize, DataTypes) => {
 
   Project.associate = models => {
     Project.belongsTo(models.User, { foreignKey: 'pm_id', as: 'pm' });
+    // Legacy single technician association (kept temporarily for backward compatibility)
     Project.belongsTo(models.User, { foreignKey: 'technician_id', as: 'technician' });
+    // New many-to-many technicians association
+    Project.belongsToMany(models.User, {
+      through: 'project_technicians',
+      foreignKey: 'project_id',
+      otherKey: 'user_id',
+      as: 'technicians'
+    });
     Project.belongsTo(models.Customer, { foreignKey: 'customer_id', as: 'company' });
     Project.belongsTo(models.Location, { foreignKey: 'location_id', as: 'location' });
     Project.belongsTo(models.ReportTemplate, { foreignKey: 'report_template_id', as: 'reportTemplate' });

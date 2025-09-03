@@ -1331,10 +1331,28 @@
                 {{/each}}
             </ul>
             {{/if}}
+            
+            <!-- Area-specific mercury recommendations based on lamp count -->
+            {{#if areaMercuryRecommendations.length}}
+            {{#each areaMercuryRecommendations}}
+            <p style="margin-left: 16px;"><strong>{{this.areaName}}:</strong> {{this.recommendation}}</p>
+            {{/each}}
             {{/if}}
             
+            <!-- Mercury-containing equipment removal recommendations -->
+            {{#if mercuryEquipmentRemovalRecommendation}}
+            <p style="margin-left: 16px;">{{mercuryEquipmentRemovalRecommendation}}</p>
+            {{/if}}
+            {{/if}}
+            <p style="margin-left: 16px;">Although no mercury was visibly identified in other equipment, dismantling of equipment was not conducted to verify the presence/absence of mercury.  It is cautioned that thermometers, barometers and other measuring devices (pressure gauges/sensors, vacuum gauges, manometers, etc.), thermostats and a variety of other electrical switches (temperature sensitive, tilt switches, float switches, etc.) may contain mercury that may not be visible without dismantling the equipment.  Such devices should be assumed to contain mercury until proven otherwise and similar precautions to those outlined above should be taken if any of these items are to be disturbed or taken out of service in the future. </p>
             <!-- Section 3.1.4 Silica -->
             <div style="font-weight: bold; margin-left: 16px;" id="silica-conclusions">3.1.4 Silica</div>
+            <p style="margin-left: 16px;">Suspect silica-containing materials were identified to be present in the project areas.  In their current state, building materials containing silica do not represent a risk to building occupants or construction workers.  Risks associated with exposure to silica arise during demolition activities that cause silica dust to be created (particularly grinding, drilling or cutting operations and during major demolition), resulting in a crystalline silica inhalation hazard.</p>
+
+            <p style="margin-left: 16px;">If any materials suspected to contain silica are to be removed or otherwise disturbed as a result of renovation/demolition activities it is recommended that procedures be put in place to control the generation of dust (such as routine water misting) and thus reduce the potential for worker exposure.  Workers that have the potential to be exposed to airborne silica should also wear appropriate protective clothing and respiratory protection.  </p>
+
+            <p style="margin-left: 16px;">Any work involving the disturbance of silica-containing materials should follow the procedures outlined in the Ontario MLITSD “Silica on Construction Projects” guideline (April 2011). The appropriate engineering controls, work practices, hygiene practices, personal protective measures and training necessary to conduct the work in a safe manner are provided in this guideline.  The general measures and procedures (or Type of operation) necessary depends on the type of work to be conducted. The following table outlines the classification of silica disturbance based on the Ontario MLITSD guideline.</p>
+
             {{#if silicaFound}}
             <p style="margin-left: 16px;">Results of the assessment indicated that the following silica-containing materials are present in the project areas that may be disturbed as part of the construction project. Therefore, these materials are considered to be silica-containing and specific measures and procedures are required to be followed during renovation or demolition projects that have the potential to disturb this material.</p>
             <ul style="margin-left: 32px;">
@@ -1400,6 +1418,9 @@
             <div style="font-weight: bold; margin-left: 32px;">3.2.2.1 Mould Contamination</div>
             {{#if mouldContamination}}
             <p style="margin-left: 32px;">Suspect mould growth was identified on {{mouldAreas}}. Removal should follow mould remediation procedures following the methods outlined in the Environmental Abatement Council of Canada's (EACC) Mould Abatement Guidelines (Edition 3).</p>
+            {{#if mouldLocationsHtml}}
+            <div style="margin-left: 32px;">{{{mouldLocationsHtml}}}</div>
+            {{/if}}
             {{else}}
             <p style="margin-left: 32px;">No mould contamination was identified in the project areas and no further action is required at this time. Although no obvious mould contamination or evidence to suggest possible hidden mould contamination was identified in the project areas, there is still a potential for hidden mould growth to exist behind or underneath building finishes. Should suspect mould growth be discovered during the course of renovation or demolition work, Safetech recommends that all work stop so that the area can be assessed to evaluate proper control measures and remediation protocols in order to avoid worker exposure to mould and possible contamination of adjacent areas.</p>
             {{/if}}
@@ -1421,23 +1442,39 @@
             
             <!-- Section 3.2.3.1 Polychlorinated Biphenyls (PCBs) -->
             <div style="font-weight: bold; margin-left: 32px;">3.2.3.1 Polychlorinated Biphenyls (PCBs)</div>
-            {{#if pcbObserved}}
-            <p style="margin-left: 32px;">The federal government has set strict regulations for the handling, storage and disposal of PCBs. The PCB Regulations (SOR/2008-273) came into effect on September 5th, 2008 and consolidates and replaces the Chlorobiphenyls Regulations (SOR/91-152) and the Storage of PCB Material Regulations (SOR/92-507). The purpose of the PCB Regulations is to improve the protection of Canada's environment and the health of Canadians by minimizing the risks posed by the use, storage and release of PCBs by accelerating the elimination of these substances.</p>
-            <p style="margin-left: 32px;">As of December 31, 2009 all current PCB storage sites are to have been eliminated and there should no longer be any electrical capacitors, electrical transformers, electromagnets, heat transfer equipment or any other equipment in service that contains PCBs at a concentration greater than 500 mg/kg (500 ppm). As of this time, all of this equipment should have been removed from service and sent for destruction. Furthermore, the PCB Regulations restricts the use of equipment containing PCBs (other than light ballasts or pole-top electrical transformers) at concentrations exceeding 50 mg/kg (50 ppm) in sensitive areas (such as drinking water treatment plants, schools, hospitals and senior citizen care facilities) by the same date. All other locations have until December 31, 2025 to decommission equipment containing 50 ppm to 500 ppm PCBs. The assessment confirmed that some of the existing fluorescent light ballasts contain PCB's.</p>
-            {{#if pcbLightFixtures}}
-            <p style="margin-left: 32px;">Based on our inspection results, of the approximate {{totalLightFixtures}} light fixtures present throughout the {{lightFixtureLocation}} it is estimated that approximately {{pcbPercentage}}% have ballasts that contain PCBs. Our inspection also identified {{assumedPcbBallasts}} "assumed PCB-containing" light ballast(s) while, based on the age of the building, existing HID lamp ballasts are also "assumed PCB-containing".</p>
-            {{/if}}
-            <p style="margin-left: 32px;">When light fixtures are to be decommissioned all PCB-containing ballasts should be removed and separated from other waste and disposed of as PCB waste at an authorized destruction facility. The PCB content of "assumed PCB-containing" fluorescent light ballasts and HID lamp ballasts should be verified at this time by determining the date of manufacture and other pertinent information by referring to the Environment Canada document entitled "Identification of Lamp Ballasts Containing PCBs" (Report EPS 2/CC/2 (revised) August 1991) to aid in identification.</p>
-            {{#if recentLightingRetrofit}}
-            <p style="margin-left: 32px;">Newer T8 lamps present in some of the four lamp fluorescent light fixtures indicate that a partial lighting retrofit has taken place. These newer T8 lamps use ballasts that do not contain PCBs. Therefore, light fixtures containing T8 lamps are not expected to contain PCB ballasts. However, it should be cautioned that since only the lamps were retrofitted (and not the entire light fixture) there is a potential for previous ballasts used with T12 lamps (which may contain PCBs) to be left in place; although this was not identified within the one fixture with T8 lamps that was inspected. Therefore, should renovation/demolition work result in removal and disposal of existing fluorescent light fixtures containing T8 lamps it is still recommended that each fixture is individually assessed for the presence of PCB-containing ballasts and if discovered should be handled and disposed of accordingly as described above.</p>
-            {{/if}}
-            {{#if additionalPcbEquipment}}
-            <p style="margin-left: 32px;">Additional PCB-containing electrical equipment in the form of {{additionalPcbEquipmentType}} was identified in {{additionalPcbLocation}}. Based on information obtained from the nameplate this {{additionalPcbEquipmentType}} has approximately {{pcbPounds}} pounds of {{pcbType}}, which is a trade name for a specific type of PCB. {{additionalPcbEquipmentCount}} {{additionalPcbEquipmentType}} identified in the {{additionalPcbLocation}} was classified as "assumed PCB-containing" as the date of manufacture or other pertinent information could not be identified at the time of the assessment.</p>
-            {{/if}}
-            <p style="margin-left: 32px;">This electrical equipment is not expected to be decommissioned as part of the {{projectName}} and as long as operational can remain in place until the regulated decommissioning deadline of December 31, 2025. At the time of decommissioning any suspect PCB-containing equipment should be verified by referring to the Environment Canada document entitled "Handbook on PCB's in Electrical Equipment" (Third Edition, April 1988) to aid in identification. In some cases, sampling and analysis of the material or liquid may be necessary for full verification.</p>
-            <p style="margin-left: 32px;">When PCB-containing equipment is taken out of service, jurisdiction falls under provincial regulations. As per R.R.O 1990, Regulation 347, General - Waste Management, the land disposal of PCB waste is prohibited. PCB wastes in Ontario are regulated under R.R.O 1990, Regulation 362, Waste Management – PCBs (Reg. 362), made under the Environmental Protection Act. Under this regulation, PCB waste is defined as any waste material containing PCBs at a concentration of more than fifty (50) parts per million by weight (i.e. >50mg/kg), with the exception of an electrical capacitor that has never contained over 1 kg of PCB's. Any PCB-containing equipment taken out of service should be properly handled and disposed of at an authorized destruction facility in accordance with the requirements of Federal Regulation SOR/2008-273 and Reg. 362.</p>
+            {{#if isAfter1980Building}}
+            <p style="margin-left: 32px;">If the building is known to be constructed after 1980, no light fixtures are expected to have PCB-containing ballasts as the manufacture of PCBs in the U.S. was banned in 1979 and Canada banned the import, manufacture and sale of PCBs in 1977. Similarly, no other electrical equipment (such as transformers and capacitors) present in the subject area(s) is expected to contain PCBs based on the age of building construction.</p>
             {{else}}
-            <p style="margin-left: 32px;">No equipment was identified in the project areas that is expected to be PCB-containing. Additionally, it was confirmed that all original T12 fluorescent lights (including the ballasts and complete fixtures) have been replaced with T8 fluorescent lights in the project areas and, therefore, this lighting should not have PCB-containing ballasts. Or, If the building is known to be constructed after 1980, no light fixtures are expected to have PCB-containing ballasts as the manufacture of PCBs in the U.S. was banned in 1979 and Canada banned the import, manufacture and sale of PCBs in 1977. Similarly, no other electrical equipment (such as transformers and capacitors) present in the subject area(s) is expected to contain PCBs based on the age of building construction.</p>
+              {{#if pcbObserved}}
+              <p style="margin-left: 32px;">The federal government has set strict regulations for the handling, storage and disposal of PCBs. The PCB Regulations (SOR/2008-273) came into effect on September 5th, 2008 and consolidates and replaces the Chlorobiphenyls Regulations (SOR/91-152) and the Storage of PCB Material Regulations (SOR/92-507). The purpose of the PCB Regulations is to improve the protection of Canada's environment and the health of Canadians by minimizing the risks posed by the use, storage and release of PCBs by accelerating the elimination of these substances.</p>
+              <p style="margin-left: 32px;">As of December 31, 2009 all current PCB storage sites are to have been eliminated and there should no longer be any electrical capacitors, electrical transformers, electromagnets, heat transfer equipment or any other equipment in service that contains PCBs at a concentration greater than 500 mg/kg (500 ppm). As of this time, all of this equipment should have been removed from service and sent for destruction. Furthermore, the PCB Regulations restricts the use of equipment containing PCBs (other than light ballasts or pole-top electrical transformers) at concentrations exceeding 50 mg/kg (50 ppm) in sensitive areas (such as drinking water treatment plants, schools, hospitals and senior citizen care facilities) by the same date. All other locations have until December 31, 2025 to decommission equipment containing 50 ppm to 500 ppm PCBs. The assessment confirmed that some of the existing fluorescent light ballasts contain PCB's.</p>
+              {{#if pcbLightFixtures}}
+              <p style="margin-left: 32px;">Based on our inspection results, of the approximate {{totalLightFixtures}} light fixtures present throughout the {{lightFixtureLocation}} it is estimated that approximately {{pcbPercentage}}% have ballasts that contain PCBs. Our inspection also identified {{assumedPcbBallasts}} "assumed PCB-containing" light ballast(s) while, based on the age of the building, existing HID lamp ballasts are also "assumed PCB-containing".</p>
+              {{/if}}
+              {{#if hidLightsPresent}}
+              <p style="margin-left: 32px;">When light fixtures are to be decommissioned all PCB-containing ballasts should be removed and separated from other waste and disposed of as PCB waste at an authorized destruction facility. The PCB content of "assumed PCB-containing" fluorescent light ballasts and HID lamp ballasts should be verified at this time by determining the date of manufacture and other pertinent information by referring to the Environment Canada document entitled "Identification of Lamp Ballasts Containing PCBs" (Report EPS 2/CC/2 (revised) August 1991) to aid in identification.</p>
+              {{/if}}
+              {{#if fluorescentFixtures}}
+              <p style="margin-left: 32px;">Existing fluorescent light ballasts are assumed to contain PCBs. When light fixtures are to be decommissioned, all ballasts should be verified at this time by determining the date of manufacture and other pertinent information by referring to the Environment Canada document entitled "Identification of Lamp Ballasts Containing PCBs" (Report EPS 2/CC/2 (revised) August 1991) to aid in identification. Any ballasts that meet the criteria outlined in this document must be treated as PCB containing.</p>
+              {{/if}}
+              {{#if hidLightsPresent}}
+              {{#unless fluorescentFixtures}}
+              <p style="margin-left: 32px;">Existing fluorescent light ballasts are assumed to contain PCBs. When light fixtures are to be decommissioned, all ballasts should be verified at this time by determining the date of manufacture and other pertinent information by referring to the Environment Canada document entitled "Identification of Lamp Ballasts Containing PCBs" (Report EPS 2/CC/2 (revised) August 1991) to aid in identification. Any ballasts that meet the criteria outlined in this document must be treated as PCB containing.</p>
+              {{/unless}}
+              {{/if}}
+              {{#if recentLightingRetrofit}}
+              <p style="margin-left: 32px;">Newer T8 lamps present in some of the four lamp fluorescent light fixtures indicate that a partial lighting retrofit has taken place. These newer T8 lamps use ballasts that do not contain PCBs. Therefore, light fixtures containing T8 lamps are not expected to contain PCB ballasts. However, it should be cautioned that since only the lamps were retrofitted (and not the entire light fixture) there is a potential for previous ballasts used with T12 lamps (which may contain PCBs) to be left in place; although this was not identified within the one fixture with T8 lamps that was inspected. Therefore, should renovation/demolition work result in removal and disposal of existing fluorescent light fixtures containing T8 lamps it is still recommended that each fixture is individually assessed for the presence of PCB-containing ballasts and if discovered should be handled and disposed of accordingly as described above.</p>
+              {{/if}}
+              {{#if additionalPcbEquipment}}
+              <p style="margin-left: 32px;">Additional PCB-containing electrical equipment in the form of {{additionalPcbEquipmentType}} was identified in {{additionalPcbLocation}}. Based on information obtained from the nameplate this {{additionalPcbEquipmentType}} has approximately {{pcbPounds}} pounds of {{pcbType}}, which is a trade name for a specific type of PCB. {{additionalPcbEquipmentCount}} {{additionalPcbEquipmentType}} identified in the {{additionalPcbLocation}} was classified as "assumed PCB-containing" as the date of manufacture or other pertinent information could not be identified at the time of the assessment.</p>
+              {{/if}}
+              <p style="margin-left: 32px;">This electrical equipment is not expected to be decommissioned as part of the {{projectName}} and as long as operational can remain in place until the regulated decommissioning deadline of December 31, 2025. At the time of decommissioning any suspect PCB-containing equipment should be verified by referring to the Environment Canada document entitled "Handbook on PCB's in Electrical Equipment" (Third Edition, April 1988) to aid in identification. In some cases, sampling and analysis of the material or liquid may be necessary for full verification.</p>
+              {{#if pcbObserved}}
+              <p style="margin-left: 32px;">When PCB-containing equipment is taken out of service, jurisdiction falls under provincial regulations. As per R.R.O 1990, Regulation 347, General - Waste Management, the land disposal of PCB waste is prohibited. PCB wastes in Ontario are regulated under R.R.O 1990, Regulation 362, Waste Management – PCBs (Reg. 362), made under the Environmental Protection Act. Under this regulation, PCB waste is defined as any waste material containing PCBs at a concentration of more than fifty (50) parts per million by weight (i.e. >50mg/kg), with the exception of an electrical capacitor that has never contained over 1 kg of PCB's. Any PCB-containing equipment taken out of service should be properly handled and disposed of at an authorized destruction facility in accordance with the requirements of Federal Regulation SOR/2008-273 and Reg. 362.</p>
+              {{/if}}
+              {{else}}
+              <p style="margin-left: 32px;">No equipment was identified in the project areas that is expected to be PCB-containing. Additionally, it was confirmed that all original T12 fluorescent lights (including the ballasts and complete fixtures) have been replaced with T8 fluorescent lights in the project areas and, therefore, this lighting should not have PCB-containing ballasts. Or, If the building is known to be constructed after 1980, no light fixtures are expected to have PCB-containing ballasts as the manufacture of PCBs in the U.S. was banned in 1979 and Canada banned the import, manufacture and sale of PCBs in 1977. Similarly, no other electrical equipment (such as transformers and capacitors) present in the subject area(s) is expected to contain PCBs based on the age of building construction.</p>
+              {{/if}}
             {{/if}}
             
             <!-- Section 3.2.3.2 Ozone Depleting and Global Warming Substances -->
@@ -1515,6 +1552,80 @@
                 {{else}}
                 <tr>
                     <td colspan="10">No asbestos-containing materials data available for summary.</td>
+                </tr>
+                {{/if}}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- APPENDIX C: Laboratory Certificate of Analysis – Asbestos -->
+    <div class="section appendix" id="appendix-c">
+        <h3>Appendix C: Laboratory Certificate of Analysis – Asbestos</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sample No.</th>
+                    <th>Area</th>
+                    <th>Material Type</th>
+                    <th>Location</th>
+                    <th>Description</th>
+                    <th>Square Footage</th>
+                    <th>% Asbestos</th>
+                    <th>Asbestos Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#if appendixCAsbestos.length}}
+                {{#each appendixCAsbestos}}
+                <tr>
+                    <td>{{this.sampleNo}}</td>
+                    <td>{{this.areaName}}</td>
+                    <td>{{this.materialType}}</td>
+                    <td>{{this.location}}</td>
+                    <td>{{this.description}}</td>
+                    <td>{{this.squareFootage}}</td>
+                    <td>{{this.percentageAsbestos}}</td>
+                    <td>{{this.asbestosType}}</td>
+                </tr>
+                {{/each}}
+                {{else}}
+                <tr>
+                    <td colspan="8">No asbestos laboratory certificate data available.</td>
+                </tr>
+                {{/if}}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- APPENDIX D: Laboratory Certificate of Analysis – Lead -->
+    <div class="section appendix" id="appendix-d">
+        <h3>Appendix D: Laboratory Certificate of Analysis – Lead</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sample No.</th>
+                    <th>Area</th>
+                    <th>Material Type</th>
+                    <th>Location</th>
+                    <th>Description</th>
+                    <th>% Lead</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#if appendixDLead.length}}
+                {{#each appendixDLead}}
+                <tr>
+                    <td>{{this.sampleNo}}</td>
+                    <td>{{this.areaName}}</td>
+                    <td>{{this.materialType}}</td>
+                    <td>{{this.location}}</td>
+                    <td>{{this.description}}</td>
+                    <td>{{this.percentageLead}}</td>
+                </tr>
+                {{/each}}
+                {{else}}
+                <tr>
+                    <td colspan="6">No lead laboratory certificate data available.</td>
                 </tr>
                 {{/if}}
             </tbody>

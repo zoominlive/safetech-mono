@@ -103,7 +103,15 @@ module.exports = (sequelize, DataTypes) => {
 
   User.associate = models => {
     User.hasMany(models.Project, { foreignKey: 'pm_id', as: 'managedProjects' });
+    // Legacy: single technician_id reference
     User.hasMany(models.Project, { foreignKey: 'technician_id', as: 'assignedProjects' });
+    // New many-to-many association for projects where user is a technician
+    User.belongsToMany(models.Project, {
+      through: 'project_technicians',
+      foreignKey: 'user_id',
+      otherKey: 'project_id',
+      as: 'technicianProjects'
+    });
   };
 
   return User;

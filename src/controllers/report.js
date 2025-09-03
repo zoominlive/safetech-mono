@@ -174,7 +174,8 @@ exports.getReportById = async (req, res, next) => {
           include: [
             { model: Customer, as: 'company' },
             { model: User, as: 'pm' },
-            { model: User, as: 'technician' }
+            { model: User, as: 'technician' },
+            { model: User, as: 'technicians', through: { attributes: [] } }
           ]
         },
         { model: ReportTemplate, as: 'template' },
@@ -356,6 +357,7 @@ exports.generatePDFReport = async (req, res, next) => {
           include: [
             { model: Customer, as: 'company' },
             { model: User, as: 'technician' },
+            { model: User, as: 'technicians', through: { attributes: [] } },
             { model: User, as: 'pm' },
             { model: Location, as: 'location' }
           ]
@@ -401,7 +403,7 @@ exports.generatePDFReport = async (req, res, next) => {
     console.log('Generating header template...');
     const headerTemplate = getHeaderTemplate('coloredsafetech.png');
     console.log('Header template generated, length:', headerTemplate.length);
-    console.log("templateData=>", templateData);
+    // console.log("templateData=>", templateData);
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
@@ -661,6 +663,7 @@ exports.sendReportToCustomer = async (req, res, next) => {
             { model: Customer, as: 'company' },
             { model: User, as: 'pm' },
             { model: User, as: 'technician' },
+            { model: User, as: 'technicians', through: { attributes: [] } },
             { model: Location, as: 'location' }
           ]
         },
@@ -763,8 +766,9 @@ exports.submitToPMReview = async (req, res, next) => {
       });
     }
 
-    // Check if report belongs to the technician
-    if (report.project.technician_id !== user.id) {
+    // Check if report belongs to the technician (M2M or legacy field)
+    const isAssignedTech = (report.project.technicians || []).some(t => t.id === user.id) || report.project.technician_id === user.id;
+    if (!isAssignedTech) {
       const ApiError = new APIError(NOT_ACCESS, "You can only submit your own reports", BAD_REQUEST);
       return ErrorHandler(ApiError, req, res, next);
     }

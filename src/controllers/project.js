@@ -37,6 +37,7 @@ exports.createProject = async (req, res, next) => {
       report_id,
       pm_id,
       technician_id,
+      technician_ids,
       customer_id,
       start_date,
       end_date,
@@ -46,6 +47,11 @@ exports.createProject = async (req, res, next) => {
       const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
       return ErrorHandler(ApiError, req, res, next);
     }
+
+    // Determine legacy technician_id for backward compatibility
+    const legacyTechnicianId = Array.isArray(technician_ids) && technician_ids.length > 0
+      ? technician_ids[0]
+      : technician_id;
 
     const projectCreated = await Project.create(
       {
@@ -62,13 +68,21 @@ exports.createProject = async (req, res, next) => {
         specific_location: specific_location,
         report_id: report_id,
         pm_id: pm_id,
-        technician_id: technician_id,
+        technician_id: legacyTechnicianId,
         customer_id: customer_id,
         start_date: start_date,
         end_date: end_date,
       },
       { transaction }
     );
+
+    // Attach technicians via M2M if provided
+    if (Array.isArray(technician_ids) && technician_ids.length > 0) {
+      await projectCreated.setTechnicians(technician_ids, { transaction });
+    } else if (legacyTechnicianId) {
+      // Ensure at least the legacy technician is linked in M2M
+      await projectCreated.setTechnicians([legacyTechnicianId], { transaction });
+    }
 
     // Find the report template to get its name
     const reportTemplate = await ReportTemplate.findByPk(projectCreated.report_template_id, { transaction });
@@ -108,15 +122,22 @@ exports.getAllProjects = async (req, res, next) => {
     const associations = [
       { alias: "company", model: Customer, fields: ["company_name", "first_name", "last_name"] },
       { alias: "technician", model: User, fields: ["first_name", "last_name"] },
+      { alias: "technicians", model: User, fields: ["first_name", "last_name"] },
     ];
     const filters = useFilter(req.query, Project, associations);
     let whereCondition = {
       ...filters.filter,
       ...filters.search,
     };
-    // If user is a technician, only show their projects
+    // Build include filters for technicians
+    const includeTechnicians = { model: User, as: "technicians", attributes: ["id", "first_name", "last_name"], through: { attributes: [] } };
+    let technicianWhere = null;
+    let technicianRequired = false;
+
+    // If user is a technician, only show their projects (via M2M)
     if (req.user && req.user.role === USER_ROLE.TECHNICIAN) {
-      whereCondition.technician_id = req.user.id;
+      technicianWhere = { id: req.user.id };
+      technicianRequired = true;
     }
     // Filter by status (now supports multiple statuses)
     if (req.query.statusFilter && req.query.statusFilter !== "all") {
@@ -134,12 +155,14 @@ exports.getAllProjects = async (req, res, next) => {
       // Support comma-separated string
       whereCondition.pm_id = { [Op.in]: req.query.pm_ids.split(',').map(s => s.trim()) };
     }
-    // Filter by Technicians (technician_ids as array)
+    // Filter by Technicians (technician_ids as array) using M2M
     if (req.query.technician_ids && Array.isArray(req.query.technician_ids)) {
-      whereCondition.technician_id = { [Op.in]: req.query.technician_ids };
+      technicianWhere = { id: { [Op.in]: req.query.technician_ids } };
+      technicianRequired = true;
     } else if (req.query.technician_ids && typeof req.query.technician_ids === 'string') {
       // Support comma-separated string
-      whereCondition.technician_id = { [Op.in]: req.query.technician_ids.split(',').map(s => s.trim()) };
+      technicianWhere = { id: { [Op.in]: req.query.technician_ids.split(',').map(s => s.trim()) } };
+      technicianRequired = true;
     }
     // Filter by start_date (exact match or range)
     if (req.query.start_date) {
@@ -163,7 +186,10 @@ exports.getAllProjects = async (req, res, next) => {
     };
     options.include = [
       { model: Customer, as: "company", attributes: ["id", "company_name", "first_name", "last_name"], required: true },
-      { model: User, as: "technician", attributes: ["id", "first_name", "last_name"], required: true },
+      // Legacy single technician include (keep for backward compatibility/UI)
+      { model: User, as: "technician", attributes: ["id", "first_name", "last_name"], required: false },
+      // Multi-technicians include
+      { ...includeTechnicians, required: technicianRequired, where: technicianWhere || undefined },
       { model: User, as: "pm", attributes: ["id", "first_name", "last_name"] },
       { model: Location, as: "location", attributes: ["id", "name"] },
       { model: Report, as: "reports", attributes: ["id", "name"] },
@@ -187,6 +213,7 @@ exports.getProjectById = async (req, res, next) => {
       include: [
         { model: Customer, as: "company", attributes: ["id", "company_name", "first_name", "last_name"] },
         { model: User, as: "technician", attributes: ["id", "first_name", "last_name"] },
+        { model: User, as: "technicians", attributes: ["id", "first_name", "last_name"], through: { attributes: [] } },
         { model: User, as: "pm", attributes: ["id", "first_name", "last_name"] },
         { model: Location, as: "location", attributes: ["id", "name"] },
         { model: Report, as: "reports", attributes: ["id", "name", "date_of_assessment", "date_of_loss", "assessment_due_to"] },
@@ -226,6 +253,7 @@ exports.updateProject = async (req, res, next) => {
       report_id,
       pm_id,
       technician_id,
+      technician_ids,
       customer_id,
       start_date,
       end_date,
@@ -262,7 +290,7 @@ exports.updateProject = async (req, res, next) => {
           specific_location: specific_location,
           report_id: report_id,
           pm_id: pm_id,
-          technician_id: technician_id,
+          technician_id: Array.isArray(technician_ids) && technician_ids.length > 0 ? technician_ids[0] : technician_id,
           customer_id: customer_id,
           start_date: start_date,
           end_date: end_date,
@@ -280,13 +308,25 @@ exports.updateProject = async (req, res, next) => {
           .json({ code: NOT_FOUND, message: NO_RECORD_FOUND, success: false });
       }
   
+      // Update technicians M2M if provided
       const updatedProject = await Project.findByPk(id);
+      if (Array.isArray(technician_ids)) {
+        await updatedProject.setTechnicians(technician_ids);
+      } else if (technician_id) {
+        await updatedProject.setTechnicians([technician_id]);
+      }
+
+      const reloaded = await Project.findByPk(id, {
+        include: [
+          { model: User, as: 'technicians', attributes: ['id', 'first_name', 'last_name'], through: { attributes: [] } }
+        ]
+      });
       res
         .status(OK)
         .json({
           code: OK,
           message: RECORD_UPDATED,
-          data: updatedProject,
+          data: reloaded,
           success: true,
         });
     }
@@ -362,7 +402,11 @@ exports.updateProjectStatus = async (req, res, next) => {
     }
 
     // Find the project
-    const project = await Project.findByPk(projectId);
+    const project = await Project.findByPk(projectId, {
+      include: [
+        { model: User, as: 'technicians', attributes: ['id'], through: { attributes: [] } }
+      ]
+    });
     if (!project) {
       return res.status(NOT_FOUND).json({ 
         code: NOT_FOUND, 
@@ -373,15 +417,12 @@ exports.updateProjectStatus = async (req, res, next) => {
 
     // Check permissions based on role and status transition
     if (user.role === USER_ROLE.TECHNICIAN) {
-      // Technicians can only update to "In Progress" for their own projects
-      if (project.technician_id !== user.id) {
+      // Technicians can only update for their assigned projects
+      const isAssigned = (project.technicians || []).some(t => t.id === user.id) || project.technician_id === user.id;
+      if (!isAssigned) {
         const ApiError = new APIError(NOT_ACCESS, "You can only update status for your assigned projects", BAD_REQUEST);
         return ErrorHandler(ApiError, req, res, next);
       }
-      // if (status !== 'In Progress') {
-      //   const ApiError = new APIError(NOT_ACCESS, "Technicians can only set status to 'In Progress'", BAD_REQUEST);
-      //   return ErrorHandler(ApiError, req, res, next);
-      // }
     } else if (user.role === USER_ROLE.PROJECT_MANAGER) {
       // PMs can update status for their assigned projects
       if (project.pm_id !== user.id) {

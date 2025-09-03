@@ -1043,14 +1043,16 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
   };
 
   areaDetails.forEach(area => {
-    // Check if PCB was observed in any area
-    if (area.pcbObserved === 'Yes') {
+    // Check if PCB was observed in any area (supports nested assessments)
+    const a = area && area.assessments ? area.assessments : area;
+    if (a && a.pcbObserved === 'Yes') {
       pcbData.pcbObserved = true;
     }
 
     // Collect PCB electrical equipment data
-    if (area.pcbElectricalEquipmentTable && Array.isArray(area.pcbElectricalEquipmentTable)) {
-      area.pcbElectricalEquipmentTable.forEach(equipment => {
+    const a2 = area && area.assessments ? area.assessments : area;
+    if (a2.pcbElectricalEquipmentTable && Array.isArray(a2.pcbElectricalEquipmentTable)) {
+      a2.pcbElectricalEquipmentTable.forEach(equipment => {
         // Only add if equipment has meaningful data
         if (equipment.tableLocation || equipment.tablePcbIdInfo || equipment.tablePcbContent ||
             equipment.tableManufacturer || equipment.tableElectricalEquipment) {
@@ -1229,8 +1231,20 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
       substance: 'Mercury',
       findings: `The following mercury-containing materials were identified in the subject area that may be impacted during the project:<ul>${allMercuryMaterials.length > 0 ? allMercuryMaterials.map(material => `<li>${material}</li>`).join('') : '<li>N/A</li>'}</ul>
       ${suspectMercuryMaterials.length > 0 ? 'The following building materials are suspected to be mercury-containing:<ul>' + suspectMercuryMaterials.map(material => `<li>${material}</li>`).join('') + '</ul>' : ''}`,
-      // recommendations: getMercuryRecommendations(areaDetails),
-      recommendations: `If required, handle mercury-containing materials with care and keep intact. All waste lamps and vials are recommended to be sent to a recycling facility according to R.R.O. 1990, Regulation 347, General-Waste Management.`,
+      recommendations: (() => {
+        // Check if any area has lamps with count <= 15
+        const hasLowLampCount = areaDetails.some(area => 
+          area.hasLamps === 'Yes' && 
+          area.lampCount === '<=15'
+        );
+        
+        if (hasLowLampCount) {
+          const projectType = primaryArea.projectType || 'Project';
+          return `Fluorescent and HID lamps that require removal should be handled with care and kept intact to avoid potential exposure to mercury vapour present within the lamps. Under Reg. 347, waste mercury produced in amounts less than 5 kilograms (kg) in any month or otherwise accumulated in an amount less than 5 kg are exempt from hazardous waste registration, treatment and disposal requirements and can be disposed of in landfill as regular waste. Larger quantities of waste mercury must be treated and disposed of in accordance with the requirements of Reg. 347. Although it is anticipated that less than 5 kg of waste lamps will be produced as part of the ${projectType} Project, to prevent the release of mercury into the environment, Safetech recommends that all waste lamps be sent to a lamp recycling facility and not disposed of in landfill.`;
+        } else {
+          return `Fluorescent and HID lamps that require removal should be handled with care and kept intact to avoid potential exposure to mercury vapour present within the lamps.`;
+        }
+      })(),
     },
     {
       substance: 'Silica',
@@ -1817,8 +1831,184 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     };
   });
 
-  // Flag if any area reported mould growth explicitly
-  const isMouldGrowthObserved = areaDetails.some(area => area.moldGrowth === 'Yes');
+  // Flag if any area reported mould growth explicitly (supports nested assessments)
+  const isMouldGrowthObserved = areaDetails.some(area => {
+    const a = area && area.assessments ? area.assessments : area;
+    return a && a.moldGrowth === 'Yes';
+  });
+  console.log("filteredareas with mould contamination=>", areaDetails
+    .map(area => area));
+  // Compute mould contamination based on mouldMaterials presence and mould growth flag per area (supports nested assessments)
+  const mouldAreasList = areaDetails
+    .filter(area => {
+      const a = area && area.assessments ? area.assessments : area;
+      return a && a.moldGrowth === 'Yes' && Array.isArray(a.mouldMaterials) && a.mouldMaterials.length > 0;
+    })
+    .map(area => area.name || area.id || `Area ${area.areaNumber || ''}`);
+  const mouldAreas = mouldAreasList.join(', ');
+  const mouldContamination = mouldAreasList.length > 0;
+
+  // Aggregate mould material locations (supports nested assessments)
+  const mouldLocationsList = [];
+  areaDetails.forEach(area => {
+    const a = area && area.assessments ? area.assessments : area;
+    if (!(a && a.moldGrowth === 'Yes' && Array.isArray(a.mouldMaterials) && a.mouldMaterials.length > 0)) return;
+    a.mouldMaterials.forEach(item => {
+      const loc = (item && item.location ? String(item.location).trim() : '');
+      if (loc) mouldLocationsList.push(loc);
+    });
+  });
+  const mouldLocationsHtml = mouldLocationsList.length > 0
+    ? `<ul>${mouldLocationsList.map(l => `<li>${l}</li>`).join('')}</ul>`
+    : '';
+
+  // Pest infestation evaluation across areas (supports nested assessments)
+  const pestAreas = areaDetails.map(area => ({
+    areaName: area.name || area.id || `Area ${area.areaNumber || ''}`,
+    a: area && area.assessments ? area.assessments : area
+  }));
+  const pestInfestation = pestAreas.some(({ a }) => a && a.pestInfestationObserved === 'Yes');
+  const mouseInfestation = pestAreas.some(({ a }) => Array.isArray(a && a.infestationTypeSelect) && a.infestationTypeSelect.includes('Mouse'));
+  // Gather non-mouse infestation types
+  const pestTypes = [];
+  pestAreas.forEach(({ a }) => {
+    const types = Array.isArray(a && a.infestationTypeSelect) ? a.infestationTypeSelect : [];
+    types.forEach(t => {
+      if (t && t !== 'Mouse' && !pestTypes.includes(t)) {
+        pestTypes.push(t);
+      }
+    });
+  });
+  const pestType = pestTypes.join(', ');
+  // Pick the first available droppings location and prefix with a preposition
+  let pestLocation = '';
+  for (const { a } of pestAreas) {
+    if (a && typeof a.droppingsLocation === 'string' && a.droppingsLocation.trim() !== '') {
+      pestLocation = `on ${a.droppingsLocation.trim()}`;
+      break;
+    }
+  }
+
+  // Building construction year flag (supports nested assessments)
+  const isAfter1980Building = areaDetails.some(area => {
+    const a = area && area.assessments ? area.assessments : area;
+    return a && a.buildingConstructionYear === 'After 1980';
+  });
+
+  // HID lights present flag (supports nested assessments)
+  const hidLightsPresent = areaDetails.some(area => {
+    const a = area && area.assessments ? area.assessments : area;
+    return a && a.hidLightsPresent === 'Yes';
+  });
+
+  // Fluorescent fixtures present flag (supports nested assessments)
+  const fluorescentFixtures = areaDetails.some(area => {
+    const a = area && area.assessments ? area.assessments : area;
+    return a && a.fluorescentFixtures === 'Yes';
+  });
+
+  // Recent lighting retrofit flag (supports nested assessments)
+  const recentLightingRetrofit = areaDetails.some(area => {
+    const a = area && area.assessments ? area.assessments : area;
+    return a && a.recentLightingRetrofit === 'Yes';
+  });
+
+  // ODS observed flag (supports nested assessments)
+  const odsObserved = areaDetails.some(area => {
+    const a = area && area.assessments ? area.assessments : area;
+    return a && a.odsObserved === 'Yes';
+  });
+
+  // Fire extinguishing equipment flag (supports nested assessments)
+  const fireExtinguishingEquipment = areaDetails.some(area => {
+    const a = area && area.assessments ? area.assessments : area;
+    return a && a.fireExtinguishingEquipment === 'Yes';
+  });
+
+  // Air-conditioning details (for Section 3.2.3.2)
+  const airConditioningAreas = areaDetails.filter(area => {
+    const a = area && area.assessments ? area.assessments : area;
+    return a && a.hasAirConditioning === 'Yes';
+  });
+
+  const airConditioningUnits = airConditioningAreas.length > 0;
+
+  // Pick the first area with AC to populate the narrative fields
+  let airConditioningCount = '';
+  let airConditioningSize = '';
+  let airConditioningArea = '';
+  let airConditioningRoom = '';
+  let refrigerantType = '';
+  let refrigerantPounds = '';
+
+  if (airConditioningUnits) {
+    const firstAcArea = airConditioningAreas[0];
+    const a = firstAcArea && firstAcArea.assessments ? firstAcArea.assessments : firstAcArea;
+    airConditioningCount = (a && a.acUnitCount) ? a.acUnitCount : '';
+    airConditioningSize = (a && a.acUnitSize) ? a.acUnitSize : '';
+    airConditioningArea = firstAcArea.name || firstAcArea.id || '';
+
+    // Prefer room/location from area-specific ODS/GWS table if available
+    if (Array.isArray(firstAcArea.odsGwsAssessmentTable) && firstAcArea.odsGwsAssessmentTable.length > 0) {
+      const firstEquip = firstAcArea.odsGwsAssessmentTable[0];
+      airConditioningRoom = (firstEquip && (firstEquip.tableLocation || '')).toString();
+      if (!refrigerantType && firstEquip && firstEquip.tableRefrigerantTypeQuantity) {
+        refrigerantType = firstEquip.tableRefrigerantTypeQuantity;
+      }
+    }
+    // Fallback to consolidated odsData if room not found
+    if (!airConditioningRoom && Array.isArray(odsData && odsData.odsGwsAssessmentTable) && odsData.odsGwsAssessmentTable.length > 0) {
+      airConditioningRoom = odsData.odsGwsAssessmentTable[0].location || '';
+      if (!refrigerantType && odsData.odsGwsAssessmentTable[0].refrigerantType) {
+        refrigerantType = odsData.odsGwsAssessmentTable[0].refrigerantType;
+      }
+    }
+
+    // Prefer explicit answers fields for refrigerant and pounds when present
+    if (a && a.refrigerantType) {
+      refrigerantType = a.refrigerantType;
+    }
+    if (a && a.refrigerantPounds) {
+      refrigerantPounds = a.refrigerantPounds;
+    }
+  }
+
+  // Determine refrigerant class based on lists provided
+  const class1List = [
+    'CFC-11','CFC-12','CFC-13','CFC-111','CFC-112','CFC-113','CFC-114','CFC-115',
+    'CFC-211','CFC-212','CFC-213','CFC-214','CFC-215','CFC-216','CFC-217',
+    'HALON-1011','HALON-1211','HALON-1301','HALON-2402',
+    'CARBON TETRACHLORIDE','METHYL CHLOROFORM'
+  ];
+  const class2List = [
+    'HCFC-21','HCFC-22','HCFC-31','HCFC-121','HCFC-122','HCFC-123','HCFC-124',
+    'HCFC-131','HCFC-132','HCFC-133','HCFC-141','HCFC-142','HCFC-151','HCFC-221',
+    'HCFC-222','HCFC-223','HCFC-224','HCFC-225','HCFC-226','HCFC-231','HCFC-232',
+    'HCFC-233','HCFC-234','HCFC-235','HCFC-241','HCFC-242','HCFC-243','HCFC-244',
+    'HCFC-251','HCFC-252','HCFC-253','HCFC-261','HCFC-262','HCFC-271'
+  ];
+
+  const normalizeRefrigerant = (value) => {
+    const v = (value || '').toString().trim();
+    if (!v) return '';
+    // Normalize common variants like "Halon 1301" -> "HALON-1301"
+    const upper = v.toUpperCase().replace(/\s+/g, '-');
+    // Also handle cases where quantity may be appended, keep only the leading token
+    return upper.split(/[,;\s]/)[0];
+  };
+
+  let refrigerantClass = '';
+  let class1or2Refrigerant = false;
+  if (refrigerantType) {
+    const norm = normalizeRefrigerant(refrigerantType);
+    if (class1List.includes(norm)) {
+      refrigerantClass = '1';
+      class1or2Refrigerant = true;
+    } else if (class2List.includes(norm)) {
+      refrigerantClass = '2';
+      class1or2Refrigerant = true;
+    }
+  }
 
   // Build consolidated Table 5 (Lead-Containing Materials) from leadMaterials across all areas
   // - Single table (not per-area)
@@ -1914,6 +2104,50 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
         });
       });
     }
+  });
+
+  // Appendix C: Laboratory Certificate of Analysis – Asbestos
+  const appendixCAsbestos = [];
+  areaDetails.forEach(area => {
+    const areaName = area.name || area.id || '';
+    const materials = Array.isArray(area.asbestosMaterials) ? area.asbestosMaterials : [];
+    materials.forEach((material, index) => {
+      const sampleCollectedRaw = (material && material.sampleCollected ? material.sampleCollected : '').toString().trim().toLowerCase();
+      const isSampleCollected = sampleCollectedRaw === 'yes' || sampleCollectedRaw === 'true';
+      if (!isSampleCollected) return;
+
+      appendixCAsbestos.push({
+        sampleNo: `${areaName}-${material.sampleNo || `A${index + 1}`}`,
+        areaName: areaName,
+        materialType: material.materialType || material.customMaterialName || '',
+        location: material.location || '',
+        description: material.description || '',
+        squareFootage: material.squareFootage || material.quantity || '',
+        percentageAsbestos: material.percentageAsbestos || '',
+        asbestosType: material.asbestosType || ''
+      });
+    });
+  });
+
+  // Appendix D: Laboratory Certificate of Analysis – Lead
+  const appendixDLead = [];
+  areaDetails.forEach(area => {
+    const areaName = area.name || area.id || '';
+    const materials = Array.isArray(area.leadMaterials) ? area.leadMaterials : [];
+    materials.forEach((material, index) => {
+      const sampleCollectedRaw = (material && material.sampleCollected ? material.sampleCollected : '').toString().trim().toLowerCase();
+      const isSampleCollected = sampleCollectedRaw === 'yes' || sampleCollectedRaw === 'true';
+      if (!isSampleCollected) return;
+
+      appendixDLead.push({
+        sampleNo: `${areaName}-${material.sampleNo || `L${index + 1}`}`,
+        areaName: areaName,
+        materialType: material.materialType || material.customMaterialName || '',
+        location: material.location || '',
+        description: material.description || '',
+        percentageLead: material.percentageLead || ''
+      });
+    });
   });
 
   // Area-specific sectioned output for clarity
@@ -2306,7 +2540,8 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
   if (emergencyLighting && !emergencyLightingLocation) {
     emergencyLightingLocation = 'throughout the project areas';
   }
-
+  console.log("mouldAreas=>", mouldAreas);
+  console.log("mouldContamination=>", mouldContamination);
   return {
     // Basic report information
     reportName: report.name || 'Comprehensive Designated Substances and Hazardous Materials Assessment Report',
@@ -2411,6 +2646,35 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     // Consolidated Table 6 mapping
     mouldAssessmentTable,
     isMouldGrowthObserved,
+    // Mould contamination flags/text for Section 3.2.2.1
+    mouldContamination,
+    mouldAreas,
+    mouldLocationsHtml,
+    // Pest infestation flags/text for Section 3.2.2.2
+    pestInfestation,
+    mouseInfestation,
+    pestType,
+    pestLocation,
+    isAfter1980Building,
+    hidLightsPresent,
+    fluorescentFixtures,
+    recentLightingRetrofit,
+    // ODS flags and AC narrative fields
+    odsObserved,
+    airConditioningUnits,
+    airConditioningCount,
+    airConditioningSize,
+    airConditioningArea,
+    airConditioningRoom,
+    refrigerantType,
+    refrigerantPounds,
+    refrigerantClass,
+    class1or2Refrigerant,
+    // Appendix C/D data
+    appendixCAsbestos,
+    appendixDLead,
+    fireExtinguishingEquipment,
+    odsObserved,
 
     // Appendix A data
     appendixASummaryTable,
@@ -2420,6 +2684,7 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     isPestInfestationObserved,
     // Consolidated environmental hazard data
     pcbData,
+    pcbObserved: pcbData.pcbObserved,
     odsData,
     // Aggregated PCB flags and values for conditional narrative
     fluorescentFixturesYes,
@@ -2508,6 +2773,59 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
         }
       });
       return nonFriableMaterialTypes.length > 0 ? nonFriableMaterialTypes.join(', ') : null;
+    })(),
+
+    // Area-specific mercury recommendations based on lamp count
+    areaMercuryRecommendations: (() => {
+      const recommendations = [];
+      areaDetails.forEach(area => {
+        if (area.hasLamps === 'Yes' && area.lampCount) {
+          const areaName = area.name || area.id || `Area ${area.areaNumber || ''}`;
+          const lampCount = area.lampCount;
+          const projectType = primaryArea.projectType || 'Project';
+          
+          let recommendation = '';
+          if (lampCount === '<=15') {
+            recommendation = `Fluorescent and HID lamps that require removal should be handled with care and kept intact to avoid potential exposure to mercury vapour present within the lamps. Under Reg. 347, waste mercury produced in amounts less than 5 kilograms (kg) in any month or otherwise accumulated in an amount less than 5 kg are exempt from hazardous waste registration, treatment and disposal requirements and can be disposed of in landfill as regular waste. Larger quantities of waste mercury must be treated and disposed of in accordance with the requirements of Reg. 347. Although it is anticipated that less than 5 kg of waste lamps will be produced as part of the ${projectType} Project, to prevent the release of mercury into the environment, Safetech recommends that all waste lamps be sent to a lamp recycling facility and not disposed of in landfill.`;
+          } else if (lampCount === '>15') {
+            recommendation = `Fluorescent and HID lamps that require removal should be handled with care and kept intact to avoid potential exposure to mercury vapour present within the lamps.`;
+          }
+          
+          if (recommendation) {
+            recommendations.push({
+              areaName: areaName,
+              recommendation: recommendation
+            });
+          }
+        }
+      });
+      return recommendations;
+    })(),
+
+    // Mercury-containing equipment removal recommendations
+    mercuryEquipmentRemovalRecommendation: (() => {
+      // Find the first area with mercury equipment removal status
+      const mercuryEquipmentArea = areaDetails.find(area => 
+        area.willTheMercuryContainingEquipmentBeRemoved
+      );
+      
+      if (!mercuryEquipmentArea) {
+        return null;
+      }
+      
+      const removalStatus = mercuryEquipmentArea.willTheMercuryContainingEquipmentBeRemoved;
+      const projectType = primaryArea.projectType || 'Project';
+      
+      if (removalStatus === 'Removed') {
+        return `Mercury-containing thermostats, thermometers, barometers and other measuring devices (pressure gauges/sensors, vacuum gauges, manometers, etc.), and a variety of other electrical switches (temperature sensitive, tilt switches, float switches, etc.) associated with mechanical equipment are expected to be removed as part of the ${projectType}. Care should be taken not to disturb these items during the work as breakage could cause a spill of liquid mercury. If any of these items are to be removed it should be done so carefully to avoid spillage and stored/packaged in a manner that will prevent breakage or spillage. Any mercury-containing equipment that is to be removed is recommended to be recycled rather than disposed of in landfill.`;
+      } else if (removalStatus === 'Distributed') {
+        return `Mercury-containing thermostats, thermometers, barometers and other measuring devices (pressure gauges/sensors, vacuum gauges, manometers, etc.), and a variety of other electrical switches (temperature sensitive, tilt switches, float switches, etc.) associated with mechanical equipment were observed in the project areas. These items are not expected to be removed as part of the ${projectType}. However, care should be taken not to disturb these items during the work as breakage could cause a spill of liquid mercury. If any of these items are to be removed it should be done so carefully to avoid spillage and stored/packaged in a manner that will prevent breakage or spillage. Any mercury-containing equipment that is to be removed is recommended to be recycled rather than disposed of in landfill.`;
+      } else if (removalStatus === 'Unknown') {
+        // For unknown status, show the "Removed" version as default
+        return `Mercury-containing thermostats, thermometers, barometers and other measuring devices (pressure gauges/sensors, vacuum gauges, manometers, etc.), and a variety of other electrical switches (temperature sensitive, tilt switches, float switches, etc.) associated with mechanical equipment are expected to be removed as part of the ${projectType}. Care should be taken not to disturb these items during the work as breakage could cause a spill of liquid mercury. If any of these items are to be removed it should be done so carefully to avoid spillage and stored/packaged in a manner that will prevent breakage or spillage. Any mercury-containing equipment that is to be removed is recommended to be recycled rather than disposed of in landfill.`;
+      }
+      
+      return null;
     })(),
 };
 };
