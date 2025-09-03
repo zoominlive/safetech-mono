@@ -116,7 +116,9 @@ function ProjectTable({ searchQuery, sortBy, statusFilter, pm_ids, technician_id
             company: project.company?.company_name || '-',
             startDate: formatDate(project.start_date),
             pm: project.pm?.first_name + ' ' + project.pm?.last_name || '-',
-            technician: project.technician?.first_name + ' ' + project.technician?.last_name || '-',
+            technician: project.technicians && project.technicians.length > 0 
+              ? project.technicians.map(tech => `${tech.first_name} ${tech.last_name}`).join(', ')
+              : '-',
             status: project.status || 'new',
             latestReportId,
           };

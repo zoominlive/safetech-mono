@@ -23,11 +23,12 @@ interface ProjectsResponse {
         first_name: string;
         last_name: string;
       }
-      technician_id: string,
-      technician: {
+      technician_ids: string[],
+      technicians: Array<{
+        id: string;
         first_name: string;
         last_name: string;
-      },
+      }>,
       company: {
         company_name: string;
         first_name: string;
@@ -68,12 +69,12 @@ export interface ProjectData {
     first_name: string;
     last_name: string;
   };
-  technician_id: string;
-  technician: {
+  technician_ids: string[];
+  technicians: Array<{
     id: string;
     first_name: string;
     last_name: string;
-  },
+  }>;
   customer_id: string;
   company: {
     id: string;
@@ -114,12 +115,12 @@ export interface ProjectResponse {
       name: string;
     },
     pm_id: string,
-    technician_id: string,
-    technician: {
+    technician_ids: string[],
+    technicians: Array<{
       id: string;
       first_name: string;
       last_name: string;
-    },
+    }>,
     pm: {
       id: string;
       first_name: string;

@@ -8,11 +8,19 @@ export const transformPcbSchema = (originalSchema: SchemaSection[]): SchemaSecti
         title: "PCB Assessment",
         fields: [
           {
+            id: "buildingConstructionYear",
+            type: "select",
+            label: "When was this building constructed?",
+            name: "buildingConstructionYear",
+            options: ["Before 1980", "After 1980"],
+          },
+          {
             id: "pcbObserved",
             type: "radio",
             label: "Were any sources of polychlorinated biphenyls (PCBs) observed?",
             name: "pcbObserved",
-            options: ["Yes", "No"]
+            options: ["Yes", "No"],
+            showWhen: "buildingConstructionYear=Before 1980"
           },
           {
             id: "fluorescentFixtures",
@@ -20,14 +28,14 @@ export const transformPcbSchema = (originalSchema: SchemaSection[]): SchemaSecti
             label: "Are there fluorescent light fixtures present?",
             name: "fluorescentFixtures",
             options: ["Yes", "No"],
-            showWhen: "pcbObserved=Yes"
+            showWhen: "pcbObserved=Yes and buildingConstructionYear=Before 1980"
           },
           {
             id: "fixtureType",
             type: "text",
             label: "What type of number light fixtures are they?",
             name: "fixtureType",
-            showWhen: "pcbObserved=Yes"
+            showWhen: "pcbObserved=Yes and buildingConstructionYear=Before 1980"
           },
           {
             id: "fixtureSize",
@@ -35,7 +43,7 @@ export const transformPcbSchema = (originalSchema: SchemaSection[]): SchemaSecti
             label: "What type of light fixtures are they?",
             name: "fixtureSize",
             options: ["T8", "T12"],
-            showWhen: "pcbObserved=Yes"
+            showWhen: "pcbObserved=Yes and buildingConstructionYear=Before 1980"
           },
           {
             id: "hidLightsPresent",
@@ -43,14 +51,14 @@ export const transformPcbSchema = (originalSchema: SchemaSection[]): SchemaSecti
             label: "Was there HID lights?",
             name: "hidLightsPresent",
             options: ["Yes", "No"],
-            showWhen: "pcbObserved=Yes"
+            showWhen: "pcbObserved=Yes and buildingConstructionYear=Before 1980"
           },
           {
             id: "hidLightsCount",
             type: "number",
             label: "How many?",
             name: "hidLightsCount",
-            showWhen: "hidLightsPresent=Yes"
+            showWhen: "hidLightsPresent=Yes and buildingConstructionYear=Before 1980"
           },
           {
             id: "liquidFilledTransformer",
@@ -58,7 +66,7 @@ export const transformPcbSchema = (originalSchema: SchemaSection[]): SchemaSecti
             label: "Was there a liquid-filled transformer(s)?",
             name: "liquidFilledTransformer",
             options: ["Yes", "No"],
-            showWhen: "pcbObserved=Yes"
+            showWhen: "pcbObserved=Yes and buildingConstructionYear=Before 1980"
           },
           {
             id: "transformerLeakageSigns",
@@ -66,14 +74,14 @@ export const transformPcbSchema = (originalSchema: SchemaSection[]): SchemaSecti
             label: "If yes to previous question, was there signs of leakage?",
             name: "transformerLeakageSigns",
             options: ["Yes", "No"],
-            showWhen: "pcbObserved=Yes"
+            showWhen: "pcbObserved=Yes and buildingConstructionYear=Before 1980"
           },
           {
             id: "transformerLeakageLocation",
             type: "text",
             label: "If yes to previous question, where was the leakage?",
             name: "transformerLeakageLocation",
-            showWhen: "transformerLeakageSigns=Yes"
+            showWhen: "pcbObserved=Yes and transformerLeakageSigns=Yes and buildingConstructionYear=Before 1980"
           },
           {
             id: "wallMountedCapacitor",
@@ -81,7 +89,7 @@ export const transformPcbSchema = (originalSchema: SchemaSection[]): SchemaSecti
             label: "Was there a wall-mounted capacitor(s)?",
             name: "wallMountedCapacitor",
             options: ["Yes", "No"],
-            showWhen: "pcbObserved=Yes"
+            showWhen: "pcbObserved=Yes and buildingConstructionYear=Before 1980"
           },
           {
             id: "capacitorLeakageSigns",
@@ -89,7 +97,7 @@ export const transformPcbSchema = (originalSchema: SchemaSection[]): SchemaSecti
             label: "If yes to previous question, was there signs of leakage?",
             name: "capacitorLeakageSigns",
             options: ["Yes", "No"],
-            showWhen: "pcbObserved=Yes"
+            showWhen: "pcbObserved=Yes and buildingConstructionYear=Before 1980"
           },
           {
             id: "recentLightingRetrofit",
@@ -97,20 +105,21 @@ export const transformPcbSchema = (originalSchema: SchemaSection[]): SchemaSecti
             label: "Has the project area/building had a recent lighting retrofit?",
             name: "recentLightingRetrofit",
             options: ["Yes", "No"],
-            showWhen: "pcbObserved=Yes"
+            showWhen: "pcbObserved=Yes and buildingConstructionYear=Before 1980"
           },
           {
             id: "pcbElectricalEquipmentTable",
             type: "repeater",
             label: "Assessment for PCB-Containing Electrical Equipment",
             name: "pcbElectricalEquipmentTable",
-            showWhen: "pcbObserved=Yes",
+            showWhen: "pcbObserved=Yes and buildingConstructionYear=Before 1980",
             fields: [
               { 
                 id: "tableLocation", 
                 type: "text", 
                 label: "Location",
-                name: "tableLocation"
+                name: "tableLocation",
+                showWhen: "pcbObserved=Yes"
               },
               {
                 id: "tableElectricalEquipment",

@@ -34,8 +34,8 @@ export const transformMercurySchema = (originalSchema: SchemaSection[]): SchemaS
             type: "select",
             label: "How many lamps?",
             options: [
-              "<=16",
-              "<16"
+              "<=15",
+              ">15"
               ],
             showWhen: "mercuryObserved=Yes",
             name: "lampCount"

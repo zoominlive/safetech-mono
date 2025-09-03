@@ -742,6 +742,20 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     setSelectedArea(updatedAreas.find(area => area.id === selectedArea?.id) || null);
   };
 
+  // Evaluate showWhen expressions like "a=Yes and b=No" against given assessments
+  const shouldShow = (showWhen: string | undefined, assessments: Record<string, any>): boolean => {
+    if (!showWhen) return true;
+    // Split on case-insensitive "and" with surrounding whitespace
+    const conditions = showWhen.split(/\s+and\s+/i);
+    return conditions.every((condition) => {
+      const [rawKey, rawExpected] = condition.split("=");
+      if (!rawKey || rawExpected === undefined) return false;
+      const key = rawKey.trim();
+      const expected = rawExpected.trim();
+      return assessments[key] === expected;
+    });
+  };
+
   const renderField = (field: SchemaField, area: Area) => {
     const value = area.assessments[field.id];
     const isPrefilledDisabled = alwaysDisabledFields.includes(field.id);
@@ -790,11 +804,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
             {field.fields && field.fields.length > 0 && (
               <div className="space-y-4 mt-4">
                 {field.fields.map((nestedField) => {
-                  let showNestedField = true;
-                  if (nestedField.showWhen) {
-                    const [depKey, depValue] = nestedField.showWhen.split('=');
-                    showNestedField = area.assessments[depKey] === depValue;
-                  }
+                  const showNestedField = shouldShow(nestedField.showWhen, area.assessments);
                   return showNestedField ? (
                     <div key={nestedField.id} className="space-y-2">
                       <Label>
@@ -943,19 +953,11 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
           </div>
         );
       case "conditional": {
-        const conditionKey = field.showWhen?.split('=')[0];
-        const expectedCondition = field.showWhen?.split('=')[1];
-        const conditionValue = area.assessments[conditionKey || ''];
-      
-        if (conditionValue === expectedCondition) {
+        if (shouldShow(field.showWhen, area.assessments)) {
           return (
             <div className="space-y-4">
               {field.fields?.map((nestedField) => {
-                let showNestedField = true;
-                if (nestedField.showWhen) {
-                  const [depKey, depValue] = nestedField.showWhen.split('=');
-                  showNestedField = area.assessments[depKey] === depValue;
-                }
+                const showNestedField = shouldShow(nestedField.showWhen, area.assessments);
                 return showNestedField ? (
                   <div key={nestedField.id} className="space-y-2">
                     <Label>
@@ -2601,7 +2603,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                         <img
                           src={selectedArea?.assessments.technicianSignature}
                           alt="Technician Signature"
-                          className="h-12 mt-1 rounded border"
+                          className="text-gray-500"
                           style={{ maxWidth: '200px', objectFit: 'contain', background: '#fff' }}
                         />
                       ) : (
@@ -2609,6 +2611,34 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                       )}
                     </div>
                   </div>
+                  
+                  {/* Render Inspection Details section if it exists in schema */}
+                  {schema.find(section => section.title === "Inspection Details") && (
+                    <div className="mt-8 pt-6 border-t border-gray-200">
+                      <h4 className="font-semibold text-lg mb-4">Inspection Details</h4>
+                      <div className="space-y-4">
+                        {schema.find(section => section.title === "Inspection Details")?.fields.map((field, fieldIndex) => {
+                          const showField = shouldShow(field.showWhen, selectedArea?.assessments || {});
+                          return showField ? (
+                            <div key={field.id} className="space-y-2">
+                              <Label className="flex items-start space-x-2">
+                                <span className="text-gray-500 font-medium min-w-[24px]">
+                                  {`${fieldIndex + 1}`}
+                                </span>
+                                <span>
+                                  {field.label}
+                                  {field.required && <span className="text-red-500 ml-1">*</span>}
+                                </span>
+                              </Label>
+                              <div className="pl-8">
+                                {selectedArea && renderField(field, selectedArea)}
+                              </div>
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -2620,15 +2650,11 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               <div className="space-y-6">
                 {schema.map((section, sectionIndex) => {
                   // Check if section has showWhen and if it should be shown
-                  let showSection = true;
-                  if (section.showWhen) {
-                    const [depKey, depValue] = section.showWhen.split('=');
-                    showSection = selectedArea?.assessments[depKey] === depValue;
-                  }
+                  const showSection = shouldShow(section.showWhen, selectedArea?.assessments || {});
                   if (!showSection) return null;
 
-                  // Hide client/project info fields from area form
-                  if (["Client Information", "Project Information"].includes(section.title)) return null;
+                  // Hide client/project info fields and inspection details from area form
+                  if (["Client Information", "Project Information", "Inspection Details"].includes(section.title)) return null;
 
                   // If this section contains LabImport, wrap with anchor
                   const containsLabImport = section.fields.some(f => f.type === "labImport");
@@ -2642,9 +2668,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                       </h4>
                       <div className="space-y-4">
                         {section.fields.map((field, fieldIndex) => {
-                          const showField = field.showWhen 
-                            ? selectedArea?.assessments[field.showWhen.split('=')[0]] === field.showWhen.split('=')[1] 
-                            : true;
+                          const showField = shouldShow(field.showWhen, selectedArea?.assessments || {});
                           return showField ? (
                             <div 
                               key={field.id} 

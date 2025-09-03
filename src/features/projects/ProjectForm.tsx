@@ -26,6 +26,7 @@ import * as Yup from "yup";
 import BackButton from "@/components/BackButton";
 import { useAuthStore } from "@/store";
 import { Combobox } from "@/components/Combobox";
+import { MultiSelect, Option } from "@/components/MultiSelect";
 
 interface User {
   id: string;
@@ -92,11 +93,7 @@ const ProjectForm: React.FC = () => {
       first_name: "",
       last_name: "",
     },
-    technician: {
-      id: "",
-      first_name: "",
-      last_name: "",
-    },
+    technicians: [],
     pm: {
       id: "",
       first_name: "",
@@ -119,7 +116,7 @@ const ProjectForm: React.FC = () => {
       id: "",
       name: ""
     },
-    technician_id: "",
+    technician_ids: [],
     customer_id: "",
     start_date: "",
     end_date: "",
@@ -136,7 +133,7 @@ const ProjectForm: React.FC = () => {
       site_contact_name: Yup.string().required("Site contact name is required"),
       site_contact_title: Yup.string().required("Site contact title is required"),
       customer_id: Yup.string().required("Customer is required"),
-      technician_id: Yup.string().required("Technician is required"),
+      technician_ids: Yup.array().min(1, "At least one technician is required"),
       site_email: Yup.string().email("Invalid email address"),
       pm_id:
         userRole && userRole.toLowerCase() === "admin"
@@ -191,6 +188,23 @@ const ProjectForm: React.FC = () => {
     }
     return options;
   };
+
+  const [technicianOptions, setTechnicianOptions] = useState<Option[]>([]);
+
+  const fetchTechnicianOptions = async () => {
+    const res = await userService.getAllUsers("", undefined, undefined, 50, 1, "technician");
+    if (res.success) {
+      const options = res.data.rows.map((u: any) => ({ 
+        value: u.id, 
+        label: u.first_name + " " + u.last_name 
+      }));
+      setTechnicianOptions(options);
+    }
+  };
+
+  useEffect(() => {
+    fetchTechnicianOptions();
+  }, []);
 
   // Fetch locations by customer id
   const fetchLocationsByCustomer = async (custId: string) => {
@@ -285,6 +299,8 @@ const ProjectForm: React.FC = () => {
             console.log("Project Details::", projectDetails);
             
             setProjectNumber(projectDetails.project_no || ""); // Set project number from API
+            console.log("Setting initial values - technicians:", projectDetails.technicians);
+            console.log("Setting initial values - technician_ids:", projectDetails.technician_ids);
             setInitialValues({
               name: projectDetails.name,
               company: {
@@ -293,11 +309,11 @@ const ProjectForm: React.FC = () => {
                 first_name: projectDetails.company.first_name,
                 last_name: projectDetails.company.last_name,
               },
-              technician: {
-                id: projectDetails.technician.id,
-                first_name: projectDetails.technician.first_name,
-                last_name: projectDetails.technician.last_name,
-              },
+              technicians: (projectDetails.technicians || []).map(tech => ({
+                id: tech.id || '',
+                first_name: tech.first_name || '',
+                last_name: tech.last_name || ''
+              })),
               pm: {
                 id: projectDetails.pm.id,
                 first_name: projectDetails.pm.first_name,
@@ -320,7 +336,7 @@ const ProjectForm: React.FC = () => {
               location_id: projectDetails.location_id,
               report_template_id: projectDetails.report_template_id,
               pm_id: projectDetails.pm_id,
-              technician_id: projectDetails.technician_id,
+              technician_ids: projectDetails.technician_ids || (projectDetails.technicians || []).map(tech => tech.id).filter(id => id),
               customer_id: projectDetails.customer_id,
               start_date: projectDetails.start_date,
               end_date: projectDetails.end_date,
@@ -358,6 +374,8 @@ const ProjectForm: React.FC = () => {
   }, [user]);
 
   const handleSubmit = async (values: ProjectData, { setSubmitting }: FormikHelpers<ProjectData>) => {
+    console.log("Form submission - technician_ids:", values.technician_ids);
+    console.log("Form submission - technicians:", values.technicians);
     try {
       setIsLoading(true);
       if (user && user.role) {
@@ -739,19 +757,27 @@ const ProjectForm: React.FC = () => {
                 )}
 
                 <div className="grid w-full items-center gap-3 relative">
-                  <Label htmlFor="technician_id">Technician *</Label>
-                  <Combobox
-                    value={values.technician_id}
-                    onChange={(val, option) => {
-                      setFieldValue("technician_id", val);
-                      if (option) setFieldValue("technician", { id: option.value, name: option.label });
+                  <Label htmlFor="technician_ids">Technicians *</Label>
+                  <MultiSelect
+                    options={technicianOptions}
+                    selected={values.technicians.map(tech => ({ value: tech.id, label: `${tech.first_name} ${tech.last_name}` }))}
+                    onChange={(selected: Option[]) => {
+                      const technicianIds = selected.map(opt => opt.value);
+                      const technicians = selected.map(opt => {
+                        const nameParts = opt.label.trim().split(/\s+/);
+                        const firstName = nameParts[0] || '';
+                        const lastName = nameParts.slice(1).join(' ') || '';
+                        return { id: opt.value, first_name: firstName, last_name: lastName };
+                      });
+                      setFieldValue("technician_ids", technicianIds);
+                      setFieldValue("technicians", technicians);
                     }}
-                    fetchOptions={(q) => fetchTechnicians(q, values.technician_id)}
-                    placeholder="Select technician"
+                    placeholder="Select technicians"
+                    className="w-full"
                   />
                   <div className="min-h-[20px] relative">
-                    {errors.technician_id && touched.technician_id && (
-                      <div className="text-red-500 text-sm absolute left-0 top-0">{errors.technician_id}</div>
+                    {errors.technician_ids && touched.technician_ids && (
+                      <div className="text-red-500 text-sm absolute left-0 top-0">{errors.technician_ids}</div>
                     )}
                   </div>
                 </div>
