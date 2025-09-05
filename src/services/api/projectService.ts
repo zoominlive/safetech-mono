@@ -121,6 +121,10 @@ export interface ProjectResponse {
       first_name: string;
       last_name: string;
     }>,
+    technician: {
+      first_name: string;
+      last_name: string;
+    };
     pm: {
       id: string;
       first_name: string;

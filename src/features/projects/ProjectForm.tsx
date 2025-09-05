@@ -168,26 +168,26 @@ const ProjectForm: React.FC = () => {
     }
     return [];
   };
-  const fetchTechnicians = async (query: string, selectedId?: string) => {
-    const res = await userService.getAllUsers(query, undefined, undefined, 10, 1, "technician");    
-    let options: SelectOption[] = [];
-    if (res.success) {
-      options = res.data.rows.map((u: any) => ({ value: u.id, label: u.first_name + " " + u.last_name }));
-    }
-    // If in edit mode and selectedId is not in options, fetch and append
-    if (selectedId && !options.some(opt => opt.value === selectedId)) {
-      try {
-        const singleRes = await userService.getUserById(selectedId);
-        if (singleRes.success) {
-          const u = singleRes.data;
-          options.push({ value: u.id, label: u.first_name + " " + u.last_name });
-        }
-      } catch (e) {
-        // ignore error
-      }
-    }
-    return options;
-  };
+  // const fetchTechnicians = async (query: string, selectedId?: string) => {
+  //   const res = await userService.getAllUsers(query, undefined, undefined, 10, 1, "technician");    
+  //   let options: SelectOption[] = [];
+  //   if (res.success) {
+  //     options = res.data.rows.map((u: any) => ({ value: u.id, label: u.first_name + " " + u.last_name }));
+  //   }
+  //   // If in edit mode and selectedId is not in options, fetch and append
+  //   if (selectedId && !options.some(opt => opt.value === selectedId)) {
+  //     try {
+  //       const singleRes = await userService.getUserById(selectedId);
+  //       if (singleRes.success) {
+  //         const u = singleRes.data;
+  //         options.push({ value: u.id, label: u.first_name + " " + u.last_name });
+  //       }
+  //     } catch (e) {
+  //       // ignore error
+  //     }
+  //   }
+  //   return options;
+  // };
 
   const [technicianOptions, setTechnicianOptions] = useState<Option[]>([]);
 
