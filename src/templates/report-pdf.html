@@ -1558,6 +1558,34 @@
         </table>
     </div>
 
+    <!-- APPENDIX B: Site Drawings -->
+    <div class="section appendix" id="appendix-b">
+        <h3>Appendix B: Site Drawings</h3>
+        {{#if project_drawings.length}}
+        <div class="photo-grid">
+            {{#each project_drawings}}
+            <div class="photo-item">
+                <img src="{{this.file_url}}" alt="{{this.file_name}}" />
+                <div class="photo-caption">{{this.file_name}}</div>
+            </div>
+            {{/each}}
+        </div>
+        {{else}}
+        {{#if projectDrawings.length}}
+        <div class="photo-grid">
+            {{#each projectDrawings}}
+            <div class="photo-item">
+                <img src="{{this.file_url}}" alt="{{this.file_name}}" />
+                <div class="photo-caption">{{this.file_name}}</div>
+            </div>
+            {{/each}}
+        </div>
+        {{else}}
+        <p>No site drawings uploaded.</p>
+        {{/if}}
+        {{/if}}
+    </div>
+
     <!-- APPENDIX C: Laboratory Certificate of Analysis – Asbestos -->
     <div class="section appendix" id="appendix-c">
         <h3>Appendix C: Laboratory Certificate of Analysis – Asbestos</h3>
@@ -1632,5 +1660,185 @@
         </table>
     </div>
 
+    <!-- APPENDIX E: Methodology -->
+    <div class="section appendix" id="appendix-e">
+        <h3>Appendix E: Methodology</h3>
+        <p>The presence of hazardous materials was assessed by visual inspection. For the purpose of this assessment and this document, hazardous materials include designated substances as well as other chemical, biological and environmental hazards as defined below:</p>
+        <ul>
+            <li><strong>Designated Substances</strong> (as prescribed by Ontario Regulation 490/09): Acrylonitrile, Arsenic, Asbestos, Benzene, Coke Oven Emissions, Ethylene Oxide, Isocyanates, Lead, Mercury, Silica and Vinyl Chloride.</li>
+            <li><strong>Other Hazardous Materials</strong>:
+                <ul>
+                    <li><strong><em>Chemical Hazards</em></strong> – Urea Formaldehyde Foam Insulation (UFFI)</li>
+                    <li><strong><em>Biological Hazards</em></strong> – Mould Contamination and Pest Infestation</li>
+                    <li><strong><em>Environmental Hazards</em></strong> – Polychlorinated Biphenyls (PCBs) and Ozone Depleting &amp; Global Warming Substances</li>
+                </ul>
+            </li>
+        </ul>
+        <p>Concealed locations such as above solid plaster or drywall ceilings, within plaster or drywall wall cavities, enclosed mechanical/pipe shafts and bulkheads, etc. were not investigated, unless otherwise stated in this report. Similarly, motors, blowers, electrical panels, etc., were not de-energized or disassembled to examine concealed conditions. Building materials that are not detailed within this assessment due to inaccessibility at the time of our site visit and/or uncovered during renovation/demolition activities should be assessed by a qualified person prior to their disturbance.</p>
+        <p>Bulk sampling followed by laboratory analysis was also conducted to confirm the presence/absence of select hazardous materials. Bulk sampling was limited to asbestos in building materials and lead in paint on building finishes (if flaking paint was present). All other hazardous materials were identified by visual inspection only. Where possible, observations regarding the location, quantity and condition of the hazardous materials identified were made to determine the potential for exposure and provide appropriate recommendations for remedial action, if necessary. Specific methodology for each individual hazardous material assessed is further detailed below.</p>
+
+        <h4>Designated Substances</h4>
+        <h4><em>Asbestos</em></h4>
+        <p>A visual inspection for the presence of both friable and non-friable asbestos-containing material (ACM) was performed in the subject area.</p>
+        <p>If an existing asbestos survey was available for review, Safetech relied on the information present. Building materials that were visually similar to materials previously tested and that were confirmed to be either ACM or non-ACM were considered to have consistent content and were not re-sampled. Additional sampling was only conducted where the investigator believed a need existed.</p>
+        <p>Bulk samples of building materials suspected to contain asbestos were retrieved by Safetech only for materials that were deemed to have a potential to be disturbed as part of the construction project. Some suspect materials may not have been sampled during our investigation. Bulk samples were retrieved in accordance with Section 3 and Table 1 of Ontario Regulation 278/05, <em>Designated Substance – Asbestos on Construction Projects and in Buildings and Repair Operations</em>. The number of samples collected for each material was based on the type and quantity of the material present in the subject area. Each individual sample was placed in a labeled zip-lock bag for transportation to an accredited independent laboratory.</p>
+        <p>Analysis for asbestos content was performed by the independent laboratory in accordance with the U.S. Environmental Protection Agency (EPA) Test Method <em>600/R-93/116: Method for the Determination of Asbestos in Bulk Building Materials</em> (June 1993). This method identifies the asbestos fibre content of building materials using polarized light microscopy (PLM) analytical techniques, with confirmation of presence and type of asbestos made by dispersion staining optical microscopy. This analytical method meets the requirements set forth in Section 3 of O. Reg. 278/05.</p>
+        <p>In accordance with O. Reg. 278/05, an asbestos-containing material is defined as material that contains 0.5 per cent or more asbestos by dry weight. The laboratory was instructed to conduct “stop-positive” analysis for all materials. If a sample was found to be asbestos-containing, no further analysis was conducted for samples taken from the same homogeneous material.</p>
+        <p>Locations where ACM have been identified are detailed in this report. Recommendations pertaining to ACM were made based on the friability, accessibility and condition of the material in conjunction with the potential for the planned renovation work to disturb the ACM.</p>
+
+        <h4><em>Assessment of Asbestos-Containing Building Materials</em></h4>
+        <p>Accessibility, Condition and Action (Priority) ratings for individual items, or defined areas were developed by Safetech to determine remedial action plans specific to the facility’s needs.</p>
+        <h4><em>Condition</em></h4>
+        <p>The condition of asbestos-containing materials identified in the subject area was assessed as Good (G), Fair (F) or Poor (P). The assessment criteria used to determine condition is dependent on material characteristics, such as friability. The following table summarizes the criteria used by Safetech to evaluate the condition of ACM.</p>
+        <div class="avoid-break">
+            <table>
+                <tbody>
+                    <tr>
+                        <th colspan="2">Sprayed Fireproofing, Sprayed Insulation and Sprayed Texture Finishes</th>
+                    </tr>
+                    <tr>
+                        <td style="width: 20%"><strong>Good</strong></td>
+                        <td>
+                            <ul>
+                                <li>Surface shows no significant signs of damage, deterioration, or delamination (i.e. &lt;1%).</li>
+                                <li>Unencapsulated or unpainted fireproofing or texture finishes, where no delamination or damage is observed.</li>
+                                <li>Encapsulated fireproofing or texture finishes where encapsulation applied after damage or fallout.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fair</strong></td>
+                        <td>
+                            <ul>
+                                <li>Not utilized as part of condition assessment for these materials.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Poor</strong></td>
+                        <td>
+                            <ul>
+                                <li>Greater than 1% damage, delamination, or deterioration to surface.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="text-center"><strong>In areas where damage exists in isolated locations, both Good and Poor may be applicable.</strong></td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">Mechanical Insulation (boilers, breeching, ductwork, piping, tanks, equipment, etc.)</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Good</strong></td>
+                        <td>
+                            <ul>
+                                <li>Insulation completely covered in jacketing and exhibits no evidence of damage or deterioration.</li>
+                                <li>Jacketing may have minor damage (i.e. scuffs or stains), but is not penetrated.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fair</strong></td>
+                        <td>
+                            <ul>
+                                <li>Minor penetrating damage to jacketed insulation (cuts, tears, nicks, deterioration or delamination).</li>
+                                <li>Undamaged insulation that had never been jacketed.</li>
+                                <li>Insulation is exposed but not showing surface disintegration.</li>
+                                <li>Extent of missing insulation ranges from minor to none.</li>
+                                <li>Damage that can be repaired.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Poor</strong></td>
+                        <td>
+                            <ul>
+                                <li>Original insulation jacket is missing, damaged, deteriorated, or delaminated.</li>
+                                <li>Insulation is exposed and significant areas have been dislodged.</li>
+                                <li>Damage that cannot be easily repaired.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">Non-Friable and Potentially Friable Materials</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Good</strong></td>
+                        <td>
+                            <ul>
+                                <li>No significant damage.</li>
+                                <li>Material may be cracked or broken but is stable and not likely to become friable upon casual contact.</li>
+                                <li>No friable debris present.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fair</strong></td>
+                        <td>
+                            <ul>
+                                <li>Not utilized as part of condition assessment for these materials.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Poor</strong></td>
+                        <td>
+                            <ul>
+                                <li>Material is severely damaged.</li>
+                                <li>Debris is present or binder has disintegrated to the point where the material has become friable.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">Asbestos-Containing Debris (noted separately from the presumed source material)</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Poor</strong></td>
+                        <td>
+                            <ul>
+                                <li>Debris is always considered to be in Poor condition.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h4><em>Quantity</em></h4>
+        <p>The approximate quantity and the units of measure related to the quantity (i.e.: linear feet (LF), square feet (SF) or each (EACH) as appropriate to the item) have only been provided for materials requiring remedial or corrective action (i.e. materials in Fair or Poor condition). In such circumstances any quantities provided should be considered rough estimates only and should not be solely relied upon for bidding purposes. <strong>It is the responsibility of the selected Contractor to obtain actual quantities</strong>.</p>
+
+        <h4>Lead</h4>
+        <p>If paint samples were collected, they were collected by scraping the paint down to the base material substrate to ensure collection of all layers of paint. Care would be taken to avoid collection of the underlying substrate to reduce analytical substrate matrix interference.</p>
+        <p>If collected, paint samples were submitted to an independent laboratory for the determination of lead content. The laboratory would participate in and accredited by the EPA (U.S. Environmental Protection Agency) for analysis of lead in paint chips through the American Industrial Hygiene Association (AIHA) Environmental Lead Laboratory Accreditation Program (ELLAP). Analysis would be conducted by the laboratory following the EPA “Test Methods for Evaluating Solid Waste, Physical/Chemical Methods” (SW-846), Method 7000B “Flame Atomic Absorption Spectrophotometry”. Result of analysis would be reported by the laboratory as the percentage of lead by weight of the total sample (% by wt.).</p>
+        <p>The presence of lead in other materials, such as lead sheeting, pigmented mortar, lead piping, lead solder, etc. would be noted where observed but not sampled to verify lead content. Lead can be present in these materials to varying degrees, depending on their age of application and should be considered lead-containing until proven otherwise.</p>
+
+        <h4>Mercury</h4>
+        <p>The type, quantity and location of mercury-containing equipment and devices in the subject area were determined by visual inspection based on appearance, age and knowledge of historical uses. Sampling for mercury-containing building materials and dismantling of suspect mercury-containing equipment was not performed. Where possible, attempts were made to verify the presence/absence of mercury by gathering additional information such as equipment model number, serial number, etc.</p>
+
+        <h4>Silica</h4>
+        <p>The presence of crystalline silica in building materials was determined through visual inspection of building materials only, based on knowledge of the historic use of silica-containing materials in certain building materials. Sampling to verify the presence/absence of silica in building materials was not performed.</p>
+
+        <h4>Other Designated Substances</h4>
+        <p>Other designated substances (i.e. acrylonitrile, arsenic, benzene, coke oven emissions, ethylene oxide, isocyanates, and vinyl chloride) are typically not expected to be encountered in building materials as significant constituents or in a form that would represent an exposure concern. These substances were not included in the assessment unless specific information regarding their use (e.g. in a manufacturing process) was provided to us. No sampling for these designated substances was performed.</p>
+
+        <h4>Other Hazardous Materials</h4>
+        <h4><em>Chemical Hazards</em></h4>
+        <p>A visual inspection to evaluate the possible presence of Urea Formaldehyde Foam Insulation (UFFI) was conducted in the subject area. Our visual inspection was limited to identifying evidence of possible UFFI installation (i.e. repaired nozzle holes in walls) and overspray at wall/ceiling joints, etc. No destructive testing or material sampling was conducted as part of the assessment.</p>
+
+        <h4>Biological Hazards</h4>
+        <h4><em>Mould Contamination</em></h4>
+        <p>A visual inspection to determine the possibility of mould growth was conducted in the subject area. The assessment was limited to identifying evidence of mould growth and water damage (staining, material deterioration, efflorescence, etc.) on the surface of building materials, which may be an indicator of hidden mould growth. No moisture content readings of building materials were taken to determine their current condition. Additionally, destructive testing to confirm the presence/absence of hidden mould growth and material sampling to verify the presence/absence of mould on suspect surfaces was beyond the scope of this assessment.</p>
+        <h4><em>Pest Infestation</em></h4>
+        <p>The presence and extent of pest infestation in the subject area was based on visually inspecting for evidence of significant pest activity, including signs of nesting, droppings/fecal accumulation, dead insects/carcass accumulation, etc. Evidence of minor pest presence was not considered to be indicative of pest infestation.</p>
+
+        <h4>Environmental Hazards</h4>
+        <h4><em>Polychlorinated Biphenyls (PCBs)</em></h4>
+        <p>The presence of PCB-containing electrical equipment in the subject area was identified through visual inspection and knowledge of the timeline of historical use.</p>
+        <p>For stand-alone transformers and capacitors, information from the manufacturer nameplate (such as the date of manufacture, dielectric fluid trade name or “Type Number”, etc.) was gathered, where possible, to further evaluate if the equipment may contain PCBs. This information was then compared to the information provided in the Environment Canada document entitled “Handbook on PCB’s in Electrical Equipment” (Third Edition, April 1988) to aid in identification. Transformers and capacitors confirmed to be manufactured after 1979 were assumed to not contain PCBs. If appropriate information could not be obtained it was assumed that the transformer or capacitor contained PCBs.</p>
+        <p>For fluorescent light ballasts, a representative number of fixtures were inspected, if possible, for assessment areas that were constructed prior to 1980 and where there was no history or evidence of a complete lighting retrofit. The light fixtures were examined by removing any lenses and ballast covers to expose the ballast and identify information such as ballast make, model number, serial number, and date code. This information was then compared to the information provided in the Environment Canada document entitled “Identification of Lamp Ballasts Containing PCBs” (Report EPS 2/CC/2 (revised) August 1991) to aid in identification. Ballasts that could not be confirmed Non-PCB-containing were assumed to contain PCBs. The light fixtures were not de-energized and ballasts were not removed to obtain manufacturer information that may be on the back of the ballast. If visual confirmation of ballast type could not be made it was assumed that light fixtures in areas constructed prior to 1980 that have not undergone a complete lighting retrofit have PCB-containing ballasts until proven otherwise.</p>
+        <p>No sampling of materials or fluids within equipment was conducted to verify the presence/absence of PCBs. Inspection and testing of other materials for PCB content, including (but not limited to) caulking, asphalt, oil-based paint, plastics, switches, electric cables and hydraulic fluids was beyond the scope of the assessment.</p>
+        <h4><em>Ozone Depleting and Global Warming Substances</em></h4>
+        <p>The presence of fixed equipment likely to contain ozone-depleting substances (ODS) and/or global-warming substances (GWS) was identified through visual inspection and knowledge of the timeline of historical use. This included equipment such as chillers, air-conditioners, walk-in refrigeration and freezer units and fixed dry-chemical fire extinguishers, where chemicals such as hydrochlorofluorocarbons (HCFCs), hydrofluorocarbons (HFCs) or halons may be present. Where possible, information regarding the type and quantity of refrigerant present was obtained from the manufacturer nameplate. Our visual assessment was limited to fixed equipment in the subject area and did not include portable equipment such as stand-alone refrigerators, freezers, water coolers, air-conditioners and fire extinguishers, etc.</p>
+    </div>
 </body>
 </html> 

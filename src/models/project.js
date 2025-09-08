@@ -113,6 +113,8 @@ module.exports = (sequelize, DataTypes) => {
     Project.belongsTo(models.Location, { foreignKey: 'location_id', as: 'location' });
     Project.belongsTo(models.ReportTemplate, { foreignKey: 'report_template_id', as: 'reportTemplate' });
     Project.hasMany(models.Report, { foreignKey: 'project_id', as: 'reports' });
+    // Site drawings
+    Project.hasMany(models.ProjectDrawing, { foreignKey: 'project_id', as: 'ProjectDrawings' });
   };
 
   return Project;

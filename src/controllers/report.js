@@ -359,7 +359,8 @@ exports.generatePDFReport = async (req, res, next) => {
             { model: User, as: 'technician' },
             { model: User, as: 'technicians', through: { attributes: [] } },
             { model: User, as: 'pm' },
-            { model: Location, as: 'location' }
+            { model: Location, as: 'location' },
+            { model: sequelize.models.ProjectDrawing, as: 'ProjectDrawings', attributes: ['id','project_id','file_name','file_url','is_marked','created_at'] }
           ]
         },
         { model: ReportTemplate, as: "template" },
@@ -392,13 +393,17 @@ exports.generatePDFReport = async (req, res, next) => {
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
+    // Increase timeouts for large reports/assets
+    page.setDefaultNavigationTimeout(120000);
+    page.setDefaultTimeout(120000);
+    await page.setViewport({ width: 1280, height: 1690, deviceScaleFactor: 1 });
+
+    // Set content and allow more time for resources
+    await page.setContent(htmlContent, { waitUntil: 'domcontentloaded' });
+    console.log('Page content set, allowing time for resources to load...');
     
-    // Set content and wait for images to load
-    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
-    console.log('Page content set, waiting for resources...');
-    
-    // Wait a bit more for any external resources using setTimeout
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Extra wait for remote images and fonts
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
     console.log('Generating header template...');
     const headerTemplate = getHeaderTemplate('coloredsafetech.png');
@@ -410,7 +415,8 @@ exports.generatePDFReport = async (req, res, next) => {
       displayHeaderFooter: true,
       margin: { top: "100px", bottom: "80px", left: "50px", right: "50px" },
       headerTemplate: headerTemplate,
-      footerTemplate: getFooterTemplate(templateData)
+      footerTemplate: getFooterTemplate(templateData),
+      timeout: 120000
     });
 
     console.log('PDF generated, buffer size:', pdfBuffer.length);

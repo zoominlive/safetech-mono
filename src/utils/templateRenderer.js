@@ -612,6 +612,23 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
   
   // Combine all photos
   const allPhotos = [...photos, ...areaPhotos];
+
+  // Project drawings (Appendix B)
+  let project_drawings = [];
+  try {
+    console.log("project=>", project);
+    const raw = project && (project.ProjectDrawings || project.project_drawings || project.drawings);
+    if (Array.isArray(raw)) {
+      project_drawings = raw.map(d => ({
+        id: d.id,
+        project_id: d.project_id,
+        file_name: d.file_name,
+        file_url: d.file_url,
+        is_marked: !!d.is_marked,
+        created_at: d.created_at || d.createdAt || null,
+      }));
+    }
+  } catch (_) {}
   
   // Generate assessment responses from primary area
   const assessmentResponses = formatAssessmentResponses(primaryArea);
@@ -2580,6 +2597,9 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     // Assessment data
     assessmentResponses,
     photos: allPhotos,
+    // Site drawings for Appendix B
+    project_drawings,
+    projectDrawings: project_drawings,
     keyFindings,
     recommendations,
     controlMeasures,
