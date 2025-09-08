@@ -59,7 +59,15 @@ class ApiClient {
     formData: FormData,
     config?: AxiosRequestConfig,
   ): Promise<R> {
-    return this.ApiInstance.post<T, R>(url, formData, config);
+    const mergedConfig: AxiosRequestConfig = {
+      ...(config || {}),
+      headers: {
+        ...(config?.headers || {}),
+        // Let axios set the correct multipart boundary automatically
+        'Content-Type': 'multipart/form-data',
+      },
+    };
+    return this.ApiInstance.post<T, R>(url, formData, mergedConfig);
   }
 
   putFormData<T = unknown, R = AxiosResponse<T>>(
@@ -67,7 +75,14 @@ class ApiClient {
     formData: FormData,
     config?: AxiosRequestConfig,
   ): Promise<R> {
-    return this.ApiInstance.put<T, R>(url, formData, config);
+    const mergedConfig: AxiosRequestConfig = {
+      ...(config || {}),
+      headers: {
+        ...(config?.headers || {}),
+        'Content-Type': 'multipart/form-data',
+      },
+    };
+    return this.ApiInstance.put<T, R>(url, formData, mergedConfig);
   }
 
   put<T = unknown, R = AxiosResponse<T>>(

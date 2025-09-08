@@ -10,7 +10,7 @@ import {
   SelectGroup,
   SelectItem,
 } from "@/components/ui/select";
-import { Bookmark, CircleX, SquarePen } from "lucide-react";
+import { Bookmark, CircleX, Download, SquarePen, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { ProjectData, projectService } from "@/services/api/projectService";
@@ -27,6 +27,8 @@ import BackButton from "@/components/BackButton";
 import { useAuthStore } from "@/store";
 import { Combobox } from "@/components/Combobox";
 import { MultiSelect, Option } from "@/components/MultiSelect";
+import { projectDrawingService, ProjectDrawing } from "@/services/api/projectDrawingService";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface User {
   id: string;
@@ -72,6 +74,10 @@ const ProjectForm: React.FC = () => {
   const [_reports, setReports] = useState<Report[]>([]);
   const [projectNumber, setProjectNumber] = useState<string>("");
   const [projectManagers, setProjectManagers] = useState<User[]>([]);
+  const [drawings, setDrawings] = useState<ProjectDrawing[]>([]);
+  const [isLoadingDrawings, setIsLoadingDrawings] = useState(false);
+  const [isUploadingUnmarked, setIsUploadingUnmarked] = useState(false);
+  const [isUploadingMarked, setIsUploadingMarked] = useState(false);
 
   // Generate a random 5-digit number
   const generateProjectNumber = () => {
@@ -84,6 +90,66 @@ const ProjectForm: React.FC = () => {
       setProjectNumber(generateProjectNumber());
     }
   }, [id]);
+
+  useEffect(() => {
+    const loadDrawings = async () => {
+      if (!id) return;
+      try {
+        setIsLoadingDrawings(true);
+        const res = await projectDrawingService.list(id);
+        if (res.success) setDrawings(res.data);
+      } catch (e) {
+        // ignore and show empty
+      } finally {
+        setIsLoadingDrawings(false);
+      }
+    };
+    loadDrawings();
+  }, [id]);
+
+  const refreshDrawings = async () => {
+    if (!id) return;
+    const res = await projectDrawingService.list(id);
+    if (res.success) setDrawings(res.data);
+  };
+
+  const handleUpload = async (files: FileList | null, isMarked: boolean) => {
+    if (!files || files.length === 0) {
+      toast({ title: "No files selected", description: "Please choose at least one file to upload.", variant: "destructive" });
+      return;
+    }
+    if (!id) return;
+    try {
+      if (isMarked) setIsUploadingMarked(true); else setIsUploadingUnmarked(true);
+      const fileArray = Array.from(files);
+      toast({ title: "Preparing upload", description: `${fileArray.length} file(s) selected` });
+      await projectDrawingService.upload(id, fileArray, isMarked);
+      toast({ title: "Uploaded", description: `${files.length} file(s) uploaded` });
+      await refreshDrawings();
+    } catch (e) {
+      toast({ title: "Error", description: "Failed to upload drawings", variant: "destructive" });
+    } finally {
+      if (isMarked) setIsUploadingMarked(false); else setIsUploadingUnmarked(false);
+    }
+  };
+
+  const handleDelete = async (drawingId: string) => {
+    if (!id) return;
+    try {
+      const res = await projectDrawingService.remove(id, drawingId);
+      if (res?.success) {
+        toast({ title: "Deleted", description: "Drawing removed" });
+        await refreshDrawings();
+      } else {
+        toast({ title: "Error", description: res?.message || "Failed to delete drawing", variant: "destructive" });
+      }
+    } catch (e) {
+      toast({ title: "Error", description: "Failed to delete drawing", variant: "destructive" });
+    }
+  };
+
+  const unmarkedDrawings = drawings.filter(d => !d.is_marked);
+  const markedDrawings = drawings.filter(d => d.is_marked);
 
   const [initialValues, setInitialValues] = useState<ProjectData>({
     name: "",
@@ -804,6 +870,114 @@ const ProjectForm: React.FC = () => {
                   </div>
                 </div> */}
               </CardContent>
+              {id && (
+                <CardContent className="p-6 pt-0">
+                  <div className="space-y-6">
+                    <h3 className="font-semibold text-lg">Site Drawings</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <Label>Upload Unmarked Drawings</Label>
+                        <Input type="file" multiple onChange={(e) => handleUpload(e.target.files, false)} disabled={isUploadingUnmarked} />
+                        {isUploadingUnmarked && <p className="text-sm text-gray-500">Uploading...</p>}
+                      </div>
+                      <div className="space-y-3">
+                        <Label>Upload Marked Drawings</Label>
+                        <Input type="file" multiple onChange={(e) => handleUpload(e.target.files, true)} disabled={isUploadingMarked} />
+                        {isUploadingMarked && <p className="text-sm text-gray-500">Uploading...</p>}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-medium mb-3">Unmarked</h4>
+                        {isLoadingDrawings ? (
+                          <p className="text-sm text-gray-500">Loading...</p>
+                        ) : unmarkedDrawings.length === 0 ? (
+                          <p className="text-sm text-gray-500">No unmarked drawings</p>
+                        ) : (
+                          <ul className="divide-y">
+                            {unmarkedDrawings.map((d) => (
+                              <li key={d.id} className="py-2 flex items-center justify-between gap-3">
+                                <div className="min-w-0">
+                                  <p className="truncate text-sm">{d.file_name}</p>
+                                  <p className="text-xs text-gray-500">{new Date(d.created_at).toLocaleString()}</p>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <Button variant="ghost" size="icon" onClick={() => window.open(d.file_url, '_blank')} title="Download">
+                                    <Download className="h-4 w-4" />
+                                  </Button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="ghost" size="icon" title="Delete">
+                                        <Trash2 className="h-4 w-4 text-red-500" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Delete this drawing?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          This action cannot be undone. The file will be permanently removed.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDelete(d.id)}>Delete</AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-medium mb-3">Marked</h4>
+                        {isLoadingDrawings ? (
+                          <p className="text-sm text-gray-500">Loading...</p>
+                        ) : markedDrawings.length === 0 ? (
+                          <p className="text-sm text-gray-500">No marked drawings</p>
+                        ) : (
+                          <ul className="divide-y">
+                            {markedDrawings.map((d) => (
+                              <li key={d.id} className="py-2 flex items-center justify-between gap-3">
+                                <div className="min-w-0">
+                                  <p className="truncate text-sm">{d.file_name}</p>
+                                  <p className="text-xs text-gray-500">{new Date(d.created_at).toLocaleString()}</p>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <Button variant="ghost" size="icon" onClick={() => window.open(d.file_url, '_blank')} title="Download">
+                                    <Download className="h-4 w-4" />
+                                  </Button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="ghost" size="icon" title="Delete">
+                                        <Trash2 className="h-4 w-4 text-red-500" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Delete this drawing?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          This action cannot be undone. The file will be permanently removed.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDelete(d.id)}>Delete</AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              )}
               <CardFooter className="flex justify-end space-x-6 pb-6">
                 <Button 
                   type="submit"

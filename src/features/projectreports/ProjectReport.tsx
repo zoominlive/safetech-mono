@@ -1,4 +1,4 @@
-import { CirclePlus, CircleX, Upload, List, Loader2, TestTube, StickyNote, Edit3, Trash2 } from "lucide-react";
+import { CirclePlus, CircleX, Upload, List, Loader2, TestTube, StickyNote, Edit3 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -9,6 +9,11 @@ import { toast } from "@/components/ui/use-toast";
 import { reportService } from "@/services/api/reportService";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router";
+import { Download, Trash2 } from "lucide-react";
+import {
+  AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
+import { projectDrawingService, ProjectDrawing } from "@/services/api/projectDrawingService";
 import BackButton from "@/components/BackButton";
 import { useAuthStore } from "@/store";
 import { Input } from "@/components/ui/input";
@@ -145,6 +150,64 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   const [schema, setSchema] = useState<SchemaSection[]>([]);
   const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
   const [projectId, setProjectId] = useState<string>("");
+  // Drawings state
+  const [drawings, setDrawings] = useState<ProjectDrawing[]>([]);
+  const [isLoadingDrawings, setIsLoadingDrawings] = useState(false);
+  const [isUploadingUnmarked, setIsUploadingUnmarked] = useState(false);
+  const [isUploadingMarked, setIsUploadingMarked] = useState(false);
+
+  const loadDrawings = async () => {
+    if (!projectId) return;
+    try {
+      setIsLoadingDrawings(true);
+      const res = await projectDrawingService.list(projectId);
+      if (res.success) setDrawings(res.data);
+    } catch (e) {
+      // ignore
+    } finally {
+      setIsLoadingDrawings(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDrawings();
+  }, [projectId]);
+
+  const handleUploadDrawings = async (files: FileList | null, isMarked: boolean) => {
+    if (!files || files.length === 0) {
+      toast({ title: "No files selected", description: "Please choose at least one file.", variant: "destructive" });
+      return;
+    }
+    if (!projectId) return;
+    try {
+      if (isMarked) setIsUploadingMarked(true); else setIsUploadingUnmarked(true);
+      await projectDrawingService.upload(projectId, Array.from(files), isMarked);
+      toast({ title: "Uploaded", description: `${files.length} file(s) uploaded` });
+      await loadDrawings();
+    } catch (e) {
+      toast({ title: "Error", description: "Failed to upload drawings", variant: "destructive" });
+    } finally {
+      if (isMarked) setIsUploadingMarked(false); else setIsUploadingUnmarked(false);
+    }
+  };
+
+  const handleDeleteDrawing = async (drawingId: string) => {
+    if (!projectId) return;
+    try {
+      const res = await projectDrawingService.remove(projectId, drawingId);
+      if (res?.success) {
+        toast({ title: "Deleted", description: "Drawing removed" });
+        await loadDrawings();
+      } else {
+        toast({ title: "Error", description: res?.message || "Failed to delete drawing", variant: "destructive" });
+      }
+    } catch (e) {
+      toast({ title: "Error", description: "Failed to delete drawing", variant: "destructive" });
+    }
+  };
+
+  const unmarkedDrawings = drawings.filter(d => !d.is_marked);
+  const markedDrawings = drawings.filter(d => d.is_marked);
   const [projectStatus, setProjectStatus] = useState<string>("");
   const [projectData, setProjectData] = useState<any>();
   const [areaToDelete, setAreaToDelete] = useState<Area | null>(null);
@@ -1682,6 +1745,73 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     }
   };
 
+  // Validate required common fields in "Docs and Limits" section
+  const getMissingDocsAndLimits = (): string[] => {
+    const docsSection = schema.find((s) => s.title === "Docs and Limits");
+    if (!docsSection) return [];
+    const missingRequired: string[] = [];
+    docsSection.fields.forEach((field) => {
+      if (field.required) {
+        const value = (reportData as any)[field.id];
+        const isEmpty =
+          value === undefined ||
+          value === null ||
+          (typeof value === "string" && value.trim() === "") ||
+          (Array.isArray(value) && value.length === 0);
+        if (isEmpty) missingRequired.push(field.label || field.id);
+      }
+    });
+    return missingRequired;
+  };
+
+  const handleOpenSubmitToPMDialog = () => {
+    if (userRole === "Technician") {
+      const missing = getMissingDocsAndLimits();
+      if (missing.length > 0) {
+        setIsDrawerOpen(true);
+        setDrawerMode('toc');
+        setIsSubmitToPMReviewDialogOpen(false);
+        toast({
+          title: "Missing required fields",
+          description: `Please complete: ${missing.join(", ")}`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    setIsSubmitToPMReviewDialogOpen(true);
+  };
+
+  // Render common (non-area) fields bound to top-level reportData
+  const renderCommonField = (field: SchemaField) => {
+    const value = reportData[field.id] ?? "";
+    const disabled = readOnly || alwaysDisabledFields.includes(field.id);
+
+    switch (field.type) {
+      case 'text':
+        return (
+          <Input
+            value={value}
+            onChange={(e) => setReportData((prev: Record<string, any>) => ({ ...prev, [field.id]: e.target.value }))}
+            disabled={disabled}
+            placeholder={field.placeholder || ''}
+          />
+        );
+      case 'textarea':
+        return (
+          <Textarea
+            value={value}
+            onChange={(e) => setReportData((prev: Record<string, any>) => ({ ...prev, [field.id]: e.target.value }))}
+            disabled={disabled}
+            placeholder={field.placeholder || ''}
+            rows={4}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   const updateAreaAssessment = (fieldId: string, value: any) => {
     if (!selectedArea) return;
 
@@ -1884,6 +2014,40 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   // Workflow functions for status transitions
   const handleSubmitToPMReview = async () => {
     if (!id || !projectId) return;
+    // Validate common "Docs and Limits" fields for Technician before submitting
+    if (userRole === "Technician") {
+      console.log("Validating Docs and Limits fields for Technician");
+      const docsSection = schema.find((s) => s.title === "Docs and Limits");
+      console.log("Docs section:", docsSection);
+      if (docsSection) {
+        const missingRequired: string[] = [];
+        console.log("Docs section fields:", docsSection.fields);
+        docsSection.fields.forEach((field) => {
+          if (field.required) {
+            const value = (reportData as any)[field.id];
+            const isEmpty =
+              value === undefined ||
+              value === null ||
+              (typeof value === "string" && value.trim() === "") ||
+              (Array.isArray(value) && value.length === 0);
+            if (isEmpty) {
+              missingRequired.push(field.label || field.id);
+            }
+          }
+        });
+        if (missingRequired.length > 0) {
+          setIsDrawerOpen(true);
+          setDrawerMode('toc');
+          setIsSubmitToPMReviewDialogOpen(false);
+          toast({
+            title: "Missing required fields",
+            description: `Please complete: ${missingRequired.join(", ")}`,
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+    }
     
     try {
       setIsSaving(true);
@@ -2131,13 +2295,38 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                     }}>
                       Project Information
                     </Button>
-                    <Button variant="ghost" className="w-full justify-start text-lg" onClick={() => {
+                    {/* <Button variant="ghost" className="w-full justify-start text-lg" onClick={() => {
                       setScrollTarget('lab-results-section');
                       setIsDrawerOpen(false);
                     }}>
                       Insert Lab Results
-                    </Button>
+                    </Button> */}
                   </div>
+                  {(
+                    <div className="mt-3 space-y-3">
+                      <div className="border-t border-gray-300" />
+                      {schema
+                        .filter((section) => section.title === "Docs and Limits")
+                        .map((section) => (
+                          <div key={section.title} className="space-y-3">
+                            <h4 className="font-semibold text-lg">{section.title}</h4>
+                            <div className="space-y-3">
+                              {section.fields.map((field, fieldIndex) => (
+                                <div key={field.id} className={`p-3 rounded-md ${fieldIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
+                                  <Label className="block mb-2">
+                                    {field.label}
+                                    {field.required && <span className="text-red-500 ml-1">*</span>}
+                                  </Label>
+                                  <div>
+                                    {renderCommonField(field)}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
                   <div className="border-t border-gray-300" />
                   <div className="flex-1 overflow-y-auto mt-6 space-y-4 pr-2">
                     {areas.map((area) => {
@@ -2347,7 +2536,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               {userRole === "Technician" && projectStatus === "In Progress" && (
                 <>
                   <Button 
-                    onClick={() => setIsSubmitToPMReviewDialogOpen(true)} 
+                    onClick={handleOpenSubmitToPMDialog} 
                     disabled={isSaving}
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
@@ -2611,6 +2800,111 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                       )}
                     </div>
                   </div>
+                  {/* Site Drawings under Project Information */}
+                  <div className="mt-8 pt-6 border-t border-gray-200">
+                    <h4 className="font-semibold text-lg mb-4">Site Drawings</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <Label>Upload Unmarked Drawings</Label>
+                        <input type="file" multiple onChange={(e) => handleUploadDrawings(e.target.files, false)} disabled={isUploadingUnmarked} />
+                        {isUploadingUnmarked && <p className="text-sm text-gray-500">Uploading...</p>}
+                      </div>
+                      <div className="space-y-3">
+                        <Label>Upload Marked Drawings</Label>
+                        <input type="file" multiple onChange={(e) => handleUploadDrawings(e.target.files, true)} disabled={isUploadingMarked} />
+                        {isUploadingMarked && <p className="text-sm text-gray-500">Uploading...</p>}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                      <div>
+                        <h5 className="font-medium mb-3">Unmarked</h5>
+                        {isLoadingDrawings ? (
+                          <p className="text-sm text-gray-500">Loading...</p>
+                        ) : unmarkedDrawings.length === 0 ? (
+                          <p className="text-sm text-gray-500">No unmarked drawings</p>
+                        ) : (
+                          <ul className="divide-y">
+                            {unmarkedDrawings.map((d) => (
+                              <li key={d.id} className="py-2 flex items-center justify-between gap-3">
+                                <div className="min-w-0">
+                                  <p className="truncate text-sm">{d.file_name}</p>
+                                  <p className="text-xs text-gray-500">{new Date(d.created_at).toLocaleString()}</p>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <button className="p-2" onClick={() => window.open(d.file_url, '_blank')} title="Download">
+                                    <Download className="h-4 w-4" />
+                                  </button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <button className="p-2" title="Delete">
+                                        <Trash2 className="h-4 w-4 text-red-500" />
+                                      </button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Delete this drawing?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          This action cannot be undone. The file will be permanently removed.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDeleteDrawing(d.id)}>Delete</AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                      <div>
+                        <h5 className="font-medium mb-3">Marked</h5>
+                        {isLoadingDrawings ? (
+                          <p className="text-sm text-gray-500">Loading...</p>
+                        ) : markedDrawings.length === 0 ? (
+                          <p className="text-sm text-gray-500">No marked drawings</p>
+                        ) : (
+                          <ul className="divide-y">
+                            {markedDrawings.map((d) => (
+                              <li key={d.id} className="py-2 flex items-center justify-between gap-3">
+                                <div className="min-w-0">
+                                  <p className="truncate text-sm">{d.file_name}</p>
+                                  <p className="text-xs text-gray-500">{new Date(d.created_at).toLocaleString()}</p>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <button className="p-2" onClick={() => window.open(d.file_url, '_blank')} title="Download">
+                                    <Download className="h-4 w-4" />
+                                  </button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <button className="p-2" title="Delete">
+                                        <Trash2 className="h-4 w-4 text-red-500" />
+                                      </button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Delete this drawing?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          This action cannot be undone. The file will be permanently removed.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDeleteDrawing(d.id)}>Delete</AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                   
                   {/* Render Inspection Details section if it exists in schema */}
                   {schema.find(section => section.title === "Inspection Details") && (
@@ -2653,8 +2947,8 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                   const showSection = shouldShow(section.showWhen, selectedArea?.assessments || {});
                   if (!showSection) return null;
 
-                  // Hide client/project info fields and inspection details from area form
-                  if (["Client Information", "Project Information", "Inspection Details"].includes(section.title)) return null;
+                  // Hide client/project info fields, inspection details, and follow-up questions from area form
+                  if (["Client Information", "Project Information", "Inspection Details", "Docs and Limits"].includes(section.title)) return null;
 
                   // If this section contains LabImport, wrap with anchor
                   const containsLabImport = section.fields.some(f => f.type === "labImport");
