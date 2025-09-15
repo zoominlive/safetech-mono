@@ -53,7 +53,8 @@ export const useAuthStore = create<AuthState>()(
         try {
           const response: any = await BaseClient.post('auth/login', { 
             email, 
-            password 
+            password,
+            rememberMe
           });
           
           set({ 
@@ -78,13 +79,13 @@ export const useAuthStore = create<AuthState>()(
       
       // Logout action
       logout: () => {
-        const { rememberMe } = get();
-        if (rememberMe) {
-          set({ isAuthenticated: false, user: null, token: null });
-        } else {
-          set({ isAuthenticated: false, user: null, token: null, rememberMe: false });
-          localStorage.removeItem('auth-storage'); // Clear persisted state
+        // Always clear localStorage on sign out
+        try {
+          localStorage.clear();
+        } catch (e) {
+          // no-op if storage is unavailable
         }
+        set({ isAuthenticated: false, user: null, token: null, rememberMe: false });
       },
       
       // Reset password action
