@@ -91,7 +91,7 @@ exports.register = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
     const user = await User.findOne({ 
       where: { 
         email,
@@ -139,8 +139,11 @@ exports.login = async (req, res, next) => {
       { where: { id: user.id } }
     );
 
-    const token = generateToken({ id: user.id, role: user.role, email: user.email });
-    res.json({ token, user });
+    // Determine expiry: default 1 day, rememberMe => 30 days
+    const accessTokenTtl = rememberMe ? '30d' : '1d';
+    const token = generateToken({ id: user.id, role: user.role, email: user.email }, accessTokenTtl);
+
+    res.json({ token, user, rememberMe: Boolean(rememberMe) });
   } catch (err) {
     next(err);
   }
