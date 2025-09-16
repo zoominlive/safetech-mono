@@ -48,7 +48,7 @@ git subtree add --prefix packages/backend be main --squash
 - Initialize root package manager files:
 ```powershell
 # If using pnpm
-pnpm init -y
+pnpm init
 ```
 
 - Root `package.json` (pnpm workspaces) minimal example:
@@ -114,6 +114,7 @@ git push -u origin main
 ```powershell
 # Pull updates from FE into monorepo
 git subtree pull --prefix packages/frontend fe main --squash
+# remove --squash for all history
 # Push changes from monorepo back to FE (optional)
 git subtree push --prefix packages/frontend fe main
 ```
