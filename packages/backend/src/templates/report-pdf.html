@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{reportName}}</title>
+    <style>
+        @page {
+            margin: 120px 50px 100px 50px;
+            size: A4;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Times New Roman', serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: -100px;
+            left: 0;
+            right: 0;
+            height: 100px;
+            border-bottom: 2px solid #003366;
+            background: #fff;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+        
+        .logo {
+            max-height: 60px;
+        }
+        
+        .header-text {
+            text-align: center;
+            font-weight: bold;
+            color: #003366;
+            font-size: 14px;
+        }
+        
+        .header-right {
+            text-align: right;
+            font-size: 10px;
+        }
+        
+        /* Footer */
+        footer {
+            position: fixed;
+            bottom: -80px;
+            left: 0;
+            right: 0;
+            height: 50px;
+            border-top: 1px solid #ccc;
+            font-size: 10px;
+            text-align: center;
+            padding-top: 10px;
+        }
+        
+        .pagenum:before {
+            content: counter(page);
+        }
+        
+        /* Cover Page */
+        .cover-page {
+            text-align: center;
+            padding-top: 200px;
+            page-break-after: always;
+        }
+        
+        .cover-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #003366;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        
+        .cover-subtitle {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 40px;
+        }
+        
+        .cover-project {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 60px;
+        }
+        
+        .cover-details {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .cover-company {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 100px;
+        }
+        
+        .cover-date {
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        
+        /* Sections */
+        .section {
+            page-break-before: always;
+            margin-top: 20px;
+        }
+        
+        .section:first-of-type {
+            page-break-before: avoid;
+        }
+        
+        h1 {
+            color: black;
+            font-family: Arial, sans-serif;
+            font-style: normal;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 18pt;
+        }
+        
+        p {
+            color: black;
+            font-family: Arial, sans-serif;
+            font-style: normal;
+            /* font-weight: bold; */
+            text-decoration: none;
+            font-size: 12pt;
+            margin: 0pt;
+        }
+
+        h2 {
+            color: black;
+            font-family: Arial, sans-serif;
+            font-style: italic;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 12pt;
+        }
+        
+        h3 {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin: 20px 0 10px 0;
+        }
+        
+        h4 {
+            font-size: 13px;
+            font-weight: bold;
+            color: #333;
+            margin: 15px 0 8px 0;
+        }
+        
+        /* Table of Contents */
+        .toc {
+            page-break-before: always;
+        }
+        
+        .toc h1 {
+            text-align: center;
+            border-bottom: none;
+            margin-bottom: 30px;
+        }
+        
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .toc li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .toc li:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 4px;
+            width: 15px;
+            border-bottom: 1px dotted #999;
+        }
+        
+        .toc .section-number {
+            font-weight: bold;
+            color: #003366;
+        }
+        
+        /* TOC Page Numbers */
+        .toc a {
+            text-decoration: none;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+        
+        .toc a:hover {
+            color: #003366;
+        }
+        
+        .toc .page-number {
+            font-weight: bold;
+            color: #003366;
+        }
+        
+        .toc .toc-text {
+            flex: 1;
+        }
+        
+        .toc .toc-dots {
+            flex: 1;
+            border-bottom: 1px dotted #999;
+            margin: 0 8px;
+        }
+        
+        /* Section IDs for navigation */
+        .section-id {
+            position: relative;
+        }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 11px;
+        }
+        
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        
+        th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            color: #003366;
+        }
+        
+        .table-header {
+            background-color: #003366;
+            color: white;
+            font-weight: bold;
+        }
+        
+        /* Executive Summary */
+        .executive-summary {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-left: 4px solid #003366;
+            margin: 20px 0;
+        }
+        
+        /* Assessment Details */
+        .assessment-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .detail-item {
+            margin-bottom: 15px;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #003366;
+        }
+        
+        /* Photos */
+        .photo-section {
+            margin: 20px 0;
+        }
+        
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .photo-item {
+            text-align: center;
+        }
+        
+        .photo-item img {
+            max-width: 100%;
+            max-height: 300px;
+            border: 1px solid #ccc;
+            page-break-inside: avoid;
+        }
+        
+        .photo-caption {
+            font-size: 10px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        /* Findings and Recommendations */
+        .findings-section {
+            margin: 20px 0;
+        }
+        
+        .finding-item {
+            margin-bottom: 15px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .finding-item:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #003366;
+            font-weight: bold;
+        }
+        
+        /* Methodology */
+        .methodology {
+            background-color: #f9f9f9;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        /* Appendices */
+        .appendix {
+            margin: 20px 0;
+        }
+        
+        .appendix h3 {
+            color: #003366;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+        
+        /* Area-specific sections */
+        .area-findings {
+            margin: 20px 0;
+            page-break-inside: avoid;
+        }
+        
+        .area-findings h4 {
+            color: #003366;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 15px 0 10px 0;
+            padding: 8px;
+            background-color: #f5f5f5;
+            border-left: 4px solid #003366;
+        }
+        
+        .area-findings table {
+            margin: 10px 0;
+        }
+        
+        /* Page breaks */
+        .page-break {
+            page-break-before: always;
+        }
+        
+        .avoid-break {
+            page-break-inside: avoid;
+        }
+        
+        /* Utilities */
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .bold {
+            font-weight: bold;
+        }
+        
+        .italic {
+            font-style: italic;
+        }
+        
+        .underline {
+            text-decoration: underline;
+        }
+        
+        .highlight {
+            background-color: #ffffcc;
+            padding: 2px 4px;
+        }
+        
+        /* Lists */
+        ul, ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        li {
+            margin-bottom: 5px;
+        }
+        
+        /* Paragraphs */
+        p {
+            margin: 10px 0;
+            text-align: justify;
+        }
+        
+        /* Responsive adjustments for PDF */
+        @media print {
+            .photo-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Cover Page -->
+    <div class="cover-page" style="text-align: center; font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding-top: 40px;">
+        <h1 style="font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;">
+            {{reportName}}
+        </h1>
+        <div style="font-size: 14pt; font-weight: bold; margin-bottom: 10px;">
+            {{projectName}}
+        </div>
+        <div style="font-size: 12pt; font-weight: bold; margin-bottom: 10px;">
+            {{projectLocation}}
+        </div>
+        <br>
+        <div style="font-style: italic; font-weight: bold; font-size: 12pt; margin-bottom: 5px;">
+            Prepared for:
+        </div>
+        <div style="font-size: 12pt; font-weight: bold; margin-bottom: 5px;">
+            {{projectContactName}}, {{projectContactTitle}}<br>
+            Project Supervisor – Capital Development
+        </div>
+        <br>
+        <div style="font-size: 12pt; font-weight: bold; margin-bottom: 5px;">
+            {{customerHeadOfficeAddress}}<br>
+            {{#if customerHeadOfficeAddress2}}{{customerHeadOfficeAddress2}}<br>{{/if}}
+        </div>
+        <br>
+        <div style="font-style: italic; font-weight: bold; font-size: 12pt; margin-bottom: 5px;">
+            Prepared by:
+        </div>
+        <div style="font-size: 12pt; font-weight: bold; margin-bottom: 5px;">
+            Safetech Environmental Limited
+        </div>
+        <div style="margin-bottom: 5px;">
+            <img src="{{technicianSignature}}" alt="Technician Signature" style="width: 100px; display: block; margin: 0 auto;" />
+        </div>
+        <div style="font-size: 12pt; margin-bottom: 15px;">
+            {{technicianName}}<br>
+            {{technicianTitle}}
+        </div>
+        <br>
+        <div style="font-style: italic; font-weight: bold; font-size: 12pt; margin-bottom: 5px;">
+            Reviewed by:
+        </div>
+        <div style="margin-bottom: 5px;">
+            <img src="{{pmSignature}}" alt="PM Signature" style="width: 120px; display: block; margin: 0 auto;" />
+        </div>
+        <div style="font-size: 12pt; margin-bottom: 15px;">
+            {{pmName}}<br>
+            Senior Project Manager
+        </div>
+        <br>
+        <div style="font-size: 12pt; font-weight: bold; margin-bottom: 10px;">
+            Safetech Project Number: {{projectNumber}}
+        </div>
+        <br>
+        <div style="font-size: 12pt; font-weight: bold; margin-bottom: 5px;">
+            Date of Site Work: {{assessmentDate}}
+        </div>
+        <div style="font-size: 12pt; font-weight: bold;">
+            Date of Issue: {{reportDate}}
+        </div>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="section toc">
+        <h1>TABLE OF CONTENTS</h1>
+        <ul>
+            <li>
+                <a href="#executive-summary">
+                    <span class="toc-text"><span class="section-number"></span> EXECUTIVE SUMMARY</span>
+                    <span class="toc-dots"></span>
+                    <span class="page-number">5</span>
+                </a>
+            </li>
+            <li>
+                <a href="#introduction">
+                    <span class="toc-text"><span class="section-number">1.0</span> Introduction</span>
+                    <span class="toc-dots"></span>
+                    <span class="page-number">6</span>
+                </a>
+                <ul>
+                    <li>
+                        <a href="#background-objectives">
+                            <span class="toc-text"><span class="section-number">1.1</span> Background and Objectives</span>
+                            <span class="toc-dots"></span>
+                            <span class="page-number">6</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#scope-of-work">
+                            <span class="toc-text"><span class="section-number">1.2</span> Scope of Work</span>
+                            <span class="toc-dots"></span>
+                            <span class="page-number">6</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#description-of-areas">
+                            <span class="toc-text"><span class="section-number">1.3</span> Description of Area(s) Assessed</span>
+                            <span class="toc-dots"></span>
+                            <span class="page-number">7</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="#results">
+                    <span class="toc-text"><span class="section-number">2.0</span> Results</span>
+                    <span class="toc-dots"></span>
+                    <span class="page-number">8</span>
+                </a>
+                <ul>
+                    <li>
+                        <a href="#designated-substances">
+                            <span class="toc-text"><span class="section-number">2.1</span> Designated Substances</span>
+                            <span class="toc-dots"></span>
+                            <span class="page-number">8</span>
+                        </a>
+                        <ul>
+                            <li>
+                                <a href="#asbestos">
+                                    <span class="toc-text"><span class="section-number">2.1.1</span> Asbestos</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">8</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#lead">
+                                    <span class="toc-text"><span class="section-number">2.1.2</span> Lead</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">10</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#mercury">
+                                    <span class="toc-text"><span class="section-number">2.1.3</span> Mercury</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">12</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#silica">
+                                    <span class="toc-text"><span class="section-number">2.1.4</span> Silica</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">12</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#other-designated-substances">
+                                    <span class="toc-text"><span class="section-number">2.1.5</span> Other Designated Substances</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">13</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#other-hazardous-materials">
+                            <span class="toc-text"><span class="section-number">2.2</span> Other Hazardous Materials</span>
+                            <span class="toc-dots"></span>
+                            <span class="page-number">13</span>
+                        </a>
+                        <ul>
+                            <li>
+                                <a href="#chemical-hazards">
+                                    <span class="toc-text"><span class="section-number">2.2.1</span> Chemical Hazards</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">13</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#biological-hazards">
+                                    <span class="toc-text"><span class="section-number">2.2.2</span> Biological Hazards</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">14</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#environmental-hazards">
+                                    <span class="toc-text"><span class="section-number">2.2.3</span> Environmental Hazards</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">15</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="#conclusions-recommendations">
+                    <span class="toc-text"><span class="section-number">3.0</span> Conclusions and Recommendations</span>
+                    <span class="toc-dots"></span>
+                    <span class="page-number">16</span>
+                </a>
+                <ul>
+                    <li>
+                        <a href="#designated-substances-conclusions">
+                            <span class="toc-text"><span class="section-number">3.1</span> Designated Substances</span>
+                            <span class="toc-dots"></span>
+                            <span class="page-number">16</span>
+                        </a>
+                        <ul>
+                            <li>
+                                <a href="#asbestos-conclusions">
+                                    <span class="toc-text"><span class="section-number">3.1.1</span> Asbestos</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">16</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#lead-conclusions">
+                                    <span class="toc-text"><span class="section-number">3.1.2</span> Lead</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">16</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#mercury-conclusions">
+                                    <span class="toc-text"><span class="section-number">3.1.3</span> Mercury</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">16</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#silica-conclusions">
+                                    <span class="toc-text"><span class="section-number">3.1.4</span> Silica</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">16</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#other-designated-substances-conclusions">
+                                    <span class="toc-text"><span class="section-number">3.1.5</span> Other Designated Substances</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">16</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#other-hazardous-materials-conclusions">
+                            <span class="toc-text"><span class="section-number">3.2</span> Other Hazardous Materials</span>
+                            <span class="toc-dots"></span>
+                            <span class="page-number">17</span>
+                        </a>
+                        <ul>
+                            <li>
+                                <a href="#chemical-hazards-conclusions">
+                                    <span class="toc-text"><span class="section-number">3.2.1</span> Chemical Hazards</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">17</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#biological-hazards-conclusions">
+                                    <span class="toc-text"><span class="section-number">3.2.2</span> Biological Hazards</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">17</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#environmental-hazards-conclusions">
+                                    <span class="toc-text"><span class="section-number">3.2.3</span> Environmental Hazards</span>
+                                    <span class="toc-dots"></span>
+                                    <span class="page-number">17</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="#limitations">
+                    <span class="toc-text"><span class="section-number">4.0</span> Limitations</span>
+                    <span class="toc-dots"></span>
+                    <span class="page-number">18</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- List of Tables and Appendices -->
+    <div class="section" style="page-break-before: always;">
+        <div style="margin-top: 80px;">
+            <h1 style="font-size: 18pt; font-family: Arial, sans-serif; font-weight: bold;">LIST OF TABLES</h1>
+            <div style="font-size: 12pt; font-family: Arial, sans-serif;">
+                Table 1: Summary of Hazardous Materials and Designated Substances<br>
+                Table 2: Bulk Sample Analytical Results for Determination of Asbestos Content<br>
+                Table 3: Results of Assessment for Asbestos-Containing Materials<br>
+                Table 4: Results of Paint Condition and Lead Content Assessment<br>
+                Table 5: Results of Assessment for Lead-Containing Materials<br>
+                Table 6: Results of Assessment for Mould Contamination<br>
+                Table 7: Results of Assessment for PCB-Containing Electrical Equipment<br>
+                Table 8: Results of Assessment for Ozone-Depleting and Global Warming Substances
+            </div>
+        </div>
+        <div style="margin-top: 40px;">
+            <h1 style="font-size: 18pt; font-family: Arial, sans-serif; font-weight: bold;">LIST OF APPENDICES</h1>
+            <div style="font-size: 12pt; font-family: Arial, sans-serif;">
+                Appendix A: Summary of ACM Occurrences<br>
+                Appendix B: Site Drawings<br>
+                Appendix C: Laboratory Certificate of Analysis – Asbestos<br>
+                Appendix D: Laboratory Certificate of Analysis – Lead<br>
+                Appendix E: Methodology
+            </div>
+        </div>
+    </div>
+
+    <!-- Executive Summary -->
+    <div class="section" id="executive-summary">
+        <h1>EXECUTIVE SUMMARY</h1>
+        
+        <div class="executive-summary">
+            <p><strong>Safetech Environmental Limited (Safetech)</strong> was commissioned by <strong>{{clientName}}</strong> to conduct a designated substances and hazardous materials assessment in <strong>{{projectLocation}}</strong>.</p>
+            
+            <p>The objective of the assessment was to determine the presence, location, condition and quantities of designated substances and other hazardous materials that have the potential to be disturbed as part of planned construction activities (<strong>{{projectName}}</strong>) so that appropriate control measures can be implemented to protect workers during the work.</p>
+            
+            <p>A summary of the assessment results and general recommendations based on our findings are provided in the following table. This table should be considered a summary only. Please refer to the Results (Section 2.0), Conclusions and Recommendations (Section 3.0), Summary of ACM Occurrences (Appendix A) and Site Drawings (Appendix B) of our report for additional details.</p>
+        </div>
+        
+        <!-- Table 1: Summary of Hazardous Materials and Designated Substances -->
+        <h2 style="margin-top: 30px;">Table 1: Summary of Hazardous Materials and Designated Substances</h2>
+        <table class="summary-table">
+            <thead>
+                <tr>
+                    <th>Designated Substance</th>
+                    <th>Findings</th>
+                    <th>Recommendations</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each summaryTable}}
+                <tr>
+                    <td>{{this.substance}}</td>
+                    <td>{{{this.findings}}}</td>
+                    <td>{{{this.recommendations}}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        
+        <!-- OHSA Compliance Statement and Contact Information -->
+        <div style="margin-top: 30px; margin-bottom: 30px; font-family: Arial, sans-serif; font-size: 12pt;">
+            <p>This assessment satisfies the Owner's requirements under Section 30 of the Ontario Occupational Health and Safety Act (OHSA), Revised Statutes of Ontario 1990, as amended.</p>
+            
+            <p>Should you have any questions regarding the information contained in the report, please contact our office.</p>
+            
+            <div style="margin-top: 40px;">
+                <p><strong>Safetech Environmental Limited</strong></p>
+                <div style="margin-top: 20px;">
+                    {{#if technicianSignature}}
+                    <img src="{{technicianSignature}}" alt="Technician Signature" style="width: 100px; height: 50px; display: block;" />
+                    {{/if}}
+                    <p style="margin-top: 10px;"><strong>{{technicianName}}</strong></p>
+                    <p>Occupational Health and Safety Technician</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- INTRO -->
+    <div class="section" id="introduction">
+        <!-- Inserted Section: Designated Substances and Hazardous Materials Assessment Details -->
+        <div style="margin-top: 30px; margin-bottom: 30px; font-family: Arial, sans-serif; font-size: 12pt;">
+            <div style="margin-bottom: 16px;">
+                {{reportDate}}<br><br>
+                {{clientName}}<br>
+                {{customerHeadOfficeAddress}}<br>
+                <!-- Add more address lines if needed -->
+                <br>
+                <span style="font-weight: bold;">Attention:</span> {{projectContactName}}, {{projectContactTitle}}<br>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <span style="font-weight: bold;">RE:&nbsp;</span>
+                <span style="font-weight: bold;">
+                    Designated Substances and Hazardous Materials Assessment<br>
+                    {{projectType}}<br>
+                    {{projectName}}<br>
+                    {{projectLocation}}
+                </span>
+                <div style="border-bottom: 2px solid #000; margin-top: 6px; width: 100%;"></div>
+            </div>
+            <!-- Section 1.0 INTRODUCTION and subsections -->
+            <div style="margin-top: 32px; font-weight: bold;">1.0 INTRODUCTION</div>
+            <div style="font-weight: bold;" id="background-objectives">1.1 Background and Objectives</div>
+            <p>Safetech Environmental Limited (Safetech) was commissioned by <strong>{{clientName}}</strong> to conduct a designated substances and hazardous materials assessment within <strong>Project Area Placeholder</strong> of <strong>Building Name Placeholder</strong> located at <strong>{{projectLocation}}</strong>. The objective of the assessment was to determine the presence, location, condition and quantities of designated substances and other hazardous materials in the project areas that have the potential to be disturbed as part of planned <strong>{{projectName}}</strong> so that appropriate control measures can be implemented to protect workers during the work.</p>
+            <p>This assessment satisfies the Owner's requirements under Section 30 of the Ontario Occupational Health and Safety Act (OHSA), Revised Statutes of Ontario 1990, as amended. Section 30(1) requires a building owner to determine if there are any designated substances present at a project site prior to construction or demolition activities. Sections 30(2), (3) and (4) require the Owner and constructors for a project to provide the findings in this report as part of the tendering information for any tendered project or to prospective contractors (and subcontractors) of a project before entering into a binding contract.</p>
+            <p>This report documents findings of our on-site inspection that was conducted on <strong>{{assessmentDate}}</strong> and provides conclusions and recommendations based on our findings and knowledge of the planned <strong>{{projectName}}</strong> project.</p>
+            <div style="font-weight: bold;" id="scope-of-work">1.2 Scope of Work</div>
+            <p>In accordance with our fee proposal document, our scope of work included the following activities:</p>
+            <ul>
+                <li>A review of existing documents, including renovation documents and drawings, floor plans and existing environmental assessment reports, etc., where available;</li>
+                <li>A visual assessment of accessible area(s) in the project areas to identify the presence, location, condition and quantities of designated substances and other hazardous materials;</li>
+                <li>Collection, analysis and interpretation of representative bulk samples of suspect asbestos-containing building materials for the determination of asbestos content and material classification;</li>
+                <li>Collection, analysis and interpretation of representative paint chip samples for the determination of lead content; <!-- Static, as paintChipSamplesAnalyzed is not in prepareReportData --></li>
+                <li>Preparation of a report to document findings and provide recommendations regarding control measures and/or special handling procedures for designated substances or specific hazardous materials that may be disturbed as part of planned <strong>{{projectName}}</strong> activities.</li>
+            </ul>
+            <p>Documents reviewed to aid in the assessment included the following:</p>
+            <ul>
+                <li>Document 1 Placeholder</li>
+                <li>Document 2 Placeholder</li>
+            </ul>
+            <p>This assessment only identified designated substances and hazardous materials that were deemed to be part of the building or somehow otherwise incorporated into the building structure and its finishes. The following items were not included in our scope of work:</p>
+            <ul>
+                <li>Assessing occupant items such as stored products, furnishings, items and materials used or produced as part of a manufacturing process;</li>
+                <li>Investigating underground materials or equipment (vessels, drums, underground storage tanks, duct-banks, pipes, or cables);</li>
+                <li>Assessing enclosed wall or ceiling cavities; and</li>
+                <li>Assessing risers, pipe chases or elevator shafts.</li>
+            </ul>
+            <div style="font-weight: bold;" id="description-of-areas">1.3 Description of Area(s) Assessed</div>
+            <p>The area(s) investigated included all accessible locations of the subject building. The extent of the area investigated is indicated on the floor plan(s) provided in Appendix B. Please note, the following areas were not accessible during the assessment:</p>
+            <ul>
+                <li>Area Not Accessible 1 Placeholder</li>
+                <li>Area Not Accessible 2 Placeholder</li>
+            </ul>
+            <!-- End Inserted Section -->
+            <br>  
+        </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="section" id="results">
+        <!-- Inserted Section: Designated Substances and Hazardous Materials Assessment Details -->
+        <div style="margin-top: 30px; margin-bottom: 30px; font-family: Arial, sans-serif; font-size: 12pt;">
+            <div style="font-weight: bold;">2.0 RESULTS</div>
+            <p>Results of our visual assessment and bulk sample analytical findings are summarized in the sections below.</p>
+            <!-- Section 2.1 Designated Substances -->
+            <div style="font-weight: bold;" id="designated-substances">2.1 Designated Substances</div>
+            <div style="font-weight: bold;" id="asbestos">2.1.1 Asbestos</div>
+            <p>Results of bulk sample analysis for the determination of asbestos content are summarized in the following table. Materials have been classified as "ACM", "Non-ACM", "Suspected ACM" or "Presumed Non-ACM" based on analytical results. Materials classified as Suspected ACM or Presumed Non-ACM may require further analysis (depending on site-specific conditions) to verify whether the material should be classified as ACM or Non-ACM.  Please refer to the Limitations section of this report (Section 4.0) for additional details. The Laboratory Certificate of Analysis is included in Appendix C.</p>
+            <h2 style="margin-top: 30px;">Table 2: Bulk Sample Analytical Results for Determination of Asbestos Content</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sample No.</th>
+                        <th>Area</th>
+                        <th>Material Description</th>
+                        <th>Sample Location</th>
+                        <th>Asbestos Content</th>
+                        <th>Material Classification</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each asbestosSamples}}
+                    <tr>
+                        <td>{{this.sampleNo}}</td>
+                        <td>{{this.areaName}}</td>
+                        <td>{{this.materialDescription}}</td>
+                        <td>{{this.sampleLocation}}</td>
+                        <td>{{this.asbestosContent}}</td>
+                        <td>{{this.materialClassification}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+            <p>Materials assessed for asbestos content are summarized in the following table based on the type/use of the material.</p>
+            <!-- Table 3: Results of Assessment for Asbestos-Containing Materials -->
+            <h2 style="margin-top: 30px;">Table 3: Results of Assessment for Asbestos-Containing Materials</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Material</th>
+                  <th>Area(s)</th>
+                  <th>Location(s)</th>
+                  <th>Description</th>
+                  <th>Photo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each asbestosAssessmentTable}}
+                <tr>
+                  <td>{{this.material}}</td>
+                  <td>{{{this.areas}}}</td>
+                  <td>{{{this.locations}}}</td>
+                  <td>{{{this.descriptions}}}</td>
+                  <td>{{#if this.photo}}<img src="{{this.photo}}" alt="Photo" style="max-width: 100px;" />{{/if}}</td>
+                </tr>
+                {{/each}}
+              </tbody>
+            </table>
+            <!-- Additional asbestos findings and recommendations can be inserted here as needed -->
+        
+            <!-- Section 2.1.2 Lead -->
+            <div style="font-weight: bold;" id="lead">2.1.2 Lead</div>
+            <p>Laboratory analytical results for paints tested to determine lead content are summarized in the following table. The Laboratory Certificate of Analysis is included in Appendix D. Refer to Section 3.1.2 of this report for recommended lead abatement procedures (if any) that correspond to the type of proposed construction, renovation, or demolition work.</p>
+            <h2 style="margin-top: 30px;">Table 4: Results of Paint Condition and Lead Content Assessment</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sample No.</th>
+                        <th>Location</th>
+                        <th>Surface</th>
+                        <th>Paint Colour</th>
+                        <th>Condition</th>
+                        <th>Lead Conc. (% by wt.)</th>
+                        <th>Material Classification</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each leadSamples}}
+                    <tr>
+                        <td>{{this.sampleNo}}</td>
+                        <td>{{this.location}}</td>
+                        <td>{{this.surface}}</td>
+                        <td>{{this.paintColour}}</td>
+                        <td>{{this.condition}}</td>
+                        <td>{{this.leadConcentration}}</td>
+                        <td>{{this.materialClassification}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+            <p>LCP: Lead-Containing Paint (&gt;0.1% Lead Content); LLLP: Low-Level Lead Paint (0.1% Lead Content); Non-LCP: Not Lead-containing Paint</p>
+            <p><strong><em>Suspect lead-containing materials</em></strong> observed in the subject building included the following:</p>
+            {{#if suspectLeadMaterialList.length}}
+            <ul>
+              {{#each suspectLeadMaterialList}}
+                <li>{{this}}</li>
+              {{/each}}
+            </ul>
+            {{else}}
+            <p>None identified.</p>
+            {{/if}}
+            <h2 style="margin-top: 30px;">Table 5: Results of Assessment for Lead-Containing Materials</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Material</th>
+                  <th>Area(s)</th>
+                  <th>Location(s)</th>
+                  <th>Description</th>
+                  <th>Photo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each leadAssessmentTable}}
+                <tr>
+                  <td>{{this.material}}</td>
+                  <td>{{this.areas}}</td>
+                  <td>{{{this.locations}}}</td>
+                  <td>{{{this.descriptions}}}</td>
+                  <td>{{#if this.photo}}<img src="{{this.photo}}" alt="Photo" style="max-width: 100px;" />{{/if}}</td>
+                </tr>
+                {{/each}}
+              </tbody>
+            </table>
+            <!-- End Section 2.1.2 Lead -->
+
+            <!-- Section 2.1.3 Mercury -->
+            <div style="font-weight: bold;" id="mercury">2.1.3 Mercury</div>
+            {{#if mercuryMaterialList.length}}
+            <p>Mercury is present in the project areas in the form of:</p>
+            <ul>
+              {{#each mercuryMaterialList}}
+              <li>{{this}}</li>
+              {{/each}}
+            </ul>
+            {{else}}
+            <p>No sources of mercury were observed in the project areas.</p>
+            {{/if}}
+            <!-- End Section 2.1.3 Mercury -->
+
+            <!-- Section 2.1.4 Silica -->
+            <div style="font-weight: bold;" id="silica">2.1.4 Silica</div>
+            {{#if silicaMaterialList.length}}
+            <p>A number of building materials were identified in the subject building that are suspected to contain crystalline silica. This includes the following materials:</p>
+            <ul>
+              {{#each silicaMaterialList}}
+              <li>{{this}}</li>
+              {{/each}}
+            </ul>
+            {{else}}
+            <p>No sources of silica were observed in the project areas.</p>
+            {{/if}}
+            <div style="font-weight: bold;" id="other-designated-substances">2.1.5 Other Designated Substances</div>
+            <p>Acrylonitrile, arsenic, benzene, coke oven emissions, ethylene oxide, isocyanates, and vinyl chloride were not included in the assessment as these substances are not expected to be a significant component of building materials or present in a form that would represent an exposure concern. Additionally, no specific information regarding their use was provided to us.</p>
+            <!-- End Section 2.1 Designated Substances -->
+        
+            <!-- Section 2.2 Other Hazardous Materials -->
+            <div style="font-weight: bold;" id="other-hazardous-materials">2.2 Other Hazardous Materials</div>
+            <div style="font-weight: bold;" id="chemical-hazards">2.2.1 Chemical Hazards</div>
+            <p>No visible evidence of UFFI installation (i.e. injection openings) or overspray of foam insulation at wall/ceiling joints was identified in the subject building. However, given that no destructive testing was conducted, there is a remote possibility that UFFI could be hidden within locations such as exterior wall cavities. If suspect foam insulation is identified during renovation/demolition activities work should be stopped and the area should be re-assessed to evaluate conditions and determine appropriate control measures and worker protection, if necessary.</p>
+        
+            <div style="font-weight: bold;" id="biological-hazards">2.2.2 Biological Hazards</div>
+            <div style="font-weight: bold;">2.2.2.1 Mould Contamination</div>
+            {{#if isMouldGrowthObserved}}
+            <p>Findings from our assessment for the presence of mould growth in subject areas of the building are provided in the following table.</p>
+            {{/if}}
+            <h2 style="margin-top: 30px;">Table 6: Results of Assessment for Mould Contamination</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Material</th>
+                  <th>Area(s)</th>
+                  <th>Location(s)</th>
+                  <th>Description</th>
+                  <th>Photo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#if mouldAssessmentTable.length}}
+                  {{#each mouldAssessmentTable}}
+                  <tr>
+                    <td>{{this.material}}</td>
+                    <td>{{this.areas}}</td>
+                    <td>{{{this.locations}}}</td>
+                    <td>{{{this.descriptions}}}</td>
+                    <td>{{#if this.photo}}<img src="{{this.photo}}" alt="Photo" style="max-width: 100px;" />{{/if}}</td>
+                  </tr>
+                  {{/each}}
+                {{else}}
+                  <tr>
+                    <td colspan="5">
+                      There was no visible evidence of obvious mould growth on building finishes in the subject building at the time of the assessment. In addition, there was no visible evidence of any significant water staining or discolouration to building finishes in the subject building that would suggest the potential for hidden mould growth behind these finishes.
+                    </td>
+                  </tr>
+                {{/if}}
+              </tbody>
+            </table>
+            <!-- End Section 2.1.4 Silica -->
+
+            <!-- Section 2.1.5 Other Designated Substances -->
+            <div style="font-weight: bold;">2.2.2.2 Pest Infestation</div>
+            {{#if isPestInfestationObserved}}
+              <ul>
+                {{#each pestInfestationData}}
+                <li>{{this.statement}}</li>
+                {{/each}}
+              </ul>
+            {{else}}
+              <p>There was no visible evidence of a pest infestation observed in the surveyed areas of the subject building.</p>
+            {{/if}}
+        
+            <div style="font-weight: bold;" id="environmental-hazards">2.2.3 Environmental Hazards</div>
+            <div style="font-weight: bold;">2.2.3.1 Polychlorinated Biphenyls (PCBs)</div>
+            {{#if pcbData.pcbObserved}}
+            <p>The assessment for potential PCB-containing electrical equipment is summarized in the following table. Equipment where the presence/absence of PCBs could be verified are indicated as such in the table. Equipment where the absence of PCBs could not be verified based on the information available are assumed to contain PCBs.</p>
+            <h2 style="margin-top: 30px;">Table 7: Results of Assessment for PCB-Containing Electrical Equipment</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Location</th>
+                  <th>Electrical Equipment</th>
+                  <th>Manufacturer</th>
+                  <th>PCB Identification Information</th>
+                  <th>PCB Content</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each pcbData.pcbElectricalEquipmentTable}}
+                <tr>
+                  <td>{{this.location}}</td>
+                  <td>{{this.electricalEquipment}}</td>
+                  <td>{{this.manufacturer}}</td>
+                  <td>{{this.pcbIdInfo}}</td>
+                  <td>{{this.pcbContent}}</td>
+                </tr>
+                {{/each}}
+              </tbody>
+            </table>
+
+            {{#if fluorescentFixturesYes}}
+            <p>Fluorescent light fixtures were identified in the project areas. These were noted to be {{fixtureType}}-lamp fixtures. Most of the lamps were noted to be {{fixtureSize}}.</p>
+            {{/if}}
+
+            {{#if hidLightsPresentYes}}
+            <p>A total of approximately {{hidLightsCount}} HID lights were also present throughout the project areas.  These lights could not be accessed for further evaluation to determine the type(s) of ballasts present and therefore the ballasts within these lights are assumed to contain PCBs.</p>
+            {{/if}}
+
+            {{#if liquidFilledTransformerYes}}
+            <p>liquid-filled transformers were identified in {{transformerLeakageLocation}} of the project areas that was identified to be PCB-containing.  No significant staining or discolouration of the concrete floor was noted beneath the transformer that may be suggestive of previous leakage. The transformer itself was observed to be in good condition and did not exhibit any signs of leakage.</p>
+            {{/if}}
+
+            {{#if wallMountedCapacitorYes}}
+            <p>wall-mounted capacitors were identified in the project areas. Based on the nameplate information obtained, {{capacitorVerifiedNotPcbText}} of these capacitors was verified to not contain PCBs while the second capacitor is assumed to be PCB-containing.  No suspect leakage was observed on the exterior casing of these capacitors.</p>
+            {{/if}}
+            {{else}}
+            <p>No sources of polychlorinated biphenyls (PCBs) were observed in the surveyed areas of the subject building.</p>
+            {{/if}}
+        
+            <div style="font-weight: bold;">2.2.3.2 Ozone Depleting and Global Warming Substances</div>
+            {{#if odsData.odsObserved}}
+              <p>
+                Equipment identified in the subject building that are suspected to contain ozone
+                depleting substances (ODS) and/or global warming substances (GWS) are summarized
+                in the following table.
+              </p>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Location</th>
+                    <th>Equipment Manufacturer and Type</th>
+                    <th>Type and Quantity of Refrigerant or Fire Extinguishing Agent</th>
+                    <th>ODS/GWS Classification</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {{#each odsData.odsGwsAssessmentTable}}
+                  <tr>
+                    <td>{{this.location}}</td>
+                    <td>{{this.equipmentType}}</td>
+                    <td>{{this.refrigerantType}}</td>
+                    <td>{{this.classification}}</td>
+                  </tr>
+                  {{/each}}
+                </tbody>
+              </table>
+            {{else}}
+              <p>
+                No sources of ODS/GWS were obsereved in the surveyred areas of the subject building.
+              </p>
+            {{/if}}
+            <!-- End Section 2.2 Other Hazardous Materials -->
+        </div>
+    </div>    
+
+    <!-- CONCLUSIONS AND RECOMMENDATIONS -->
+    <div class="section" id="conclusions-recommendations">
+        <!-- Inserted Section: Designated Substances and Hazardous Materials Assessment Details -->
+        <div style="margin-top: 30px; margin-bottom: 30px; font-family: Arial, sans-serif; font-size: 12pt;">
+            <!-- Section 3.0 Conclusions and Recommendations -->
+            <div style="font-weight: bold;">3.0 CONCLUSIONS AND RECOMMENDATIONS</div>
+            
+            <!-- Section 3.1 Designated Substances -->
+            <div style="font-weight: bold; margin-top: 24px;" id="designated-substances-conclusions">3.1 Designated Substances</div>
+            
+            <!-- Section 3.1.1 Asbestos -->
+            <div style="font-weight: bold; margin-left: 16px;" id="asbestos-conclusions">3.1.1 Asbestos</div>
+            {{#if asbestosFound}}
+            <p style="margin-left: 16px;">Results of the assessment indicated that the following asbestos-containing materials are present in the project areas that may be disturbed as part of the construction project. Therefore, these materials are considered to be asbestos-containing and specific measures and procedures are required to be followed during renovation or demolition projects that have the potential to disturb this material.</p>
+            <ul style="margin-left: 32px;">
+                {{#each asbestosContainingMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            {{#if suspectAsbestosMaterials.length}}
+            <p style="margin-left: 16px;">The following building materials are suspected to be asbestos-containing but were not sampled as sampling would compromise the integrity of the material, lack of accessibility or potential hazards to the surveyor:</p>
+            <ul style="margin-left: 32px;">
+                {{#each suspectAsbestosMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            {{/if}}
+            <p style="margin-left: 16px;">Refer to Appendix A (Summary of ACM Occurrences) and Appendix B (Site Drawings) for types, locations, estimated quantities, and condition of asbestos-containing materials identified in the subject area.</p>
+            {{#if isRenovation}}
+            <p style="margin-left: 16px;">Removal or disturbance of identified asbestos-containing materials must be conducted in accordance with O.Reg. 278/05. Asbestos containing materials in Poor condition must be removed and/or repaired immediately following applicable asbestos abatement procedures. Asbestos-containing materials in Good condition can remain in place until major system upgrading, maintenance or demolition which could result in disturbance of this material.</p>
+            {{/if}}
+            {{#if isDemolition}}
+            <p style="margin-left: 16px;">In accordance with O.Reg. 278/05, prior to the demolition of the subject building, any identified asbestos-containing materials must be removed. However, this does not apply so as to prevent work necessary to gain access to the asbestos-containing material that is to be removed, if the workers doing the work are protected from the hazard. Our recommendations for the removal of the aforementioned asbestos-containing materials can be found below.</p>
+            {{/if}}
+            {{else}}
+            <p style="margin-left: 16px;">As results summarized in Table 3 indicate, no asbestos was detected in any of the following bulk samples retrieved for analysis. Therefore, these building materials are considered to be Non-ACM and there are no requirements for management, disturbance or removal of these materials under O. Reg. 278/05. </p>
+            <p style="margin-left: 16px;">Should any building materials be uncovered during demolition activities that were not referenced in this report, they must be assumed to be asbestos-containing unless proven otherwise by bulk sampling in accordance with Section 3 of O. Reg. 278/05.</p>
+            {{/if}}
+            
+            {{#if textureCoatAsbestos}}
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">Texture Coat/Plaster</p>
+            <p style="margin-left: 16px;">Texture Coat/ Plaster identified to be asbestos-containing is recommended to be treated as friable ACM since disturbance of this material typically results in significant degradation and subsequent dust/debris generation that cannot be adequately controlled through wetting. Therefore, removal or disturbance of 1 square metre or less of texture coat should be conducted following Type 2 operations. If more than 1 square metre of texture coat is to be removed or disturbed then work should be conducted following Type 3 operations.</p>
+            {{/if}}
+            
+            {{#if nonFriableMaterials}}
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">Non-Friables:</p>
+            <p style="margin-left: 16px;"><strong>{{nonFriableMaterials}}</strong> is/are considered to be a non-friable ACM. As per O. Reg. 278/05, removal of non-friable ACM can be conducted following Type 1 operations; as long as the material can be removed without being broken, cut, drilled or otherwise similarly disturbed. If the material cannot be removed without it breaking or being similarly disturbed then the work should be conducted using non-powered hand tools and the material should be wetted to control the spread of dust. If the material cannot be wetted or if power tools attached to dust-collecting devices equipped with HEPA (high efficiency particulate aerosol) filters are used during removal or disturbance, then work should be performed following Type 2 operations. If non-friable materials are removed or disturbed using power tools that are not attached to dust-collecting devices that are equipped with HEPA filters then work should be conducted following Type 3 operations.</p>
+            {{/if}}
+            
+            {{#if friableMaterials}}
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">Friables:</p>
+            <p style="margin-left: 16px;"><strong>{{friableMaterials}}</strong> is/are considered to be a friable ACM. As per O. Reg. 278/05, removal or disturbance of 1 square metre or less of friable ACM is classified as a Type 2 operation. If more than 1 square metre of friable ACM is to be removed or disturbed then work should be conducted following Type 3 operations; unless the material is removed using a glove bag, in which case Type 2 operations are applicable.</p>
+            {{/if}}
+            
+            {{#if sprayedFireproofing}}
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">Sprayed Fireproofing:</p>
+            <p style="margin-left: 16px;">Sprayed fireproofing is considered to be a friable ACM. As per O. Reg. 278/05, removal or disturbance of 1.0 m2 or less of friable ACM is classified as a Type 2 operation. If more than 1.0 m2 of friable ACM is to be removed or disturbed, then work should be conducted following Type 3 operations.</p>
+            <p style="margin-left: 16px;">Given the presence of asbestos-containing sprayed fireproofing, it is cautioned that this material or related debris may be concealed on the surface of false ceilings. As such, access above a false ceiling where asbestos-containing sprayed fireproofing is present is classified as a Type 2 operation (full enclosure method for access).</p>
+            <p style="margin-left: 16px;">Similarly, asbestos-containing sprayed fireproofing debris may be present within wall cavities. Therefore, access within these spaces is recommended to be conducted following Type 2 operations as a precautionary measure.</p>
+            <p style="margin-left: 16px;">As required by O.Reg. 278/05, cleaning or removal of ventilation components including rigid ducting (excluding filters) in the buildings with asbestos-containing sprayed fireproofing must be conducted following Type 3 procedures. For buildings where asbestos-containing sprayed fireproofing has been identified, replacement of filters within the ventilation system (air handling units and fan coils) must be conducted as a Type 2 operation as per the requirements of O.Reg. 278/05.</p>
+            {{/if}}
+            
+            {{#if ceilingTilesAsbestos}}
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">Ceiling Tiles:</p>
+            <p style="margin-left: 16px;">In accordance with O. Reg. 278/05, removal of 7.5 m2 or more of asbestos-containing ceiling tiles (i.e. ten or more 2′x4′ tiles) should be conducted following Type 2 operations. However, care should be taken when removing the ceiling tiles to ensure they are removed without being broken, cut, abraded or otherwise handled in a manner that can cause an excessive release of ceiling tile debris. Otherwise, Type 3 operations are recommended to be followed. If less than 7.5 m2 of asbestos-containing ceiling tiles are removed and they can be removed in the manner indicated above, removal can be conducted following Type 1 operations.</p>
+            {{/if}}
+            
+            {{#if drywallJointCompoundAsbestos}}
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">Drywall Joint Compound:</p>
+            <p style="margin-left: 16px;">In accordance with O. Reg. 278/05, removal of less than 1 m2 of drywall where asbestos-containing drywall joint compound has been used can be conducted following Type 1 operations. If 1 square metre or more of drywall is removed where asbestos-containing drywall joint compound has been used then work should be conducted following Type 2 operations.</p>
+            {{/if}}
+            
+            {{#if refractoryNotSampled}}
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">Refractory:</p>
+            <p style="margin-left: 16px;">The boiler units were in operation at the time of the assessment and internal refractory materials could not be accessed for sampling. As such, refractory is assumed to be asbestos-containing. If refractory materials are found once the units are opened, Safetech should be contacted to conduct bulk sampling of the material to determine if it asbestos-containing. If samples of refractory are not collected, removal must be conducted following Type 3 procedures outlined in O.Reg. 278/05.</p>
+            {{/if}}
+            
+            {{#if refractorySampled}}
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">Refractory:</p>
+            <p style="margin-left: 16px;">Removal of refractory materials must be conducted following Type 3 procedures outlined in O.Reg. 278/05.</p>
+            {{/if}}
+            
+            <p style="margin-left: 16px; font-weight: bold; font-style: italic;">General Asbestos Recommendations:</p>
+            <p style="margin-left: 16px;">The removal or disturbance of ACM must follow the measures and procedures indicated in O. Reg. 278/05. This work should be conducted by workers who have received proper training by a "competent person" in the hazards of asbestos exposure, personal hygiene and work practices, and the use and care of respirators and protective clothing. Any worker/supervisor who works in a Type 3 operation must successfully complete the Asbestos Abatement Worker or Supervisor Training Program approved by the Ministry of Labour, Immigration, Training and Skills Development. It is recommended that all work involving the removal or disturbance of ACM be subject to inspection and testing to document conformance with O. Reg. 278/05 requirements. The degree of inspection and testing is dependent on site-specific conditions such as the type, duration, size and location of the work. In most circumstances Type 3 operations require a visual inspection and clearance air testing to be conducted by a competent worker on completion of the work. The inspection should be conducted to ensure that the enclosure and the work area inside the enclosure are free from visible dust, debris or residue that may contain asbestos. Clearance air testing for Type 3 operations requires a minimum number of air samples to be taken (depending on the size of the work area) following specific sampling and analytical procedures and all samples taken must meet the clearance criteria set out in O. Reg. 278/05.</p>
+            
+            <!-- Section 3.1.2 Lead -->
+            <div style="font-weight: bold; margin-left: 16px;" id="lead-conclusions">3.1.2 Lead</div>
+
+            {{#if lowLevelLeadSamples.length}}
+            <p style="margin-left: 16px;">Results of bulk sample analysis for the determination of lead content indicated in the following samples is/are considered a 'low-level lead-containing materials' (≤0.1% based on requirements of the Environmental Abatement Council of Canada (EACC) Lead Guideline (2014)):</p>
+            <ul style="margin-left: 32px;">
+                {{#each lowLevelLeadSamples}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            <p style="margin-left: 16px;">If the 'low-level lead-containing material' is disturbed in a non-aggressive manner (no use of power tools/abrasive blasting, grinding, welding, heating, etc.), then respirators are not considered necessary. However, Class 1 measures and procedures should still be implemented during the non-aggressive disturbance, including, but not limited to, no smoking, eating, drinking and chewing gum in the work area; dust suppression methods must be implemented; and facilities must be made available so that workers can wash their hands and face.</p>
+            {{/if}}
+
+            {{#if highLevelLeadSamples.length}}
+            <p style="margin-left: 16px;">Result of bulk sample analysis for the determination of lead content indicated the following samples is/are confirmed to be lead-containing (>0.1% lead content based on required of Environmental Abatement Council of Canada (EACC) "Lead Guideline" (October 2014)):</p>
+            <ul style="margin-left: 32px;">
+                {{#each highLevelLeadSamples}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            {{/if}}
+
+            <p style="margin-left: 16px;">Paints and surface coatings not sampled are assumed to be lead-containing. Any disturbance of the lead-containing paint should be conducted in accordance the procedures outlined in the Environmental Abatement Council of Canada (EACC) "Lead Guideline" (October 2014) and/or the Ontario Ministry of Labour, Immigration, Training and Skills Development (MLITSD) "Lead on Construction Projects" guideline (April 2011). The extent of procedures (Class or Type of operation) necessary depends on the type of work to be conducted.</p>
+            
+            {{#if emergencyLighting}}
+            <p style="margin-left: 16px;">Emergency lighting is present {{emergencyLightingLocation}} in the project areas and are suspected to contain lead-acid batteries. If emergency lighting is removed/replaced as part of the scheduled work activities, the batteries are recommended to be sent to a recycling facility for proper treatment.</p>
+            {{/if}}
+            
+            {{#if suspectLeadMaterials.length}}
+            <p style="margin-left: 16px;">Additional suspect lead-containing products include:</p>
+            <ul style="margin-left: 32px;">
+                {{#each suspectLeadMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            <p style="margin-left: 16px;">Future testing of these materials and specific handling/disposal requirements may be necessary if/when these materials are to be disturbed.</p>
+            {{/if}}
+            
+            {{#if leadDisturbanceRequired}}
+            <p style="margin-left: 16px;">Any disturbance of the lead-containing materials should be conducted in accordance with the procedures outlined in the Environmental Abatement Council of Canada (EACC) "Lead Guideline" (October 2014) and/or the Ontario Ministry of Labour, Immigration, Training and Skills Development (MLITSD) "Lead on Construction Projects" guideline (April 2011). The extent of procedures required depends on the type of work to be conducted.</p>
+            {{/if}}
+            
+            {{#if noLeadMaterials}}
+            <p style="margin-left: 16px;">At this time the method of disturbance, if any, of lead-containing materials is unknown. It is recommended that any contractor whose work requires lead-containing materials to be disturbed consult the EACC or Ontario MLITSD guidelines prior to the start of work to determine the Class/Type of operation(s) and the corresponding control measures (engineering controls, work/hygiene practices, protective clothing and equipment and worker training) necessary to conduct the work in a manner that will prevent worker overexposure to lead. The following table outlines the classification of lead disturbance based on the EACC guideline.</p>
+            {{/if}}
+            
+            {{#if leadGuidelineTable}}
+            <table style="margin-left: 16px; margin-top: 10px;">
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th>Description</th>
+                        <th>Requirements</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Class 1</td>
+                        <td>Non-aggressive disturbance</td>
+                        <td>Basic hygiene practices, dust suppression</td>
+                    </tr>
+                    <tr>
+                        <td>Class 2</td>
+                        <td>Aggressive disturbance</td>
+                        <td>Respiratory protection, containment</td>
+                    </tr>
+                    <tr>
+                        <td>Class 3</td>
+                        <td>Major disturbance</td>
+                        <td>Full containment, air monitoring</td>
+                    </tr>
+                </tbody>
+            </table>
+            {{/if}}
+            
+            <p style="margin-left: 16px;">If practicable, all bulk lead waste materials should be separated from other wastes and sent to a recycling facility. If not practicable, lead-containing waste should be handled and disposed of according to R.R.O. 1990, Regulation 347, General - Waste Management (Reg. 347) made under the Environmental Protection Act. Under this regulation (and depending on the quantity of waste generated) the waste may be subject to analysis following the Toxicity Characteristic Leaching Procedure (TCLP) to determine if it is a "leachate toxic waste" based on the leachate quality criteria provided in Schedule 4 of the regulation. Such wastes must meet specific treatment requirements (Schedule 5) or undergo alternative treatment for hazardous debris (Schedule 8) prior to land disposal.</p>
+            
+            <!-- Section 3.1.3 Mercury -->
+            <div style="font-weight: bold; margin-left: 16px;" id="mercury-conclusions">3.1.3 Mercury</div>
+            {{#if mercuryFound}}
+            <p style="margin-left: 16px;">Results of the assessment indicated that the following mercury-containing materials are present in the project areas that may be disturbed as part of the construction project. Therefore, these materials are considered to be mercury-containing and specific measures and procedures are required to be followed during renovation or demolition projects that have the potential to disturb this material.</p>
+            <ul style="margin-left: 32px;">
+                {{#each mercuryContainingMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            {{#if suspectMercuryMaterials.length}}
+            <p style="margin-left: 16px;">The following building materials are suspected to be mercury-containing but were not sampled as sampling would compromise the integrity of the material, lack of accessibility or potential hazards to the surveyor:</p>
+            <ul style="margin-left: 32px;">
+                {{#each suspectMercuryMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            {{/if}}
+            
+            <!-- Area-specific mercury recommendations based on lamp count -->
+            {{#if areaMercuryRecommendations.length}}
+            {{#each areaMercuryRecommendations}}
+            <p style="margin-left: 16px;"><strong>{{this.areaName}}:</strong> {{this.recommendation}}</p>
+            {{/each}}
+            {{/if}}
+            
+            <!-- Mercury-containing equipment removal recommendations -->
+            {{#if mercuryEquipmentRemovalRecommendation}}
+            <p style="margin-left: 16px;">{{mercuryEquipmentRemovalRecommendation}}</p>
+            {{/if}}
+            {{/if}}
+            <p style="margin-left: 16px;">Although no mercury was visibly identified in other equipment, dismantling of equipment was not conducted to verify the presence/absence of mercury.  It is cautioned that thermometers, barometers and other measuring devices (pressure gauges/sensors, vacuum gauges, manometers, etc.), thermostats and a variety of other electrical switches (temperature sensitive, tilt switches, float switches, etc.) may contain mercury that may not be visible without dismantling the equipment.  Such devices should be assumed to contain mercury until proven otherwise and similar precautions to those outlined above should be taken if any of these items are to be disturbed or taken out of service in the future. </p>
+            <!-- Section 3.1.4 Silica -->
+            <div style="font-weight: bold; margin-left: 16px;" id="silica-conclusions">3.1.4 Silica</div>
+            <p style="margin-left: 16px;">Suspect silica-containing materials were identified to be present in the project areas.  In their current state, building materials containing silica do not represent a risk to building occupants or construction workers.  Risks associated with exposure to silica arise during demolition activities that cause silica dust to be created (particularly grinding, drilling or cutting operations and during major demolition), resulting in a crystalline silica inhalation hazard.</p>
+
+            <p style="margin-left: 16px;">If any materials suspected to contain silica are to be removed or otherwise disturbed as a result of renovation/demolition activities it is recommended that procedures be put in place to control the generation of dust (such as routine water misting) and thus reduce the potential for worker exposure.  Workers that have the potential to be exposed to airborne silica should also wear appropriate protective clothing and respiratory protection.  </p>
+
+            <p style="margin-left: 16px;">Any work involving the disturbance of silica-containing materials should follow the procedures outlined in the Ontario MLITSD “Silica on Construction Projects” guideline (April 2011). The appropriate engineering controls, work practices, hygiene practices, personal protective measures and training necessary to conduct the work in a safe manner are provided in this guideline.  The general measures and procedures (or Type of operation) necessary depends on the type of work to be conducted. The following table outlines the classification of silica disturbance based on the Ontario MLITSD guideline.</p>
+
+            {{#if silicaFound}}
+            <p style="margin-left: 16px;">Results of the assessment indicated that the following silica-containing materials are present in the project areas that may be disturbed as part of the construction project. Therefore, these materials are considered to be silica-containing and specific measures and procedures are required to be followed during renovation or demolition projects that have the potential to disturb this material.</p>
+            <ul style="margin-left: 32px;">
+                {{#each silicaContainingMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            {{#if suspectSilicaMaterials.length}}
+            <p style="margin-left: 16px;">The following building materials are suspected to be silica-containing but were not sampled as sampling would compromise the integrity of the material, lack of accessibility or potential hazards to the surveyor:</p>
+            <ul style="margin-left: 32px;">
+                {{#each suspectSilicaMaterials}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ul>
+            {{/if}}
+            {{/if}}
+            <p style="margin-left: 16px;">In their current state, building materials containing silica do not represent a risk to building occupants or construction workers. Risks associated with exposure to silica arise during demolition activities that cause silica dust to be created (particularly grinding, drilling or cutting operations and during major demolition), resulting in a crystalline silica inhalation hazard.</p>
+            <p style="margin-left: 16px;">If any materials suspected to contain silica are to be removed or otherwise disturbed as a result of renovation/demolition activities it is recommended that procedures be put in place to control the generation of dust (such as routine water misting) and thus reduce the potential for worker exposure. Workers that have the potential to be exposed to airborne silica should also wear appropriate protective clothing and respiratory protection.</p>
+            <p style="margin-left: 16px;">Any work involving the disturbance of silica-containing materials should follow the procedures outlined in the Ontario MLITSD "Silica on Construction Projects" guideline (April 2011). The appropriate engineering controls, work practices, hygiene practices, personal protective measures and training necessary to conduct the work in a safe manner are provided in this guideline. The general measures and procedures (or Type of operation) necessary depends on the type of work to be conducted. The following table outlines the classification of silica disturbance based on the Ontario MLITSD guideline.</p>
+            
+            <table style="margin-left: 16px; margin-top: 10px;">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Requirements</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Type 1</td>
+                        <td>Low exposure potential</td>
+                        <td>Basic dust control, hygiene practices</td>
+                    </tr>
+                    <tr>
+                        <td>Type 2</td>
+                        <td>Medium exposure potential</td>
+                        <td>Respiratory protection, containment</td>
+                    </tr>
+                    <tr>
+                        <td>Type 3</td>
+                        <td>High exposure potential</td>
+                        <td>Full containment, air monitoring</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- Section 3.1.5 Other Designated Substances -->
+            <div style="font-weight: bold; margin-left: 16px;" id="other-designated-substances-conclusions">3.1.5 Other Designated Substances</div>
+            <p style="margin-left: 16px;">No other designated substances are expected to be a component of building materials in the project areas in a form that would represent an exposure concern. Therefore, no protective measures or procedures specific to acrylonitrile, arsenic, benzene, coke oven emissions, ethylene oxide, isocyanates, and vinyl chloride are considered necessary.</p>
+            
+            <!-- Section 3.2 Other Hazardous Materials -->
+            <div style="font-weight: bold; margin-top: 24px;" id="other-hazardous-materials-conclusions">3.2 Other Hazardous Materials</div>
+            
+            <!-- Section 3.2.1 Chemical Hazards -->
+            <div style="font-weight: bold; margin-left: 16px;" id="chemical-hazards-conclusions">3.2.1 Chemical Hazards</div>
+            <p style="margin-left: 16px;">As no UFFI was identified or is suspected to be present in the project areas, no further action is required. However, given that no destructive testing was conducted, there is a remote possibility that UFFI could be hidden within locations such as exterior wall cavities. If suspect foam insulation is identified during renovation/demolition activities work should be stopped and the area should be re-assessed to evaluate conditions and determine appropriate control measures and worker protection, if necessary.</p>
+            
+            <!-- Section 3.2.2 Biological Hazards -->
+            <div style="font-weight: bold; margin-left: 16px;" id="biological-hazards-conclusions">3.2.2 Biological Hazards</div>
+            
+            <!-- Section 3.2.2.1 Mould Contamination -->
+            <div style="font-weight: bold; margin-left: 32px;">3.2.2.1 Mould Contamination</div>
+            {{#if mouldContamination}}
+            <p style="margin-left: 32px;">Suspect mould growth was identified on {{mouldAreas}}. Removal should follow mould remediation procedures following the methods outlined in the Environmental Abatement Council of Canada's (EACC) Mould Abatement Guidelines (Edition 3).</p>
+            {{#if mouldLocationsHtml}}
+            <div style="margin-left: 32px;">{{{mouldLocationsHtml}}}</div>
+            {{/if}}
+            {{else}}
+            <p style="margin-left: 32px;">No mould contamination was identified in the project areas and no further action is required at this time. Although no obvious mould contamination or evidence to suggest possible hidden mould contamination was identified in the project areas, there is still a potential for hidden mould growth to exist behind or underneath building finishes. Should suspect mould growth be discovered during the course of renovation or demolition work, Safetech recommends that all work stop so that the area can be assessed to evaluate proper control measures and remediation protocols in order to avoid worker exposure to mould and possible contamination of adjacent areas.</p>
+            {{/if}}
+            
+            <!-- Section 3.2.2.2 Pest Infestation -->
+            <div style="font-weight: bold; margin-left: 32px;">3.2.2.2 Pest Infestation</div>
+            {{#if pestInfestation}}
+            <p style="margin-left: 32px;">The presence of {{pestType}} droppings {{pestLocation}} in the project areas may pose a hazard to renovation/demolition workers if disturbed as part of their work activities.</p>
+            {{#if mouseInfestation}}
+            <p style="margin-left: 32px;">Exposure to mouse droppings as well as their saliva and urine can result in exposure to certain proteins that can act as allergens, resulting in allergic or asthmatic reactions to sensitized persons. Additionally, although rare, mice may be infected with Hantavirus, which can be shed in their urine, saliva and droppings. Exposure to Hantavirus can result in a serious respiratory illness called hantavirus pulmonary syndrome (HPS).</p>
+            {{/if}}
+            <p style="margin-left: 32px;">In order to reduce the potential for worker exposure, Safetech recommends that precautions be taken when disturbing/removing {{pestType}}. Procedures should be followed that minimize the potential for dust generation. It is recommended that prior to disturbance of {{pestType}}, affected surfaces should be wetted down with a disinfectant or diluted bleach solution. The generated waste should then be placed directly into heavy gauge bags, double-bagged and sealed prior to removing them from the work area. Workers conducting this work should wear personal protection, consisting of disposable coveralls, disposable gloves (rubber, latex, vinyl or nitrile) and appropriate respiratory protection such as a half-mask air-purifying HEPA-filtered (N95 minimum) respirator.</p>
+            {{else}}
+            <p style="margin-left: 32px;">No visual evidence of any significant pest infestation was observed in the project areas. Therefore, no additional precautionary measures are deemed necessary for protection against biological contaminants potentially associated with pest infestation.</p>
+            {{/if}}
+            
+            <!-- Section 3.2.3 Environmental Hazards -->
+            <div style="font-weight: bold; margin-left: 16px;" id="environmental-hazards-conclusions">3.2.3 Environmental Hazards</div>
+            
+            <!-- Section 3.2.3.1 Polychlorinated Biphenyls (PCBs) -->
+            <div style="font-weight: bold; margin-left: 32px;">3.2.3.1 Polychlorinated Biphenyls (PCBs)</div>
+            {{#if isAfter1980Building}}
+            <p style="margin-left: 32px;">If the building is known to be constructed after 1980, no light fixtures are expected to have PCB-containing ballasts as the manufacture of PCBs in the U.S. was banned in 1979 and Canada banned the import, manufacture and sale of PCBs in 1977. Similarly, no other electrical equipment (such as transformers and capacitors) present in the subject area(s) is expected to contain PCBs based on the age of building construction.</p>
+            {{else}}
+              {{#if pcbObserved}}
+              <p style="margin-left: 32px;">The federal government has set strict regulations for the handling, storage and disposal of PCBs. The PCB Regulations (SOR/2008-273) came into effect on September 5th, 2008 and consolidates and replaces the Chlorobiphenyls Regulations (SOR/91-152) and the Storage of PCB Material Regulations (SOR/92-507). The purpose of the PCB Regulations is to improve the protection of Canada's environment and the health of Canadians by minimizing the risks posed by the use, storage and release of PCBs by accelerating the elimination of these substances.</p>
+              <p style="margin-left: 32px;">As of December 31, 2009 all current PCB storage sites are to have been eliminated and there should no longer be any electrical capacitors, electrical transformers, electromagnets, heat transfer equipment or any other equipment in service that contains PCBs at a concentration greater than 500 mg/kg (500 ppm). As of this time, all of this equipment should have been removed from service and sent for destruction. Furthermore, the PCB Regulations restricts the use of equipment containing PCBs (other than light ballasts or pole-top electrical transformers) at concentrations exceeding 50 mg/kg (50 ppm) in sensitive areas (such as drinking water treatment plants, schools, hospitals and senior citizen care facilities) by the same date. All other locations have until December 31, 2025 to decommission equipment containing 50 ppm to 500 ppm PCBs. The assessment confirmed that some of the existing fluorescent light ballasts contain PCB's.</p>
+              {{#if pcbLightFixtures}}
+              <p style="margin-left: 32px;">Based on our inspection results, of the approximate {{totalLightFixtures}} light fixtures present throughout the {{lightFixtureLocation}} it is estimated that approximately {{pcbPercentage}}% have ballasts that contain PCBs. Our inspection also identified {{assumedPcbBallasts}} "assumed PCB-containing" light ballast(s) while, based on the age of the building, existing HID lamp ballasts are also "assumed PCB-containing".</p>
+              {{/if}}
+              {{#if hidLightsPresent}}
+              <p style="margin-left: 32px;">When light fixtures are to be decommissioned all PCB-containing ballasts should be removed and separated from other waste and disposed of as PCB waste at an authorized destruction facility. The PCB content of "assumed PCB-containing" fluorescent light ballasts and HID lamp ballasts should be verified at this time by determining the date of manufacture and other pertinent information by referring to the Environment Canada document entitled "Identification of Lamp Ballasts Containing PCBs" (Report EPS 2/CC/2 (revised) August 1991) to aid in identification.</p>
+              {{/if}}
+              {{#if fluorescentFixtures}}
+              <p style="margin-left: 32px;">Existing fluorescent light ballasts are assumed to contain PCBs. When light fixtures are to be decommissioned, all ballasts should be verified at this time by determining the date of manufacture and other pertinent information by referring to the Environment Canada document entitled "Identification of Lamp Ballasts Containing PCBs" (Report EPS 2/CC/2 (revised) August 1991) to aid in identification. Any ballasts that meet the criteria outlined in this document must be treated as PCB containing.</p>
+              {{/if}}
+              {{#if hidLightsPresent}}
+              {{#unless fluorescentFixtures}}
+              <p style="margin-left: 32px;">Existing fluorescent light ballasts are assumed to contain PCBs. When light fixtures are to be decommissioned, all ballasts should be verified at this time by determining the date of manufacture and other pertinent information by referring to the Environment Canada document entitled "Identification of Lamp Ballasts Containing PCBs" (Report EPS 2/CC/2 (revised) August 1991) to aid in identification. Any ballasts that meet the criteria outlined in this document must be treated as PCB containing.</p>
+              {{/unless}}
+              {{/if}}
+              {{#if recentLightingRetrofit}}
+              <p style="margin-left: 32px;">Newer T8 lamps present in some of the four lamp fluorescent light fixtures indicate that a partial lighting retrofit has taken place. These newer T8 lamps use ballasts that do not contain PCBs. Therefore, light fixtures containing T8 lamps are not expected to contain PCB ballasts. However, it should be cautioned that since only the lamps were retrofitted (and not the entire light fixture) there is a potential for previous ballasts used with T12 lamps (which may contain PCBs) to be left in place; although this was not identified within the one fixture with T8 lamps that was inspected. Therefore, should renovation/demolition work result in removal and disposal of existing fluorescent light fixtures containing T8 lamps it is still recommended that each fixture is individually assessed for the presence of PCB-containing ballasts and if discovered should be handled and disposed of accordingly as described above.</p>
+              {{/if}}
+              {{#if additionalPcbEquipment}}
+              <p style="margin-left: 32px;">Additional PCB-containing electrical equipment in the form of {{additionalPcbEquipmentType}} was identified in {{additionalPcbLocation}}. Based on information obtained from the nameplate this {{additionalPcbEquipmentType}} has approximately {{pcbPounds}} pounds of {{pcbType}}, which is a trade name for a specific type of PCB. {{additionalPcbEquipmentCount}} {{additionalPcbEquipmentType}} identified in the {{additionalPcbLocation}} was classified as "assumed PCB-containing" as the date of manufacture or other pertinent information could not be identified at the time of the assessment.</p>
+              {{/if}}
+              <p style="margin-left: 32px;">This electrical equipment is not expected to be decommissioned as part of the {{projectName}} and as long as operational can remain in place until the regulated decommissioning deadline of December 31, 2025. At the time of decommissioning any suspect PCB-containing equipment should be verified by referring to the Environment Canada document entitled "Handbook on PCB's in Electrical Equipment" (Third Edition, April 1988) to aid in identification. In some cases, sampling and analysis of the material or liquid may be necessary for full verification.</p>
+              {{#if pcbObserved}}
+              <p style="margin-left: 32px;">When PCB-containing equipment is taken out of service, jurisdiction falls under provincial regulations. As per R.R.O 1990, Regulation 347, General - Waste Management, the land disposal of PCB waste is prohibited. PCB wastes in Ontario are regulated under R.R.O 1990, Regulation 362, Waste Management – PCBs (Reg. 362), made under the Environmental Protection Act. Under this regulation, PCB waste is defined as any waste material containing PCBs at a concentration of more than fifty (50) parts per million by weight (i.e. >50mg/kg), with the exception of an electrical capacitor that has never contained over 1 kg of PCB's. Any PCB-containing equipment taken out of service should be properly handled and disposed of at an authorized destruction facility in accordance with the requirements of Federal Regulation SOR/2008-273 and Reg. 362.</p>
+              {{/if}}
+              {{else}}
+              <p style="margin-left: 32px;">No equipment was identified in the project areas that is expected to be PCB-containing. Additionally, it was confirmed that all original T12 fluorescent lights (including the ballasts and complete fixtures) have been replaced with T8 fluorescent lights in the project areas and, therefore, this lighting should not have PCB-containing ballasts. Or, If the building is known to be constructed after 1980, no light fixtures are expected to have PCB-containing ballasts as the manufacture of PCBs in the U.S. was banned in 1979 and Canada banned the import, manufacture and sale of PCBs in 1977. Similarly, no other electrical equipment (such as transformers and capacitors) present in the subject area(s) is expected to contain PCBs based on the age of building construction.</p>
+              {{/if}}
+            {{/if}}
+            
+            <!-- Section 3.2.3.2 Ozone Depleting and Global Warming Substances -->
+            <div style="font-weight: bold; margin-left: 32px;">3.2.3.2 Ozone Depleting and Global Warming Substances</div>
+            {{#if odsObserved}}
+            <p style="margin-left: 32px;">Ontario Regulation 463/10, Ozone Depleting Substances and Other Halocarbons (O.Reg. 463/10, made under the Environmental Protection Act) controls the use, discharge, sale, transfer, transport, storage and disposal of ozone depleting substances and halocarbons in Ontario. This regulation enhances the control and management of ODS and other halocarbons to prevent or minimize emissions, which serves a dual environmental benefit of lowering emissions of substances that deplete the ozone layer and contribute to global warming.</p>
+            {{#if airConditioningUnits}}
+            <p style="margin-left: 32px;">{{airConditioningCount}} {{airConditioningSize}} air-conditioning unit was noted on {{airConditioningArea}} in the {{airConditioningRoom}}. This air-conditioning unit will require removal as part of the {{projectName}} and the assessment confirmed that the unit contained approximately {{refrigerantPounds}} lbs of {{refrigerantType}}. Under O.Reg. 463/10 {{refrigerantType}} are considered "class {{refrigerantClass}}" ozone depleting substances.</p>
+            {{#if class1or2Refrigerant}}
+            <p style="margin-left: 32px;">O.Reg. 463/10 restricts the discharge of a class 1 and class 2 ozone depleting substance or a halocarbon into the natural environment or within a building. Servicing and testing of refrigeration equipment should be conducted in accordance with Environment Canada's "Environmental Code of Practice for Elimination of Fluorocarbon Emissions from Refrigeration and Air Conditioning Systems". This work must be conducted by a certified person who holds a valid Ozone Depletion Prevention (ODP) Certificate. Refrigeration equipment and containers that are to be dismantled and disposed of need to be properly purged of remaining refrigerant by a certified person and a notice must be affixed to the equipment or container that indicates it no longer contains a refrigerant (in addition to other information required by the regulation).</p>
+            {{/if}}
+            {{/if}}
+            {{#if fireExtinguishingEquipment}}
+            <p style="margin-left: 32px;">Under O.Reg. 463/10 Halon 1301 is considered a "class 1" ozone depleting substance. Fire extinguishing equipment that contains a halon may be discharged to fight fires and can be refilled once up to December 31, 2015 provided that the system is replaced by an alternative within a year of refill. Refilling of these systems with halon is prohibited as of January 1, 2016. Any inspection, maintenance, handling or decommissioning of this system should be conducted in accordance with Environment Canada's "Environmental Code of Practice on Halons" and ULC/ORD-C1058.18-2004, "The Servicing of Halon and Clean Agent Extinguishing Systems". Inspection and servicing of fire extinguishing equipment that contains a halon and recovery or reconditioning a halon from fire extinguishing equipment can only be conducted by a person employed in a business certified for the inspection of fire extinguishing equipment by Underwriters' Laboratories of Canada. Fire extinguishing equipment and containers containing halon cannot be dismantled, recycled or otherwise disposed of until it is confirmed by a qualified person that it no longer contains halon and a notice of such is affixed. The only exception to this requirement is portable fire extinguishing equipment containing less than three kilograms of halon.</p>
+            {{/if}}
+            <p style="margin-left: 32px;">Any refrigerant that is removed from an air-conditioning unit, heat pump, refrigeration or freezer unit (that is not mobile) is defined as a Stationary Refrigerant Waste under Reg. 347 and must be collected, handled, transported and recycled or disposed of in accordance with the requirements set forth in Sections 30 to 35 of this regulation.</p>
+            {{else}}
+            <p style="margin-left: 32px;">No equipment was identified in the project areas that is expected to contain ozone depleting or global warming substances. As such, no recommendations are considered necessary at this time.</p>
+            {{/if}}
+            
+            <!-- End Section 3.0 Conclusions and Recommendations -->
+        </div>
+    </div>
+
+    <!-- LIMITATIONS -->
+    <div class="section" id="limitations">
+        <!-- Inserted Section: Designated Substances and Hazardous Materials Assessment Details -->
+        <div style="margin-top: 30px; margin-bottom: 30px; font-family: Arial, sans-serif; font-size: 12pt;">
+            <!-- Section 4.0 Limitations -->
+            <div style="font-weight: bold;">4.0 LIMITATIONS</div>
+            <p>The information and recommendations detailed in this report were carried out by trained professional and technical staff in accordance with generally accepted environmental and industrial hygiene work practices and procedures. Recommendations provided in this report have been generated in accordance with accepted industry guidelines and practices. These guidelines and practices are considered acceptable as of the date of this report.</p>
+            <p>In preparation of this report, Safetech relied on information supplied by others, including without limitation, information pertaining to the history and operation of the site, test results and reports of other consultants and testing services provided by independent laboratories. Except as expressly set out in this report, Safetech has not made any independent verification of information provided by independent entities.</p>
+            <p>The collection of samples at the location noted was consistent with the scope of work agreed-upon with the person or entity to whom this report is addressed and the information obtained concerning prior site investigations.  As conditions between samples may vary, the potential remains for the presence of unknown additional contaminants for which there were no known indicators.</p>
+            <p>The analytical method used for determination of asbestos content meets the requirements of O. Reg. 278/05.  However, small asbestos fibres may be missed by PLM due to resolution limitations of the optical microscope. Interfering binder/matrix and/or low asbestos content may also hinder positive identification by PLM. These conditions are common for vermiculite attic insulation (VAI) and non-friable organically bound (NOB) materials such as vinyl floor tiles, roofing materials, mastics and caulking and can lead to "false negative" results. Due to limitations of the analytical method we cannot confirm that low quantities of asbestos are not present in these samples using solely PLM analysis. Additional analytical procedures should be considered for such materials to rule out false negative results.</p>
+            <p>Conclusions are based on site conditions at the time of inspection and can only be extrapolated to an undefined limited area around inspected locations.  The extent of the limited area depends on building construction and conditions.  Building materials that are not detailed within this survey due to inaccessibility during the time of survey and/or are uncovered during renovation/demolition activities should be properly assessed by a qualified person prior to their disturbance.  Safetech cannot warrant against undiscovered environmental liabilities. If any information becomes available that differs from the findings in this report, we request that we be notified immediately to reassess the conclusions provided herein.</p>
+            <p>No other person or entity is entitled to use or rely upon this report without the express written consent of Safetech and the person or entity to who it is addressed. Any use that a third party makes of this report, or any reliance based on conclusions and recommendations made, are the responsibility of such third parties.  Safetech accepts no responsibility for damages suffered by third parties as a result of actions based on this report.</p>
+            <!-- End Section 4.0 Limitations -->
+        </div>
+    </div>    
+
+    <!-- APPENDIX A: Summary of ACM Occurrences -->
+    <div class="section appendix" id="appendix-a">
+        <h3>Appendix A: Summary of ACM Occurrences</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Floor</th>
+                    <th>Location</th>
+                    <th>System</th>
+                    <th>Material</th>
+                    <th>Description</th>
+                    <th>Classification</th>
+                    <th>Friable/Non-Friable</th>
+                    <th>Condition</th>
+                    <th>Est. Quantity</th>
+                    <th>Unit</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#if appendixASummaryTable.length}}
+                {{#each appendixASummaryTable}}
+                <tr>
+                    <td>{{this.floor}}</td>
+                    <td>{{this.location}}</td>
+                    <td>{{this.system}}</td>
+                    <td>{{this.material}}</td>
+                    <td>{{this.description}}</td>
+                    <td>{{this.classification}}</td>
+                    <td>{{this.friability}}</td>
+                    <td>{{this.condition}}</td>
+                    <td>{{this.estQuantity}}</td>
+                    <td>{{this.unit}}</td>
+                </tr>
+                {{/each}}
+                {{else}}
+                <tr>
+                    <td colspan="10">No asbestos-containing materials data available for summary.</td>
+                </tr>
+                {{/if}}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- APPENDIX B: Site Drawings -->
+    <div class="section appendix" id="appendix-b">
+        <h3>Appendix B: Site Drawings</h3>
+        {{#if project_drawings.length}}
+        <div class="photo-grid">
+            {{#each project_drawings}}
+            <div class="photo-item">
+                <img src="{{this.file_url}}" alt="{{this.file_name}}" />
+                <div class="photo-caption">{{this.file_name}}</div>
+            </div>
+            {{/each}}
+        </div>
+        {{else}}
+        {{#if projectDrawings.length}}
+        <div class="photo-grid">
+            {{#each projectDrawings}}
+            <div class="photo-item">
+                <img src="{{this.file_url}}" alt="{{this.file_name}}" />
+                <div class="photo-caption">{{this.file_name}}</div>
+            </div>
+            {{/each}}
+        </div>
+        {{else}}
+        <p>No site drawings uploaded.</p>
+        {{/if}}
+        {{/if}}
+    </div>
+
+    <!-- APPENDIX C: Laboratory Certificate of Analysis – Asbestos -->
+    <div class="section appendix" id="appendix-c">
+        <h3>Appendix C: Laboratory Certificate of Analysis – Asbestos</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sample No.</th>
+                    <th>Area</th>
+                    <th>Material Type</th>
+                    <th>Location</th>
+                    <th>Description</th>
+                    <th>Square Footage</th>
+                    <th>% Asbestos</th>
+                    <th>Asbestos Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#if appendixCAsbestos.length}}
+                {{#each appendixCAsbestos}}
+                <tr>
+                    <td>{{this.sampleNo}}</td>
+                    <td>{{this.areaName}}</td>
+                    <td>{{this.materialType}}</td>
+                    <td>{{this.location}}</td>
+                    <td>{{this.description}}</td>
+                    <td>{{this.squareFootage}}</td>
+                    <td>{{this.percentageAsbestos}}</td>
+                    <td>{{this.asbestosType}}</td>
+                </tr>
+                {{/each}}
+                {{else}}
+                <tr>
+                    <td colspan="8">No asbestos laboratory certificate data available.</td>
+                </tr>
+                {{/if}}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- APPENDIX D: Laboratory Certificate of Analysis – Lead -->
+    <div class="section appendix" id="appendix-d">
+        <h3>Appendix D: Laboratory Certificate of Analysis – Lead</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sample No.</th>
+                    <th>Area</th>
+                    <th>Material Type</th>
+                    <th>Location</th>
+                    <th>Description</th>
+                    <th>% Lead</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#if appendixDLead.length}}
+                {{#each appendixDLead}}
+                <tr>
+                    <td>{{this.sampleNo}}</td>
+                    <td>{{this.areaName}}</td>
+                    <td>{{this.materialType}}</td>
+                    <td>{{this.location}}</td>
+                    <td>{{this.description}}</td>
+                    <td>{{this.percentageLead}}</td>
+                </tr>
+                {{/each}}
+                {{else}}
+                <tr>
+                    <td colspan="6">No lead laboratory certificate data available.</td>
+                </tr>
+                {{/if}}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- APPENDIX E: Methodology -->
+    <div class="section appendix" id="appendix-e">
+        <h3>Appendix E: Methodology</h3>
+        <p>The presence of hazardous materials was assessed by visual inspection. For the purpose of this assessment and this document, hazardous materials include designated substances as well as other chemical, biological and environmental hazards as defined below:</p>
+        <ul>
+            <li><strong>Designated Substances</strong> (as prescribed by Ontario Regulation 490/09): Acrylonitrile, Arsenic, Asbestos, Benzene, Coke Oven Emissions, Ethylene Oxide, Isocyanates, Lead, Mercury, Silica and Vinyl Chloride.</li>
+            <li><strong>Other Hazardous Materials</strong>:
+                <ul>
+                    <li><strong><em>Chemical Hazards</em></strong> – Urea Formaldehyde Foam Insulation (UFFI)</li>
+                    <li><strong><em>Biological Hazards</em></strong> – Mould Contamination and Pest Infestation</li>
+                    <li><strong><em>Environmental Hazards</em></strong> – Polychlorinated Biphenyls (PCBs) and Ozone Depleting &amp; Global Warming Substances</li>
+                </ul>
+            </li>
+        </ul>
+        <p>Concealed locations such as above solid plaster or drywall ceilings, within plaster or drywall wall cavities, enclosed mechanical/pipe shafts and bulkheads, etc. were not investigated, unless otherwise stated in this report. Similarly, motors, blowers, electrical panels, etc., were not de-energized or disassembled to examine concealed conditions. Building materials that are not detailed within this assessment due to inaccessibility at the time of our site visit and/or uncovered during renovation/demolition activities should be assessed by a qualified person prior to their disturbance.</p>
+        <p>Bulk sampling followed by laboratory analysis was also conducted to confirm the presence/absence of select hazardous materials. Bulk sampling was limited to asbestos in building materials and lead in paint on building finishes (if flaking paint was present). All other hazardous materials were identified by visual inspection only. Where possible, observations regarding the location, quantity and condition of the hazardous materials identified were made to determine the potential for exposure and provide appropriate recommendations for remedial action, if necessary. Specific methodology for each individual hazardous material assessed is further detailed below.</p>
+
+        <h4>Designated Substances</h4>
+        <h4><em>Asbestos</em></h4>
+        <p>A visual inspection for the presence of both friable and non-friable asbestos-containing material (ACM) was performed in the subject area.</p>
+        <p>If an existing asbestos survey was available for review, Safetech relied on the information present. Building materials that were visually similar to materials previously tested and that were confirmed to be either ACM or non-ACM were considered to have consistent content and were not re-sampled. Additional sampling was only conducted where the investigator believed a need existed.</p>
+        <p>Bulk samples of building materials suspected to contain asbestos were retrieved by Safetech only for materials that were deemed to have a potential to be disturbed as part of the construction project. Some suspect materials may not have been sampled during our investigation. Bulk samples were retrieved in accordance with Section 3 and Table 1 of Ontario Regulation 278/05, <em>Designated Substance – Asbestos on Construction Projects and in Buildings and Repair Operations</em>. The number of samples collected for each material was based on the type and quantity of the material present in the subject area. Each individual sample was placed in a labeled zip-lock bag for transportation to an accredited independent laboratory.</p>
+        <p>Analysis for asbestos content was performed by the independent laboratory in accordance with the U.S. Environmental Protection Agency (EPA) Test Method <em>600/R-93/116: Method for the Determination of Asbestos in Bulk Building Materials</em> (June 1993). This method identifies the asbestos fibre content of building materials using polarized light microscopy (PLM) analytical techniques, with confirmation of presence and type of asbestos made by dispersion staining optical microscopy. This analytical method meets the requirements set forth in Section 3 of O. Reg. 278/05.</p>
+        <p>In accordance with O. Reg. 278/05, an asbestos-containing material is defined as material that contains 0.5 per cent or more asbestos by dry weight. The laboratory was instructed to conduct “stop-positive” analysis for all materials. If a sample was found to be asbestos-containing, no further analysis was conducted for samples taken from the same homogeneous material.</p>
+        <p>Locations where ACM have been identified are detailed in this report. Recommendations pertaining to ACM were made based on the friability, accessibility and condition of the material in conjunction with the potential for the planned renovation work to disturb the ACM.</p>
+
+        <h4><em>Assessment of Asbestos-Containing Building Materials</em></h4>
+        <p>Accessibility, Condition and Action (Priority) ratings for individual items, or defined areas were developed by Safetech to determine remedial action plans specific to the facility’s needs.</p>
+        <h4><em>Condition</em></h4>
+        <p>The condition of asbestos-containing materials identified in the subject area was assessed as Good (G), Fair (F) or Poor (P). The assessment criteria used to determine condition is dependent on material characteristics, such as friability. The following table summarizes the criteria used by Safetech to evaluate the condition of ACM.</p>
+        <div class="avoid-break">
+            <table>
+                <tbody>
+                    <tr>
+                        <th colspan="2">Sprayed Fireproofing, Sprayed Insulation and Sprayed Texture Finishes</th>
+                    </tr>
+                    <tr>
+                        <td style="width: 20%"><strong>Good</strong></td>
+                        <td>
+                            <ul>
+                                <li>Surface shows no significant signs of damage, deterioration, or delamination (i.e. &lt;1%).</li>
+                                <li>Unencapsulated or unpainted fireproofing or texture finishes, where no delamination or damage is observed.</li>
+                                <li>Encapsulated fireproofing or texture finishes where encapsulation applied after damage or fallout.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fair</strong></td>
+                        <td>
+                            <ul>
+                                <li>Not utilized as part of condition assessment for these materials.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Poor</strong></td>
+                        <td>
+                            <ul>
+                                <li>Greater than 1% damage, delamination, or deterioration to surface.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="text-center"><strong>In areas where damage exists in isolated locations, both Good and Poor may be applicable.</strong></td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">Mechanical Insulation (boilers, breeching, ductwork, piping, tanks, equipment, etc.)</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Good</strong></td>
+                        <td>
+                            <ul>
+                                <li>Insulation completely covered in jacketing and exhibits no evidence of damage or deterioration.</li>
+                                <li>Jacketing may have minor damage (i.e. scuffs or stains), but is not penetrated.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fair</strong></td>
+                        <td>
+                            <ul>
+                                <li>Minor penetrating damage to jacketed insulation (cuts, tears, nicks, deterioration or delamination).</li>
+                                <li>Undamaged insulation that had never been jacketed.</li>
+                                <li>Insulation is exposed but not showing surface disintegration.</li>
+                                <li>Extent of missing insulation ranges from minor to none.</li>
+                                <li>Damage that can be repaired.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Poor</strong></td>
+                        <td>
+                            <ul>
+                                <li>Original insulation jacket is missing, damaged, deteriorated, or delaminated.</li>
+                                <li>Insulation is exposed and significant areas have been dislodged.</li>
+                                <li>Damage that cannot be easily repaired.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">Non-Friable and Potentially Friable Materials</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Good</strong></td>
+                        <td>
+                            <ul>
+                                <li>No significant damage.</li>
+                                <li>Material may be cracked or broken but is stable and not likely to become friable upon casual contact.</li>
+                                <li>No friable debris present.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fair</strong></td>
+                        <td>
+                            <ul>
+                                <li>Not utilized as part of condition assessment for these materials.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Poor</strong></td>
+                        <td>
+                            <ul>
+                                <li>Material is severely damaged.</li>
+                                <li>Debris is present or binder has disintegrated to the point where the material has become friable.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">Asbestos-Containing Debris (noted separately from the presumed source material)</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Poor</strong></td>
+                        <td>
+                            <ul>
+                                <li>Debris is always considered to be in Poor condition.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h4><em>Quantity</em></h4>
+        <p>The approximate quantity and the units of measure related to the quantity (i.e.: linear feet (LF), square feet (SF) or each (EACH) as appropriate to the item) have only been provided for materials requiring remedial or corrective action (i.e. materials in Fair or Poor condition). In such circumstances any quantities provided should be considered rough estimates only and should not be solely relied upon for bidding purposes. <strong>It is the responsibility of the selected Contractor to obtain actual quantities</strong>.</p>
+
+        <h4>Lead</h4>
+        <p>If paint samples were collected, they were collected by scraping the paint down to the base material substrate to ensure collection of all layers of paint. Care would be taken to avoid collection of the underlying substrate to reduce analytical substrate matrix interference.</p>
+        <p>If collected, paint samples were submitted to an independent laboratory for the determination of lead content. The laboratory would participate in and accredited by the EPA (U.S. Environmental Protection Agency) for analysis of lead in paint chips through the American Industrial Hygiene Association (AIHA) Environmental Lead Laboratory Accreditation Program (ELLAP). Analysis would be conducted by the laboratory following the EPA “Test Methods for Evaluating Solid Waste, Physical/Chemical Methods” (SW-846), Method 7000B “Flame Atomic Absorption Spectrophotometry”. Result of analysis would be reported by the laboratory as the percentage of lead by weight of the total sample (% by wt.).</p>
+        <p>The presence of lead in other materials, such as lead sheeting, pigmented mortar, lead piping, lead solder, etc. would be noted where observed but not sampled to verify lead content. Lead can be present in these materials to varying degrees, depending on their age of application and should be considered lead-containing until proven otherwise.</p>
+
+        <h4>Mercury</h4>
+        <p>The type, quantity and location of mercury-containing equipment and devices in the subject area were determined by visual inspection based on appearance, age and knowledge of historical uses. Sampling for mercury-containing building materials and dismantling of suspect mercury-containing equipment was not performed. Where possible, attempts were made to verify the presence/absence of mercury by gathering additional information such as equipment model number, serial number, etc.</p>
+
+        <h4>Silica</h4>
+        <p>The presence of crystalline silica in building materials was determined through visual inspection of building materials only, based on knowledge of the historic use of silica-containing materials in certain building materials. Sampling to verify the presence/absence of silica in building materials was not performed.</p>
+
+        <h4>Other Designated Substances</h4>
+        <p>Other designated substances (i.e. acrylonitrile, arsenic, benzene, coke oven emissions, ethylene oxide, isocyanates, and vinyl chloride) are typically not expected to be encountered in building materials as significant constituents or in a form that would represent an exposure concern. These substances were not included in the assessment unless specific information regarding their use (e.g. in a manufacturing process) was provided to us. No sampling for these designated substances was performed.</p>
+
+        <h4>Other Hazardous Materials</h4>
+        <h4><em>Chemical Hazards</em></h4>
+        <p>A visual inspection to evaluate the possible presence of Urea Formaldehyde Foam Insulation (UFFI) was conducted in the subject area. Our visual inspection was limited to identifying evidence of possible UFFI installation (i.e. repaired nozzle holes in walls) and overspray at wall/ceiling joints, etc. No destructive testing or material sampling was conducted as part of the assessment.</p>
+
+        <h4>Biological Hazards</h4>
+        <h4><em>Mould Contamination</em></h4>
+        <p>A visual inspection to determine the possibility of mould growth was conducted in the subject area. The assessment was limited to identifying evidence of mould growth and water damage (staining, material deterioration, efflorescence, etc.) on the surface of building materials, which may be an indicator of hidden mould growth. No moisture content readings of building materials were taken to determine their current condition. Additionally, destructive testing to confirm the presence/absence of hidden mould growth and material sampling to verify the presence/absence of mould on suspect surfaces was beyond the scope of this assessment.</p>
+        <h4><em>Pest Infestation</em></h4>
+        <p>The presence and extent of pest infestation in the subject area was based on visually inspecting for evidence of significant pest activity, including signs of nesting, droppings/fecal accumulation, dead insects/carcass accumulation, etc. Evidence of minor pest presence was not considered to be indicative of pest infestation.</p>
+
+        <h4>Environmental Hazards</h4>
+        <h4><em>Polychlorinated Biphenyls (PCBs)</em></h4>
+        <p>The presence of PCB-containing electrical equipment in the subject area was identified through visual inspection and knowledge of the timeline of historical use.</p>
+        <p>For stand-alone transformers and capacitors, information from the manufacturer nameplate (such as the date of manufacture, dielectric fluid trade name or “Type Number”, etc.) was gathered, where possible, to further evaluate if the equipment may contain PCBs. This information was then compared to the information provided in the Environment Canada document entitled “Handbook on PCB’s in Electrical Equipment” (Third Edition, April 1988) to aid in identification. Transformers and capacitors confirmed to be manufactured after 1979 were assumed to not contain PCBs. If appropriate information could not be obtained it was assumed that the transformer or capacitor contained PCBs.</p>
+        <p>For fluorescent light ballasts, a representative number of fixtures were inspected, if possible, for assessment areas that were constructed prior to 1980 and where there was no history or evidence of a complete lighting retrofit. The light fixtures were examined by removing any lenses and ballast covers to expose the ballast and identify information such as ballast make, model number, serial number, and date code. This information was then compared to the information provided in the Environment Canada document entitled “Identification of Lamp Ballasts Containing PCBs” (Report EPS 2/CC/2 (revised) August 1991) to aid in identification. Ballasts that could not be confirmed Non-PCB-containing were assumed to contain PCBs. The light fixtures were not de-energized and ballasts were not removed to obtain manufacturer information that may be on the back of the ballast. If visual confirmation of ballast type could not be made it was assumed that light fixtures in areas constructed prior to 1980 that have not undergone a complete lighting retrofit have PCB-containing ballasts until proven otherwise.</p>
+        <p>No sampling of materials or fluids within equipment was conducted to verify the presence/absence of PCBs. Inspection and testing of other materials for PCB content, including (but not limited to) caulking, asphalt, oil-based paint, plastics, switches, electric cables and hydraulic fluids was beyond the scope of the assessment.</p>
+        <h4><em>Ozone Depleting and Global Warming Substances</em></h4>
+        <p>The presence of fixed equipment likely to contain ozone-depleting substances (ODS) and/or global-warming substances (GWS) was identified through visual inspection and knowledge of the timeline of historical use. This included equipment such as chillers, air-conditioners, walk-in refrigeration and freezer units and fixed dry-chemical fire extinguishers, where chemicals such as hydrochlorofluorocarbons (HCFCs), hydrofluorocarbons (HFCs) or halons may be present. Where possible, information regarding the type and quantity of refrigerant present was obtained from the manufacturer nameplate. Our visual assessment was limited to fixed equipment in the subject area and did not include portable equipment such as stand-alone refrigerators, freezers, water coolers, air-conditioners and fire extinguishers, etc.</p>
+    </div>
+</body>
+</html> 
