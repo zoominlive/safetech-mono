@@ -153,7 +153,10 @@ export const transformPcbSchema = (originalSchema: SchemaSection[]): SchemaSecti
               }
             ]
           }
-        ]
+        ],
+        type: "conditional",
+        condition: "areaAvailable",
+        showWhen: "areaAvailable=Yes"
       };
     }
     

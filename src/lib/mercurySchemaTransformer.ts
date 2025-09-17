@@ -56,7 +56,10 @@ export const transformMercurySchema = (originalSchema: SchemaSection[]): SchemaS
             showWhen: "mercuryObserved=Yes",
             options: ["Removed", "Distributed", "Unknown"]
           }
-        ]
+        ],
+        type: "conditional",
+        condition: "areaAvailable",
+        showWhen: "areaAvailable=Yes"
       };
     }
     

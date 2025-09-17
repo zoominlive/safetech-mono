@@ -55,7 +55,10 @@ export const transformMouldSchema = (originalSchema: SchemaSection[]): SchemaSec
             name: "mouldMaterials",
             showWhen: "moldGrowth=Yes"
           }
-        ]
+        ],
+        type: "conditional",
+        condition: "areaAvailable",
+        showWhen: "areaAvailable=Yes"
       };
     }
     

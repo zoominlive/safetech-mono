@@ -21,7 +21,10 @@ export const transformSilicaSchema = (originalSchema: SchemaSection[]): SchemaSe
             name: "silicaMaterials",
             showWhen: "silicaObserved=Yes"
           }
-        ]
+        ],
+        type: "conditional",
+        condition: "areaAvailable",
+        showWhen: "areaAvailable=Yes"
       };
     }
     
