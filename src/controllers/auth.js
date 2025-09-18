@@ -25,7 +25,7 @@ const {
 const { generateToken } = require('../utils/token');
 const { sendEmail } = require('../utils/email');
 const APIError = require('../helpers/apiError');
-const { JWT_SECRET, env, JWT_EXPIRESIN, FRONTEND_BASE_URL } = require('../config/use_env_variable');
+const { JWT_SECRET, env, JWT_EXPIRESIN, FRONTEND_BASE_URL, MOBILE_APP_KEY } = require('../config/use_env_variable');
 const { ErrorHandler } = require('../helpers/errorHandler');
 const logger = require('../config/logger');
 const { updateUserWithLogs } = require('./user');
@@ -91,7 +91,14 @@ exports.register = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
   try {
-    const { email, password, rememberMe } = req.body;
+    const { email, password, rememberMe, client } = req.body; // client: 'web' | 'mobile'
+    const remember = rememberMe === true || rememberMe === 'true' || rememberMe === 1 || rememberMe === '1';
+
+    // Validate client platform
+    const platform = (client || '').toLowerCase();
+    if (!['web', 'mobile'].includes(platform)) {
+      return res.status(BAD_REQUEST).json({ message: 'Invalid client platform', success: false });
+    }
     const user = await User.findOne({ 
       where: { 
         email,
@@ -133,17 +140,41 @@ exports.login = async (req, res, next) => {
       });
     }
 
+    // Enforce platform policy
+    if (platform === 'mobile' && user.role !== 'Technician') {
+      return res.status(UNAUTHORIZED).json({ 
+        message: 'Only Technicians can log in via mobile',
+        success: false
+      });
+    }
+
+    // If mobile, require a valid app key header to prevent spoofing
+    if (platform === 'mobile') {
+      const appKey = req.headers['x-app-key'];
+      if (!MOBILE_APP_KEY || appKey !== MOBILE_APP_KEY) {
+        return res.status(UNAUTHORIZED).json({ message: 'Invalid mobile app key', success: false });
+      }
+    }
+
+    // For web, optionally verify origin if present
+    if (platform === 'web' && FRONTEND_BASE_URL && req.headers.origin) {
+      if (req.headers.origin !== FRONTEND_BASE_URL) {
+        return res.status(UNAUTHORIZED).json({ message: 'Unauthorized origin', success: false });
+      }
+    }
+
     // Update last_login field
     await User.update(
       { last_login: new Date() },
       { where: { id: user.id } }
     );
 
-    // Determine expiry: default 1 day, rememberMe => 30 days
-    const accessTokenTtl = rememberMe ? '30d' : '1d';
-    const token = generateToken({ id: user.id, role: user.role, email: user.email }, accessTokenTtl);
+    // Determine expiry: default 1 day, remember => 30 days
+    const accessTokenTtl = remember ? '30d' : '1d';
+    const token = generateToken({ id: user.id, role: user.role, email: user.email, platform }, accessTokenTtl);
 
-    res.json({ token, user, rememberMe: Boolean(rememberMe) });
+    const isMobileUser = user.role === 'Technician';
+    res.json({ token, user, rememberMe: remember, isMobileUser, platform });
   } catch (err) {
     next(err);
   }
