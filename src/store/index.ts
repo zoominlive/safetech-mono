@@ -54,7 +54,8 @@ export const useAuthStore = create<AuthState>()(
           const response: any = await BaseClient.post('auth/login', { 
             email, 
             password,
-            rememberMe
+            rememberMe,
+            client: 'web'
           });
           
           set({ 
