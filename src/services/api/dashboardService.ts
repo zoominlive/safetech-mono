@@ -18,6 +18,7 @@ interface DashboardResponse {
       company: string;
       startDate: string | Date;
       technician: string;
+      technicians: string[];
       status: string;
       reports: Array<{
         id: string;

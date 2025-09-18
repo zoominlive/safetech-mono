@@ -34,6 +34,7 @@ interface DashboardResponse {
       company: string;
       startDate: string | Date;
       technician: string;
+      technicians: string[];
       status: string;
       reports: Array<{
         id: string;
@@ -46,6 +47,7 @@ interface DashboardResponse {
       company: string;
       startDate: string | Date;
       technician: string;
+      technicians: string[];
       status: string;
       reports: Array<{
         id: string;
@@ -71,6 +73,7 @@ interface InProgressProject {
   company: string;
   startDate: string | Date;
   technician: string;
+  technicians: string[];
   status: string;
   latestReportId?: string;
 }
@@ -126,6 +129,7 @@ function DashboardLayout() {
             company: project.company,
             startDate: project.startDate,
             technician: project.technician,
+            technicians: project.technicians,
             status: project.status,
             latestReportId: project.reports && project.reports.length > 0 
               ? project.reports[project.reports.length - 1].id 
@@ -139,6 +143,7 @@ function DashboardLayout() {
             company: project.company,
             startDate: project.startDate,
             technician: project.technician,
+            technicians: project.technicians,
             status: project.status,
             latestReportId: project.reports && project.reports.length > 0 
               ? project.reports[project.reports.length - 1].id 
@@ -298,18 +303,23 @@ function DashboardLayout() {
     },
     {
       header: "Technician",
-      accessorKey: "technician",
+      accessorKey: "technicians",
       width: "min-w-[90px] max-w-[120px] sm:min-w-[140px] sm:max-w-[160px]",
-      cell: (project) => (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="truncate block">{project.technician}</span>
-            </TooltipTrigger>
-            <TooltipContent>{project.technician}</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      ),
+      cell: (project) => {
+        const techNames = Array.isArray(project.technicians)
+          ? project.technicians.join(", ")
+          : (project.technicians as unknown as string) || "";
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="truncate block">{techNames}</span>
+              </TooltipTrigger>
+              <TooltipContent>{techNames}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      },
     },
     {
       header: "Status",
