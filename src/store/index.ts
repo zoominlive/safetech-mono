@@ -219,6 +219,7 @@ interface MaterialState {
   // Actions
   fetchMaterials: () => Promise<void>;
   addCustomMaterial: (materialName: string) => Promise<void>;
+  addMaterialIfMissing: (materialName: string, type: 'standard' | 'custom') => Promise<void>;
   deleteCustomMaterial: (id: string) => Promise<void>;
   getAvailableMaterials: () => string[];
   isStandardMaterial: (materialName: string) => boolean;
@@ -272,6 +273,27 @@ export const useMaterialStore = create<MaterialState>()(
         }
       } catch (error) {
         console.error('Error adding custom material:', error);
+        set({ 
+          error: error instanceof Error ? error.message : 'Failed to add material', 
+          loading: false 
+        });
+      }
+    },
+
+    addMaterialIfMissing: async (materialName: string, type: 'standard' | 'custom') => {
+      set({ loading: true, error: null });
+      try {
+        const exists = !!get().materials.find(m => m.name === materialName && m.is_active);
+        if (!exists) {
+          const response = await materialService.createCustomMaterial({ name: materialName, type });
+          if (!response.success) {
+            set({ error: response.message || 'Failed to add material', loading: false });
+            return;
+          }
+        }
+        await get().fetchMaterials();
+      } catch (error) {
+        console.error('Error adding material if missing:', error);
         set({ 
           error: error instanceof Error ? error.message : 'Failed to add material', 
           loading: false 

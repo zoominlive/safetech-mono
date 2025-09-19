@@ -44,7 +44,7 @@ export const transformMouldSchema = (originalSchema: SchemaSection[]): SchemaSec
             id: "moldImpact",
             type: "radio",
             label: "Will the mould be impacted/removed/is within scope?",
-            options: ["Yes", "No"],
+            options: ["Yes", "No", "Unknown"],
             name: "moldImpact",
             showWhen: "moldGrowth=Yes"
           },

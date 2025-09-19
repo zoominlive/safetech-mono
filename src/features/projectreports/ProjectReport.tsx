@@ -235,7 +235,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   const [dialogUploadedPhotos, setDialogUploadedPhotos] = useState<string[]>([]);
 
   // Add state for open accordion items
-  const [openAccordionItems, setOpenAccordionItems] = useState<string[]>(readOnly ? ["client-info", "project-info"] : []);
+  const [openAccordionItems, setOpenAccordionItems] = useState<string[]>(readOnly ? ["client-info", "project-info", "docs-limits"] : []);
 
   // Add after other useState hooks
   const [scrollTarget, setScrollTarget] = useState<string | null>(null);
@@ -1486,6 +1486,10 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               }}
               materialUsageStats={materialUsageStats}
               existingSampleIds={allExistingSampleIds}
+              areaMaterials={areas.reduce((acc, area) => {
+                acc[area.name] = area.assessments.asbestosMaterials || [];
+                return acc;
+              }, {} as Record<string, any[]>)}
             />
           </div>
         );
@@ -1768,8 +1772,9 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     if (userRole === "Technician") {
       const missing = getMissingDocsAndLimits();
       if (missing.length > 0) {
-        setIsDrawerOpen(true);
-        setDrawerMode('toc');
+        // Open the Docs and Limits accordion section instead of the drawer
+        setOpenAccordionItems((prev) => prev.includes("docs-limits") ? prev : [...prev, "docs-limits"]);
+        setScrollTarget('docs-limits-section');
         setIsSubmitToPMReviewDialogOpen(false);
         toast({
           title: "Missing required fields",
@@ -2036,8 +2041,9 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
           }
         });
         if (missingRequired.length > 0) {
-          setIsDrawerOpen(true);
-          setDrawerMode('toc');
+          // Open the Docs and Limits accordion section instead of the drawer
+          setOpenAccordionItems((prev) => prev.includes("docs-limits") ? prev : [...prev, "docs-limits"]);
+          setScrollTarget('docs-limits-section');
           setIsSubmitToPMReviewDialogOpen(false);
           toast({
             title: "Missing required fields",
@@ -2295,6 +2301,13 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                     }}>
                       Project Information
                     </Button>
+                    <Button variant="ghost" className="w-full justify-start text-lg" onClick={() => {
+                      setScrollTarget('docs-limits-section');
+                      setOpenAccordionItems((prev) => prev.includes("docs-limits") ? prev : [...prev, "docs-limits"]);
+                      setIsDrawerOpen(false);
+                    }}>
+                      Docs and Limits
+                    </Button>
                     {/* <Button variant="ghost" className="w-full justify-start text-lg" onClick={() => {
                       setScrollTarget('lab-results-section');
                       setIsDrawerOpen(false);
@@ -2302,31 +2315,6 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                       Insert Lab Results
                     </Button> */}
                   </div>
-                  {(
-                    <div className="mt-3 space-y-3">
-                      <div className="border-t border-gray-300" />
-                      {schema
-                        .filter((section) => section.title === "Docs and Limits")
-                        .map((section) => (
-                          <div key={section.title} className="space-y-3">
-                            <h4 className="font-semibold text-lg">{section.title}</h4>
-                            <div className="space-y-3">
-                              {section.fields.map((field, fieldIndex) => (
-                                <div key={field.id} className={`p-3 rounded-md ${fieldIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
-                                  <Label className="block mb-2">
-                                    {field.label}
-                                    {field.required && <span className="text-red-500 ml-1">*</span>}
-                                  </Label>
-                                  <div>
-                                    {renderCommonField(field)}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
                   <div className="border-t border-gray-300" />
                   <div className="flex-1 overflow-y-auto mt-6 space-y-4 pr-2">
                     {areas.map((area) => {
@@ -2769,7 +2757,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                   </div>
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="project-info" className="bg-white rounded-md shadow-sm">
+              <AccordionItem value="project-info" className="bg-white rounded-md shadow-sm mb-4">
                 <AccordionTrigger className="pl-4" id="project-info-section">Project Information</AccordionTrigger>
                 <AccordionContent className="p-6">
                   {/* Render project info fields (read-only) */}
@@ -2933,6 +2921,30 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                       </div>
                     </div>
                   )}
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="docs-limits" className="bg-white rounded-md shadow-sm">
+                <AccordionTrigger className="pl-4" id="docs-limits-section">Docs and Limits</AccordionTrigger>
+                <AccordionContent className="p-6">
+                  {schema
+                    .filter((section) => section.title === "Docs and Limits")
+                    .map((section) => (
+                      <div key={section.title} className="space-y-3">
+                        <div className="space-y-3">
+                          {section.fields.map((field, fieldIndex) => (
+                            <div key={field.id} className={`p-3 rounded-md ${fieldIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
+                              <Label className="block mb-2">
+                                {field.label}
+                                {field.required && <span className="text-red-500 ml-1">*</span>}
+                              </Label>
+                              <div>
+                                {renderCommonField(field)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

@@ -52,7 +52,6 @@ export const convertOldSilicaDataToNew = (oldData: any): any => {
       description: item.materialDescription || "",
       photos: item.materialPhoto ? [item.materialPhoto] : [],
       sampleCollected: 'No',
-      suspectedSilica: 'No',
       isCustomMaterial: item.materialType === "Other",
       timestamp: new Date().toISOString()
     }));

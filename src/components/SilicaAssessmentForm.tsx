@@ -33,7 +33,6 @@ interface SilicaMaterial {
   description: string;
   photos: string[];
   sampleCollected: 'Yes' | 'No';
-  suspectedSilica: 'Yes' | 'No';
   isCustomMaterial: boolean;
   sampleId?: string;
   sampleNo?: string;
@@ -115,7 +114,6 @@ export const SilicaAssessmentForm: React.FC<SilicaAssessmentFormProps> = ({
       description: "",
       photos: [],
       sampleCollected: 'No',
-      suspectedSilica: 'No',
       isCustomMaterial: false,
       timestamp: new Date().toISOString()
     };
@@ -610,27 +608,6 @@ export const SilicaAssessmentForm: React.FC<SilicaAssessmentFormProps> = ({
                           </RadioGroup>
                         </div>
 
-                        {/* Suspected Silica (only show if sample not collected) */}
-                        {material.sampleCollected === 'No' && (
-                          <div className="space-y-2">
-                            <Label>Is it a suspected silica-containing material?</Label>
-                            <RadioGroup
-                              value={material.suspectedSilica}
-                              onValueChange={(value) => handleMaterialChange(material.id, 'suspectedSilica', value)}
-                              disabled={disabled}
-                              className="flex space-x-4"
-                            >
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="Yes" id={`suspected-yes-${material.id}`} />
-                                <Label htmlFor={`suspected-yes-${material.id}`}>Yes</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="No" id={`suspected-no-${material.id}`} />
-                                <Label htmlFor={`suspected-no-${material.id}`}>No</Label>
-                              </div>
-                            </RadioGroup>
-                          </div>
-                        )}
                       </div>
                     )}
                   </div>

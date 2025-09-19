@@ -103,6 +103,16 @@ export const MaterialSelect: React.FC<MaterialSelectProps> = ({
               </div>
             ) : (
               <>
+                {(!showOtherOnlyWhenHasItems || filteredOptions.length > 0) && (
+                  <div className="border-b">
+                    <div
+                      className="px-3 py-2 text-sm cursor-pointer hover:bg-accent text-blue-600"
+                      onClick={handleCustomMaterial}
+                    >
+                      {customAddText || "Add Other Material..."}
+                    </div>
+                  </div>
+                )}
                 {filteredOptions.map((option) => (
                   <div
                     key={option.value}
@@ -115,16 +125,6 @@ export const MaterialSelect: React.FC<MaterialSelectProps> = ({
                     {option.label}
                   </div>
                 ))}
-                {(!showOtherOnlyWhenHasItems || filteredOptions.length > 0) && (
-                  <div className="border-t">
-                    <div
-                      className="px-3 py-2 text-sm cursor-pointer hover:bg-accent text-blue-600"
-                      onClick={handleCustomMaterial}
-                    >
-                      {customAddText || "Add Other Material..."}
-                    </div>
-                  </div>
-                )}
               </>
             )}
           </div>
