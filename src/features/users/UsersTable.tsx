@@ -39,7 +39,8 @@ function UsersTable({ searchQuery, sortBy }: UsersTableProps) {
   const [error, setError] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
-  const token = useAuthStore.getState().token;
+  const { token } = useAuthStore.getState();
+  const [resendingInvitationId, setResendingInvitationId] = useState<string | null>(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -101,7 +102,7 @@ function UsersTable({ searchQuery, sortBy }: UsersTableProps) {
           last_name: user.last_name,
           email: user.email,
           role: user.role || 'user',
-          status: user.deactivated_user ? 'inactive' : 'active',
+          status: user.deactivated_user ? 'inactive' : (user.is_verified ? 'active' : 'invited'),
           profile_picture: user.profile_picture,
         }));
         
@@ -136,6 +137,29 @@ function UsersTable({ searchQuery, sortBy }: UsersTableProps) {
   
   const handleEdit = (user: User) => {
     navigate(`/staff/${user.id}/edit`);
+  };
+  
+  const handleResendInvitation = async (user: User) => {
+    try {
+      setResendingInvitationId(user.id);
+      const response = await userService.resendActivation(user.email);
+      if (!response?.success) {
+        throw new Error(response?.message || 'Failed to resend invitation');
+      }
+      toast({
+        title: "Invitation resent",
+        description: `Activation email resent to ${user.email}`,
+      });
+    } catch (err: any) {
+      const errorMessage = err?.data?.message || err.message || "Failed to resend invitation";
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setResendingInvitationId(null);
+    }
   };
   
   const openDeleteDialog = (user: User) => {
@@ -198,6 +222,8 @@ function UsersTable({ searchQuery, sortBy }: UsersTableProps) {
           onDetails={handleDetails}
           onDelete={openDeleteDialog}
           onEdit={handleEdit}
+          onResendInvitation={handleResendInvitation}
+          resendingInvitationId={resendingInvitationId}
           pagination={true}
           currentPage={currentPage}
           pageSize={pageSize}

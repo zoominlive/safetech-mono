@@ -237,6 +237,29 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   // Add state for open accordion items
   const [openAccordionItems, setOpenAccordionItems] = useState<string[]>(readOnly ? ["client-info", "project-info", "docs-limits"] : []);
 
+  // Keep buildingConstructionYear synchronized across all areas
+  useEffect(() => {
+    if (!areas || areas.length === 0) return;
+    const values = areas
+      .map(a => (a as any)?.assessments?.buildingConstructionYear)
+      .filter(v => v === "Before 1980" || v === "After 1980");
+    if (values.length === 0) return;
+    const target = values[0];
+    const hasMismatch = areas.some(a => (a as any)?.assessments?.buildingConstructionYear !== target);
+    if (hasMismatch) {
+      const updatedAreas = areas.map(a => ({
+        ...a,
+        assessments: {
+          ...a.assessments,
+          buildingConstructionYear: target,
+        },
+      }));
+      setAreas(updatedAreas);
+      setSelectedArea(updatedAreas.find(a => a.id === selectedArea?.id) || updatedAreas[0] || null);
+      setHasUnsavedChanges(true);
+    }
+  }, [areas]);
+
   // Add after other useState hooks
   const [scrollTarget, setScrollTarget] = useState<string | null>(null);
 
@@ -2762,6 +2785,39 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                 <AccordionContent className="p-6">
                   {/* Render project info fields (read-only) */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Building Construction Year - PM/Admin can edit */}
+                    <div>
+                      <Label>When was this building constructed?</Label>
+                      {readOnly || !(userRole && ["Project Manager", "Admin"].includes(userRole)) ? (
+                        <div className="text-gray-500">{selectedArea?.assessments.buildingConstructionYear || "—"}</div>
+                      ) : (
+                        <div className="mt-1">
+                          <Select
+                            value={selectedArea?.assessments.buildingConstructionYear || ""}
+                            onValueChange={(value) => {
+                              const updatedAreas = areas.map((a) => ({
+                                ...a,
+                                assessments: {
+                                  ...a.assessments,
+                                  buildingConstructionYear: value,
+                                },
+                              }));
+                              setAreas(updatedAreas);
+                              setSelectedArea(updatedAreas.find(a => a.id === selectedArea?.id) || null);
+                              setHasUnsavedChanges(true);
+                            }}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select an option" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Before 1980">Before 1980</SelectItem>
+                              <SelectItem value="After 1980">After 1980</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
                     <div><Label>Project Name</Label><div className="text-gray-500">{selectedArea?.assessments.projectName}</div></div>
                     <div><Label>Specific Location</Label><div className="text-gray-500">{selectedArea?.assessments.specificLocation}</div></div>
                     <div><Label>Project Number</Label><div className="text-gray-500">{selectedArea?.assessments.projectNumber}</div></div>

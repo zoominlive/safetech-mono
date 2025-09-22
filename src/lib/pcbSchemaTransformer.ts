@@ -8,13 +8,6 @@ export const transformPcbSchema = (originalSchema: SchemaSection[]): SchemaSecti
         title: "PCB Assessment",
         fields: [
           {
-            id: "buildingConstructionYear",
-            type: "select",
-            label: "When was this building constructed?",
-            name: "buildingConstructionYear",
-            options: ["Before 1980", "After 1980"],
-          },
-          {
             id: "pcbObserved",
             type: "radio",
             label: "Were any sources of polychlorinated biphenyls (PCBs) observed?",
