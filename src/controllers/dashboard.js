@@ -63,10 +63,10 @@ exports.getDashboardSummary = async (req, res, next) => {
       },
       include: [
         ...(technicianInclude ? [technicianInclude] : []),
-        { model: Customer, as: 'company', attributes: ['company_name', 'first_name', 'last_name'] },
-        { model: User, as: 'technician', attributes: ['first_name', 'last_name'] },
-        { model: User, as: 'technicians', attributes: ['id', 'first_name', 'last_name'], through: { attributes: [] } },
-        { model: Report, as: "reports", attributes: ["id", "name"] }
+        { model: Customer, as: 'company', attributes: ['company_name', 'first_name', 'last_name'], required: false },
+        { model: User, as: 'technician', attributes: ['first_name', 'last_name'], required: false },
+        { model: User, as: 'technicians', attributes: ['id', 'first_name', 'last_name'], through: { attributes: [] }, required: false },
+        { model: Report, as: "reports", attributes: ["id", "name"], required: false }
       ],
       order: [['start_date', 'DESC']]
     });
@@ -78,10 +78,10 @@ exports.getDashboardSummary = async (req, res, next) => {
       },
       include: [
         ...(technicianInclude ? [technicianInclude] : []),
-        { model: Customer, as: 'company', attributes: ['company_name', 'first_name', 'last_name'] },
-        { model: User, as: 'technician', attributes: ['first_name', 'last_name'] },
-        { model: User, as: 'technicians', attributes: ['id', 'first_name', 'last_name'], through: { attributes: [] } },
-        { model: Report, as: "reports", attributes: ["id", "name"] }
+        { model: Customer, as: 'company', attributes: ['company_name', 'first_name', 'last_name'], required: false },
+        { model: User, as: 'technician', attributes: ['first_name', 'last_name'], required: false },
+        { model: User, as: 'technicians', attributes: ['id', 'first_name', 'last_name'], through: { attributes: [] }, required: false },
+        { model: Report, as: "reports", attributes: ["id", "name"], required: false }
       ],
       order: [['start_date', 'DESC']]
     });
@@ -93,10 +93,10 @@ exports.getDashboardSummary = async (req, res, next) => {
       },
       include: [
         ...(technicianInclude ? [technicianInclude] : []),
-        { model: Customer, as: 'company', attributes: ['company_name', 'first_name', 'last_name'] },
-        { model: User, as: 'technician', attributes: ['first_name', 'last_name'] },
-        { model: User, as: 'technicians', attributes: ['id', 'first_name', 'last_name'], through: { attributes: [] } },
-        { model: Report, as: "reports", attributes: ["id", "name"] }
+        { model: Customer, as: 'company', attributes: ['company_name', 'first_name', 'last_name'], required: false },
+        { model: User, as: 'technician', attributes: ['first_name', 'last_name'], required: false },
+        { model: User, as: 'technicians', attributes: ['id', 'first_name', 'last_name'], through: { attributes: [] }, required: false },
+        { model: Report, as: "reports", attributes: ["id", "name"], required: false }
       ],
       order: [['updated_at', 'DESC']]
     });
@@ -215,7 +215,7 @@ exports.getDashboardSummary = async (req, res, next) => {
         inProgress: inProgress.map(p => ({
           id: p.id,
           projectName: p.name,
-          company: p.company.company_name,
+          company: p.company?.company_name || 'No Company',
           startDate: p.start_date,
           technician: p.technician?.first_name + ' ' + p.technician?.last_name,
           technicians: (p.technicians || []).map(t => `${t.first_name} ${t.last_name}`),
@@ -229,7 +229,7 @@ exports.getDashboardSummary = async (req, res, next) => {
         newProjects: newProjects.map(p => ({
           id: p.id,
           projectName: p.name,
-          company: p.company.company_name,
+          company: p.company?.company_name || 'No Company',
           startDate: p.start_date,
           technician: p.technician?.first_name+ ' ' + p.technician?.last_name,
           technicians: (p.technicians || []).map(t => `${t.first_name} ${t.last_name}`),
@@ -243,7 +243,7 @@ exports.getDashboardSummary = async (req, res, next) => {
         awaitingReview: awaitingReview.map(p => ({
           id: p.id,
           projectName: p.name,
-          company: p.company.company_name,
+          company: p.company?.company_name || 'No Company',
           completedDate: p.updated_at,
           reports: p.reports.map(r => ({
             id: r.id,
