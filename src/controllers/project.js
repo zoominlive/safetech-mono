@@ -118,17 +118,23 @@ exports.createProject = async (req, res, next) => {
 
 exports.getAllProjects = async (req, res, next) => {
   try {   
-    // Add associations for company and technician search
+    // Add associations for company search (exclude technician to avoid JOIN issues)
     const associations = [
       { alias: "company", model: Customer, fields: ["company_name", "first_name", "last_name"] },
-      { alias: "technician", model: User, fields: ["first_name", "last_name"] },
-      { alias: "technicians", model: User, fields: ["first_name", "last_name"] },
+      // Note: Excluding technician associations from automatic search to avoid JOIN issues
+      // Technician search will be handled separately if needed
     ];
     const filters = useFilter(req.query, Project, associations);
     let whereCondition = {
       ...filters.filter,
       ...filters.search,
     };
+    
+    // Debug logging to help troubleshoot search issues
+    if (req.query.search) {
+      console.log('Search query:', req.query.search);
+      console.log('Search conditions:', JSON.stringify(filters.search, null, 2));
+    }
     // Build include filters for technicians
     const includeTechnicians = { model: User, as: "technicians", attributes: ["id", "first_name", "last_name"], through: { attributes: [] } };
     let technicianWhere = null;
