@@ -51,6 +51,8 @@ import { transformMercurySchema, convertOldMercuryDataToNew } from "@/lib/mercur
 import { transformSilicaSchema, convertOldSilicaDataToNew } from "@/lib/silicaSchemaTransformer";
 import { transformMouldSchema, convertOldMouldDataToNew } from "@/lib/mouldSchemaTransformer";
 import { transformPcbSchema, convertOldPcbDataToNew } from "@/lib/pcbSchemaTransformer";
+import { transformPestInfestationSchema } from "@/lib/pestInfestationSchemaTransformer";
+import { transformOzoneSchema } from "@/lib/ozoneSchemaTransformer";
 
 
 interface SchemaField {
@@ -633,6 +635,8 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
             transformedSchema = transformSilicaSchema(transformedSchema);
             transformedSchema = transformMouldSchema(transformedSchema);
             transformedSchema = transformPcbSchema(transformedSchema);
+            transformedSchema = transformPestInfestationSchema(transformedSchema);
+            transformedSchema = transformOzoneSchema(transformedSchema);
             console.log('Transformed asbestos schema:', transformedSchema);
             setSchema(transformedSchema);
 
@@ -1317,7 +1321,10 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               {repeaterItems.map((item: any, index: number) => (
                 <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="space-y-2 w-full">
-                    {field.fields?.map((nestedField) => (
+                    {field.fields?.map((nestedField) => {
+                      const showNestedField = shouldShow(nestedField.showWhen, item);
+                      if (!showNestedField) return null;
+                      return (
                       <div key={nestedField.id} className="space-y-2">
                         <Label>{nestedField.label}</Label>
                         {nestedField.type === "file" ? (
@@ -1410,7 +1417,8 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                           />
                         )}
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                   {isFieldEditable() && !readOnly && (
                   <Button

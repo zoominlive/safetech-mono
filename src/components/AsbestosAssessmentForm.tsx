@@ -32,6 +32,7 @@ interface AsbestosMaterial {
   materialType: string;
   customMaterialName: string;
   location: string;
+  customLocation?: string;
   description: string;
   photos: string[];
   quantity: string;
@@ -126,6 +127,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
       materialType: '',
       customMaterialName: '',
       location: '',
+      customLocation: '',
       description: '',
       photos: [],
       quantity: '',
@@ -253,6 +255,21 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
         return {
           ...material,
           photos: material.photos.filter((url: string) => url !== photoUrl)
+        };
+      }
+      return material;
+    });
+    setLocalMaterials(updatedMaterials);
+    onChange(updatedMaterials);
+  };
+
+  const handleLocationChange = (materialId: string, newLocation: string) => {
+    const updatedMaterials = localMaterials.map(material => {
+      if (material.id === materialId) {
+        return {
+          ...material,
+          location: newLocation,
+          customLocation: newLocation === 'Other' ? (material.customLocation || '') : ''
         };
       }
       return material;
@@ -824,7 +841,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                           <Label>Location/System *</Label>
                           <Select
                             value={material.location}
-                            onValueChange={(value) => handleMaterialChange(material.id, 'location', value)}
+                            onValueChange={(value) => handleLocationChange(material.id, value)}
                             disabled={disabled}
                           >
                             <SelectTrigger>
@@ -836,8 +853,24 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                               <SelectItem value="Pipe">Pipe</SelectItem>
                               <SelectItem value="Floor">Floor</SelectItem>
                               <SelectItem value="Mechanical">Mechanical</SelectItem>
+                              <SelectItem value="Duct">Duct</SelectItem>
+                              <SelectItem value="Electrical">Electrical</SelectItem>
+                              <SelectItem value="Door">Door</SelectItem>
+                              <SelectItem value="Exterior">Exterior</SelectItem>
+                              <SelectItem value="Roof">Roof</SelectItem>
+                              <SelectItem value="Structure">Structure</SelectItem>
+                              <SelectItem value="Window">Window</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
                             </SelectContent>
                           </Select>
+                          {material.location === 'Other' && (
+                            <Input
+                              placeholder="Enter other location/system"
+                              value={material.customLocation || ''}
+                              onChange={(e) => handleMaterialChange(material.id, 'customLocation', e.target.value)}
+                              disabled={disabled}
+                            />
+                          )}
                         </div>
 
                         {/* Description */}
