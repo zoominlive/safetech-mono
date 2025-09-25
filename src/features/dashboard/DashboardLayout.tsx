@@ -396,6 +396,8 @@ function DashboardLayout() {
               onSendToCustomer={(project) => handleSendToCustomer(project)}
               downloadingReportId={downloadingReportId}
               sendingToCustomerId={sendingToCustomerId}
+              collapsible={true}
+              initialCollapsedLimit={10}
             />
           </div>
           <div className="overflow-x-auto">
@@ -411,6 +413,8 @@ function DashboardLayout() {
               onSendToCustomer={(project) => handleSendToCustomer(project)}
               downloadingReportId={downloadingReportId}
               sendingToCustomerId={sendingToCustomerId}
+              collapsible={true}
+              initialCollapsedLimit={10}
             />
           </div>
           <div className="overflow-x-auto">
@@ -421,6 +425,8 @@ function DashboardLayout() {
               hasActions={true}
               onDetails={handleProjectDetails}
               downloadingReportId={downloadingReportId}
+              collapsible={true}
+              initialCollapsedLimit={10}
             />
           </div>
         </>

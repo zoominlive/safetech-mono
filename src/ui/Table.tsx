@@ -10,12 +10,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, SquarePen, Trash, Download, FileChartLine, Send, Loader2 } from "lucide-react";
+import { Eye, SquarePen, Trash, Download, FileChartLine, Send, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { useAuthStore } from "@/store";
 import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { MoreVertical } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 
 export interface Column<T> {
   header: string;
@@ -57,6 +57,9 @@ interface TableProps<T> {
   onResendInvitation?: (row: T) => void;
   // Track which row is currently resending
   resendingInvitationId?: string | null;
+  // Collapsible functionality props
+  collapsible?: boolean;
+  initialCollapsedLimit?: number;
 }
 
 export const StatusBadge = ({ status }: { status: string }) => {
@@ -462,12 +465,24 @@ function Table<T>({
   sendingToCustomerId,
   onResendInvitation,
   resendingInvitationId,
+  collapsible = false,
+  initialCollapsedLimit = 10,
 }: TableProps<T>) {
   // Calculate pagination values
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const startIndex = (currentPage - 1) * pageSize + 1;
   const endIndex = Math.min(startIndex + data.length - 1, totalCount);
   const { user } = useAuthStore();
+  
+  // Collapsible state and logic
+  const [isExpanded, setIsExpanded] = useState(false);
+  const shouldShowCollapse = collapsible && data.length > initialCollapsedLimit;
+  const displayData = shouldShowCollapse && !isExpanded 
+    ? data.slice(0, initialCollapsedLimit) 
+    : data;
+  const hiddenCount = shouldShowCollapse && !isExpanded 
+    ? data.length - initialCollapsedLimit 
+    : 0;
   
   return (
     <>
@@ -495,8 +510,8 @@ function Table<T>({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.length > 0 ? (
-              data.map((row, rowIndex) => (
+            {displayData.length > 0 ? (
+              displayData.map((row, rowIndex) => (
                 <TableRow 
                   key={rowIndex} 
                   className={cn("bg-white", onDetails && !isReportsTemplateTable && "cursor-pointer hover:bg-gray-100")}
@@ -602,6 +617,27 @@ function Table<T>({
             </TableFooter>
           )}
         </ShadcnTable>
+        {shouldShowCollapse && (
+          <div className="flex justify-center py-4 border-t bg-gray-50">
+            <Button
+              variant="ghost"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-sm text-gray-600 hover:text-gray-800"
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronUp className="w-4 h-4 mr-2" />
+                  Show Less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4 mr-2" />
+                  Show {hiddenCount} More
+                </>
+              )}
+            </Button>
+          </div>
+        )}
       </div>
     </>
   );

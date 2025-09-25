@@ -203,7 +203,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({ onCancel }) => {
         </TooltipProvider>
       </div>
       <Card>
-        <CardContent className="space-y-6 h-[calc(100vh-350px)] overflow-y-auto">
+        <CardContent className="space-y-6 max-h-[70vh] overflow-y-auto">
           <div className="space-y-6 border-b pb-7">
             <h4 className="font-semibold text-xl">Report Details</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 text-lg text-sf-black-300">

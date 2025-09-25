@@ -11,7 +11,7 @@ export default function AppLayout() {
   const [expanded, setExpanded] = useState<boolean>(true);
 
   return (
-    <div className="min-h-screen flex bg-slate-100">
+    <div className="h-screen flex bg-slate-100 overflow-hidden">
       {/* Mobile menu toggle */}
       <Button
         variant="ghost"
@@ -49,9 +49,9 @@ export default function AppLayout() {
       </div>
 
       {/* Main content */}
-      <main className="w-full my-1">
+      <main className="flex-1 flex flex-col overflow-hidden">
         <Header />
-        <div className="px-4 py-6 overflow-y-auto h-[calc(100vh-75px)]">
+        <div className="flex-1 px-4 py-6 overflow-y-auto">
           <Outlet />
         </div>
       </main>

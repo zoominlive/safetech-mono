@@ -18,6 +18,7 @@ export interface MultiSelectProps {
   disabled?: boolean;
   showOtherOption?: boolean;
   otherOptionLabel?: string;
+  triggerClassName?: string;
 }
 
 export const MultiSelect: React.FC<MultiSelectProps> = ({
@@ -29,6 +30,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   disabled = false,
   showOtherOption = false,
   otherOptionLabel = "Other",
+  triggerClassName,
 }) => {
   const [showOtherInput, setShowOtherInput] = useState(false);
   const [otherInputValue, setOtherInputValue] = useState('');
@@ -90,7 +92,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
         onValueChange={handleSelect}
         disabled={disabled}
       >
-        <SelectTrigger>
+        <SelectTrigger className={triggerClassName}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>

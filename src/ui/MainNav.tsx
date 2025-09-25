@@ -69,7 +69,7 @@ function MainNav({ onItemClick, expanded }: MainNavProps) {
   ];
 
   return (
-    <nav className="flex flex-col h-[calc(100vh-75px)]">
+    <nav className="flex flex-col flex-1">
       <div className="flex flex-col gap-1 px-2 pt-8">
         {menuItems.map((item) => {
           // Hide specific items for Technician role
