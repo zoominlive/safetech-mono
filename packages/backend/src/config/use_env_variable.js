@@ -55,4 +55,5 @@ module.exports = {
   HAZARD_API_TOKEN: process.env.HAZARD_API_TOKEN,
 
   FRONTEND_BASE_URL: process.env.FRONTEND_BASE_URL,
+  MOBILE_APP_KEY: process.env.MOBILE_APP_KEY,
 };

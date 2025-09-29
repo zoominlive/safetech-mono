@@ -772,8 +772,11 @@ exports.submitToPMReview = async (req, res, next) => {
       });
     }
 
-    // Check if report belongs to the technician (M2M or legacy field)
-    const isAssignedTech = (report.project.technicians || []).some(t => t.id === user.id) || report.project.technician_id === user.id;
+    // Check assignment using project_technicians join table, fallback to legacy technician_id
+    const assignedCount = await sequelize.models.ProjectTechnician.count({
+      where: { project_id: report.project_id, user_id: user.id }
+    });
+    const isAssignedTech = assignedCount > 0 || report.project?.technician_id === user.id;
     if (!isAssignedTech) {
       const ApiError = new APIError(NOT_ACCESS, "You can only submit your own reports", BAD_REQUEST);
       return ErrorHandler(ApiError, req, res, next);

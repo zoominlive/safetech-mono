@@ -44,7 +44,20 @@ module.exports = {
       return titles[Math.floor(Math.random() * titles.length)];
     };
     
-    const statuses = ['New', 'In Progress', 'On Hold', 'Completed', 'Cancelled'];
+    const generateProjectNumber = () => {
+      const year = new Date().getFullYear();
+      const randomNumber = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
+      return `PRJ-${year}-${randomNumber}`;
+    };
+    
+    const generateSpecificLocation = () => {
+      const locations = ['Ground Floor', 'First Floor', 'Second Floor', 'Third Floor', 'Basement', 
+                        'Roof', 'Parking Garage', 'Lobby', 'Conference Room', 'Office Suite', 
+                        'Storage Room', 'Kitchen', 'Bathroom', 'Hallway', 'Elevator Shaft'];
+      return locations[Math.floor(Math.random() * locations.length)];
+    };
+    
+    const statuses = ['New', 'In Progress', 'PM Review', 'Complete'];
     
     // Get available records to reference instead of just counts
     const [customers] = await queryInterface.sequelize.query('SELECT id FROM customers;');
@@ -72,19 +85,27 @@ module.exports = {
     // Generate project records
     const projects = Array(projectCount).fill().map(() => {
       const siteName = generateRandomSiteName();
+      const projectName = generateRandomProjectName();
       const startDate = new Date(new Date().setDate(new Date().getDate() - Math.floor(Math.random() * 180)));
       const endDate = new Date(startDate);
       endDate.setDate(startDate.getDate() + Math.floor(Math.random() * 30)); // Random end date between 0-30 days after start
       const location = locations[Math.floor(Math.random() * locations.length)];
+      
+      // Extract project type from project name
+      const projectType = projectName.split(' - ')[0];
+      
       return {
         id: uuidv4(),
-        name: generateRandomProjectName(),
+        project_no: generateProjectNumber(),
+        name: projectName,
         site_name: siteName,
         site_contact_name: generateRandomContactName(),
         site_contact_title: generateRandomContactTitle(),
+        project_type: projectType,
         site_email: generateRandomEmail(siteName),
         status: statuses[Math.floor(Math.random() * statuses.length)],
         location_id: location.id,
+        specific_location: generateSpecificLocation(),
         report_template_id: templateIds[Math.floor(Math.random() * templateIds.length)],
         pm_id: pmIds[Math.floor(Math.random() * pmIds.length)],
         technician_id: technicianIds[Math.floor(Math.random() * technicianIds.length)],

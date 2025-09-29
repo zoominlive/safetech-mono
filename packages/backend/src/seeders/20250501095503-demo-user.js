@@ -43,14 +43,21 @@ module.exports = {
         id: uuidv4(),
         first_name: firstName,
         last_name: lastName,
-        email: generateRandomEmail(name),
+        profile_picture: null,
+        technician_signature: role === 'Technician' && Math.random() > 0.7 ? `signature_${index}.png` : null,
         role: role,
+        email: generateRandomEmail(name),
         phone: generateRandomPhone(),
+        status: Math.random() > 0.3 ? 'activated' : 'invited',
+        activation_token: null,
+        activation_token_expires: null,
+        last_login: Math.random() > 0.5 ? new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000) : null,
+        is_verified: Math.random() > 0.2,
         deactivated_user: Math.random() > 0.9,
         password: null,
-        is_verified: Math.random() > 0.2,
         created_at: new Date(),
         updated_at: new Date(),
+        deleted_at: null,
         created_by: null // or set to another UUID if you want to simulate relationships
       };
     });
