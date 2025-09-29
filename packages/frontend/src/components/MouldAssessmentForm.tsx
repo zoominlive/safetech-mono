@@ -38,6 +38,7 @@ interface MouldMaterial {
   sampleNo?: string;
   mouldType?: string;
   moistureLevel?: string;
+  quantity?: string;
   timestamp?: string;
 }
 
@@ -539,6 +540,18 @@ export const MouldAssessmentForm: React.FC<MouldAssessmentFormProps> = ({
                             value={material.description}
                             onChange={(e) => handleMaterialChange(material.id, 'description', e.target.value)}
                             placeholder="Describe the material"
+                            disabled={disabled}
+                          />
+                        </div>
+
+                        {/* Quantity */}
+                        <div className="space-y-2">
+                          <Label>Quantity of mould growth (sq ft)</Label>
+                          <Input
+                            type="number"
+                            value={material.quantity || ''}
+                            onChange={(e) => handleMaterialChange(material.id, 'quantity', e.target.value)}
+                            placeholder="Enter area in square feet"
                             disabled={disabled}
                           />
                         </div>

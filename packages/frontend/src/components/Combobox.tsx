@@ -45,12 +45,24 @@ export const Combobox: React.FC<ComboboxProps> = ({
     });
   }, [fetchOptions]);
 
-  // Only fetch options when user types and combobox is open
+  // Fetch options when user types and combobox is open
   useEffect(() => {
-    if (!isOpen || inputValue.trim().length === 0) {
-      setSearchPerformed(false);
+    if (!isOpen) {
       return;
     }
+    
+    // If input is empty, immediately fetch initial records (no debounce)
+    if (inputValue.trim().length === 0) {
+      setSearchPerformed(false);
+      setLoading(true);
+      fetchOptions("").then((opts) => {
+        setOptions(opts);
+        setLoading(false);
+      });
+      return;
+    }
+    
+    // If user is typing, debounce the search
     setSearchPerformed(true);
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     debounceTimeout.current = setTimeout(() => {
@@ -60,6 +72,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
         setLoading(false);
       });
     }, 1000);
+    
     return () => {
       if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     };

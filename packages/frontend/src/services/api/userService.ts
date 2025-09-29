@@ -102,6 +102,12 @@ export const userService = {
     return response.data;
   },
   
+  // Resend activation for a user by email (local, non-global loading)
+  resendActivation: async (email: string): Promise<{ success: boolean; message: string }> => {
+    const response: AxiosResponse<{ success: boolean; message: string }> = await BaseClient.post('users/resend-activation', { email });
+    return response.data;
+  },
+  
   uploadProfilePicture: async (userId: string, formData: FormData) => {
     try {
       const response = await BaseClient.post(`/users/${userId}/profile-picture`, formData, {

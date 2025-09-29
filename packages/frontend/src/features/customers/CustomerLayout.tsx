@@ -153,7 +153,7 @@ function CustomerLayout() {
             projectName: project.name,
             startDate: formatDate(project.start_date),
             status: project.status,
-            company: customerName,
+            company: response.data.company_name || "",
             endDate: formatDate(project.end_date), // Keeping end date null for now as requested
           })) || [];
 

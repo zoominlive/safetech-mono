@@ -5,6 +5,7 @@ import { AxiosResponse } from 'axios';
 interface LoginRequest {
   email: string;
   password: string;
+  client?: string;
 }
 
 interface LoginResponse {
@@ -52,7 +53,10 @@ export const authService = {
   
   login: async (data: LoginRequest): Promise<LoginResponse> => {
     console.log('calling authService');
-    const response: AxiosResponse<LoginResponse> = await BaseClient.post('/auth/login', data);
+    const response: AxiosResponse<LoginResponse> = await BaseClient.post('/auth/login', {
+      ...data,
+      client: 'web',
+    });
     return response.data;
   },
   

@@ -199,6 +199,7 @@ const ProjectForm: React.FC = () => {
       site_contact_name: Yup.string().required("Site contact name is required"),
       site_contact_title: Yup.string().required("Site contact title is required"),
       customer_id: Yup.string().required("Customer is required"),
+      location_id: Yup.string().required("Location is required"),
       technician_ids: Yup.array().min(1, "At least one technician is required"),
       site_email: Yup.string().email("Invalid email address"),
       pm_id:
@@ -208,23 +209,32 @@ const ProjectForm: React.FC = () => {
     });
 
   const fetchCustomers = async (query: string, selectedId?: string) => {
-    const res = await customerService.getAllCustomers(query, undefined, undefined, 10, 1);
-    let options:SelectOption[] = [];
+    // If query is empty, fetch initial set of customers (50 records)
+    // If query exists, search with that term (100 records for better search results)
+    const limit = query.trim() ? 100 : 50;
+    const res = await customerService.getAllCustomers(query, undefined, undefined, limit, 1);
+    let options: SelectOption[] = [];
+    
     if (res.success) {
-      options = res.data.rows.map((c: any) => ({ value: c.id, label: c.company_name}));
+      options = res.data.rows.map((c: any) => ({ 
+        value: c.id, 
+        label: c.company_name 
+      }));
     }
+    
     // If in edit mode and selectedId is not in options, fetch and append
     if (selectedId && !options.some((opt) => opt.value === selectedId)) {
       try {
-      const singleRes: { success: boolean; data: Customer } = await customerService.getCustomerById(selectedId);
-      if (singleRes.success) {
-        const c: Customer = singleRes.data;
-        options.push({ value: c.id, label: c.company_name});
-      }
+        const singleRes: { success: boolean; data: Customer } = await customerService.getCustomerById(selectedId);
+        if (singleRes.success) {
+          const c: Customer = singleRes.data;
+          options.push({ value: c.id, label: c.company_name });
+        }
       } catch (e: unknown) {
-      // ignore error
+        // ignore error
       }
     }
+    
     return options;
   };
   const fetchReports = async () => {
@@ -602,7 +612,11 @@ const ProjectForm: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid w-full gap-3 col-span-2">
+                <div className="grid w-full items-center gap-3 relative">
+                  
+                </div> 
+                
+                <div className="grid w-full gap-3">
                   <Label htmlFor="location_id">Location</Label>
                   <Select 
                     value={values.location_id?.toString()} 
@@ -643,6 +657,15 @@ const ProjectForm: React.FC = () => {
                       </SelectGroup>
                     </SelectContent>
                   </Select>
+                  <div className="min-h-[20px] relative">
+                    {errors.location_id && touched.location_id && (
+                      <div className="text-red-500 text-sm absolute left-0 top-0">{errors.location_id}</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid w-full items-center gap-3 relative">
+                  
                 </div>
 
                 <div className="grid w-full items-center gap-3 relative">
@@ -840,6 +863,7 @@ const ProjectForm: React.FC = () => {
                     }}
                     placeholder="Select technicians"
                     className="w-full"
+                    triggerClassName="w-full py-7.5"
                   />
                   <div className="min-h-[20px] relative">
                     {errors.technician_ids && touched.technician_ids && (

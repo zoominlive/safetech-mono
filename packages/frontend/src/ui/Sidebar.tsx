@@ -13,7 +13,7 @@ interface SidebarProps {
 function Sidebar({ onCloseMobileMenu, expanded, onSetExpanded }: SidebarProps) {
   return (
     <aside
-      className={cn("border-r border-sf-gray-400 h-screen bg-white w-full")}
+      className={cn("border-r border-sf-gray-400 h-full bg-white w-full flex flex-col")}
     >
       <div className="border-b py-1 relative">
         <Logo expanded={expanded} />

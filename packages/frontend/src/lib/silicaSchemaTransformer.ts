@@ -21,7 +21,10 @@ export const transformSilicaSchema = (originalSchema: SchemaSection[]): SchemaSe
             name: "silicaMaterials",
             showWhen: "silicaObserved=Yes"
           }
-        ]
+        ],
+        type: "conditional",
+        condition: "areaAvailable",
+        showWhen: "areaAvailable=Yes"
       };
     }
     
@@ -49,7 +52,6 @@ export const convertOldSilicaDataToNew = (oldData: any): any => {
       description: item.materialDescription || "",
       photos: item.materialPhoto ? [item.materialPhoto] : [],
       sampleCollected: 'No',
-      suspectedSilica: 'No',
       isCustomMaterial: item.materialType === "Other",
       timestamp: new Date().toISOString()
     }));

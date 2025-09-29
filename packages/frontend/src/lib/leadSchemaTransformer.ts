@@ -40,7 +40,10 @@ export const transformLeadSchema = (originalSchema: SchemaSection[]): SchemaSect
             showWhen: "isLeadAssessed=Yes",
             options: ["Yes", "No"]
           }
-        ] 
+        ],
+        type: "conditional",
+        condition: "areaAvailable",
+        showWhen: "areaAvailable=Yes"
       };
     }
     

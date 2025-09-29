@@ -34,7 +34,10 @@ export const transformAsbestosSchema = (originalSchema: SchemaSection[]): Schema
             name: "asbestosMaterials",
             showWhen: "isAsbestosAssessed=Yes"
           }
-        ]
+        ],
+        type: "conditional",
+        condition: "areaAvailable",
+        showWhen: "areaAvailable=Yes"
       };
     }
     

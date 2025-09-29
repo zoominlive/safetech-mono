@@ -248,6 +248,7 @@ const ProjectDetail: React.FC = () => {
                         id="report_name"
                         name="report_name"
                         className="bg-gray-50"
+                        style={{ height: '62px' }}
                         readOnly
                       />
                     </div>
@@ -268,6 +269,7 @@ const ProjectDetail: React.FC = () => {
                         as={Input}
                         id="site_contact_name"
                         name="site_contact_name"
+                        style={{ height: '62px' }}
                       />
                     </div>
                     
@@ -278,6 +280,7 @@ const ProjectDetail: React.FC = () => {
                         as={Input}
                         id="site_contact_title"
                         name="site_contact_title"
+                        style={{ height: '62px' }}
                       />
                     </div>
                     
@@ -288,6 +291,7 @@ const ProjectDetail: React.FC = () => {
                         as={Input}
                         id="assessment_due_to"
                         name="assessment_due_to"
+                        style={{ height: '62px' }}
                       />
                     </div>
                     

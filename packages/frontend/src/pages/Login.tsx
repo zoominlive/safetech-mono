@@ -3,10 +3,11 @@ import { Link, useNavigate, useLocation } from "react-router";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { useAuthStore } from "@/store";
 import { loginSchema } from "@/schemas/authSchemas";
-import { LockKeyhole, Mail } from "lucide-react";
+import { LockKeyhole, Mail, Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const { login, loading, error, clearError } = useAuthStore();
   const navigate = useNavigate();
@@ -73,10 +74,21 @@ export default function Login() {
                 <Field
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Password"
-                  className="w-full px-3 py-2 pl-10 border-2 rounded-md border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  className="w-full px-3 py-2 pl-10 pr-10 border-2 rounded-md border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300"
                 />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center z-10"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-500 hover:text-gray-700" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-500 hover:text-gray-700" />
+                  )}
+                </button>
               </div>
               <ErrorMessage
                 name="password"

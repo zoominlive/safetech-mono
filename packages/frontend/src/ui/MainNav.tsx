@@ -9,6 +9,7 @@ import {
   Users,
 } from "lucide-react";
 import { Link, useLocation } from "react-router";
+import { useAuthStore } from "@/store";
 
 type SidebarItemProps = {
   icon: React.ElementType;
@@ -54,6 +55,8 @@ interface MainNavProps {
 function MainNav({ onItemClick, expanded }: MainNavProps) {
   const location = useLocation();
   const currentPath = "/" + location.pathname.slice(1).split("/").at(0);
+  const { user } = useAuthStore();
+  const isTechnician = user?.role?.toLowerCase() === "technician";
 
   const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -66,9 +69,13 @@ function MainNav({ onItemClick, expanded }: MainNavProps) {
   ];
 
   return (
-    <nav className="flex flex-col h-[calc(100vh-75px)]">
+    <nav className="flex flex-col flex-1">
       <div className="flex flex-col gap-1 px-2 pt-8">
         {menuItems.map((item) => {
+          // Hide specific items for Technician role
+          if (isTechnician && (item.label === "Analytics" || item.label === "Report Templates")) {
+            return null;
+          }
           // Make Analytics menu item not clickable
           if (item.label === "Analytics") {
             const Icon = item.icon;

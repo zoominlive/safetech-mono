@@ -6,6 +6,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MaterialSelect } from "@/components/MaterialSelect";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CirclePlus, CircleX, Upload, Info, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import {
@@ -31,6 +32,7 @@ interface AsbestosMaterial {
   materialType: string;
   customMaterialName: string;
   location: string;
+  customLocation?: string;
   description: string;
   photos: string[];
   quantity: string;
@@ -45,6 +47,9 @@ interface AsbestosMaterial {
   timestamp?: string;
   condition: 'Good' | 'Fair' | 'Poor' | 'Unknown'; // Add condition field
   friability: 'Friable' | 'Non-Friable'; // Add friability field
+  isTile?: boolean; // Add tile checkbox field
+  ceilingTileStyle?: string; // Add ceiling tile style field
+  customCeilingTileStyle?: string; // Add custom ceiling tile style field
 }
 
 interface AsbestosAssessmentFormProps {
@@ -57,6 +62,7 @@ interface AsbestosAssessmentFormProps {
   existingMaterials?: string[]; // For tracking usage across areas
   materialUsageStats?: Record<string, { count: number; samplesCollected: number }>;
   existingSampleIds?: string[]; // For tracking sample IDs across all areas
+  areaMaterials?: Record<string, AsbestosMaterial[]>; // Materials from other areas for copying
 }
 
 export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
@@ -66,11 +72,14 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
   onFileUpload,
   materialUsageStats = {},
   existingSampleIds = [],
+  areaMaterials = {},
 }) => {
   const [localMaterials, setLocalMaterials] = useState<AsbestosMaterial[]>(value);
   const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
   const [expandedMaterials, setExpandedMaterials] = useState<Set<string>>(new Set());
   const [materialToDelete, setMaterialToDelete] = useState<AsbestosMaterial | null>(null);
+  const [copyDialogOpen, setCopyDialogOpen] = useState(false);
+  const [materialToCopy, setMaterialToCopy] = useState<{ materialType: string; materialId: string } | null>(null);
 
   // Use the material store
   const { 
@@ -118,6 +127,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
       materialType: '',
       customMaterialName: '',
       location: '',
+      customLocation: '',
       description: '',
       photos: [],
       quantity: '',
@@ -127,6 +137,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
       isCustomMaterial: false,
       condition: 'Unknown', // Default value for condition
       friability: 'Non-Friable', // Default value for friability
+      isTile: false, // Default value for tile checkbox
     };
     const updatedMaterials = [newMaterial, ...localMaterials];
     setLocalMaterials(updatedMaterials);
@@ -252,6 +263,21 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
     onChange(updatedMaterials);
   };
 
+  const handleLocationChange = (materialId: string, newLocation: string) => {
+    const updatedMaterials = localMaterials.map(material => {
+      if (material.id === materialId) {
+        return {
+          ...material,
+          location: newLocation,
+          customLocation: newLocation === 'Other' ? (material.customLocation || '') : ''
+        };
+      }
+      return material;
+    });
+    setLocalMaterials(updatedMaterials);
+    onChange(updatedMaterials);
+  };
+
   const handleMaterialTypeChange = (materialId: string, materialType: string) => {
     console.log('handleMaterialTypeChange called with:', { materialId, materialType });
     
@@ -281,6 +307,20 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
     console.log('Material type:', materialType, 'isStandard:', isStandard, 'isCustom:', isCustom);
     
     console.log('Updating material with:', { materialType, isCustomMaterial: isCustom });
+    
+    // Check if this material is already used in other areas
+    const materialName = isCustom ? materialType : materialType;
+    const areasWithMaterial = Object.entries(areaMaterials).filter(([, materials]) => 
+      materials.some(m => (m.isCustomMaterial ? m.customMaterialName : m.materialType) === materialName)
+    );
+    
+    if (areasWithMaterial.length > 0) {
+      // Show copy dialog
+      setMaterialToCopy({ materialType, materialId });
+      setCopyDialogOpen(true);
+      return;
+    }
+    
     const updatedMaterials = localMaterials.map(material => {
       if (material.id === materialId) {
         return { 
@@ -294,6 +334,146 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
     });
     setLocalMaterials(updatedMaterials);
     onChange(updatedMaterials);
+  };
+
+  const handleTileCheckboxChange = async (materialId: string, isTile: boolean) => {
+    const updatedMaterials = localMaterials.map(material => {
+      if (material.id === materialId) {
+        return { ...material, isTile };
+      }
+      return material;
+    });
+
+    if (isTile) {
+      // Ensure Grout and Thinset exist in BE (avoid duplicates)
+      try {
+        const store = useMaterialStore.getState();
+        const required = ['Grout', 'Thinset'];
+        for (const mat of required) {
+          await store.addMaterialIfMissing(mat, 'standard');
+        }
+        // Ensure latest materials are in store before we render locally
+        await store.fetchMaterials();
+      } catch (e) {
+        console.error('Error ensuring tile-related materials exist:', e);
+      }
+
+      // Add Grout and Thinset materials
+      const storeAfter = useMaterialStore.getState();
+      const groutIsCustom = storeAfter.isCustomMaterial('Grout');
+      const thinsetIsCustom = storeAfter.isCustomMaterial('Thinset');
+
+      const groutMaterial: AsbestosMaterial = {
+        id: `material-${Date.now()}-grout`,
+        materialType: 'Grout',
+        customMaterialName: 'Grout',
+        location: '',
+        description: '',
+        photos: [],
+        quantity: '',
+        quantityType: 'Square/ft',
+        sampleCollected: 'No',
+        suspectedAcm: 'No',
+        isCustomMaterial: groutIsCustom,
+        condition: 'Unknown',
+        friability: 'Non-Friable',
+        isTile: false,
+      };
+
+      const thinsetMaterial: AsbestosMaterial = {
+        id: `material-${Date.now()}-thinset`,
+        materialType: 'Thinset',
+        customMaterialName: 'Thinset',
+        location: '',
+        description: '',
+        photos: [],
+        quantity: '',
+        quantityType: 'Square/ft',
+        sampleCollected: 'No',
+        suspectedAcm: 'No',
+        isCustomMaterial: thinsetIsCustom,
+        condition: 'Unknown',
+        friability: 'Non-Friable',
+        isTile: false,
+      };
+
+      // Insert the new materials after the current material
+      const currentMaterialIndex = updatedMaterials.findIndex(m => m.id === materialId);
+      const alreadyHasGrout = updatedMaterials.some(m => m.materialType === 'Grout');
+      const alreadyHasThinset = updatedMaterials.some(m => m.materialType === 'Thinset');
+      const toInsert: AsbestosMaterial[] = [];
+      if (!alreadyHasGrout) toInsert.push(groutMaterial);
+      if (!alreadyHasThinset) toInsert.push(thinsetMaterial);
+
+      const newMaterials = [
+        ...updatedMaterials.slice(0, currentMaterialIndex + 1),
+        ...toInsert,
+        ...updatedMaterials.slice(currentMaterialIndex + 1)
+      ];
+
+      setLocalMaterials(newMaterials);
+      onChange(newMaterials);
+    } else {
+      // Remove Grout and Thinset materials that were auto-added
+      const filteredMaterials = updatedMaterials.filter(material => 
+        !(material.materialType === 'Grout' || material.materialType === 'Thinset')
+      );
+      setLocalMaterials(filteredMaterials);
+      onChange(filteredMaterials);
+    }
+  };
+
+  const handleCopyFromArea = (areaName: string) => {
+    if (!materialToCopy) return;
+    
+    const materialName = materialToCopy.materialType;
+    const sourceMaterials = areaMaterials[areaName] || [];
+    const sourceMaterial = sourceMaterials.find(m => 
+      (m.isCustomMaterial ? m.customMaterialName : m.materialType) === materialName
+    );
+    
+    if (sourceMaterial) {
+      const updatedMaterials = localMaterials.map(material => {
+        if (material.id === materialToCopy.materialId) {
+          return {
+            ...sourceMaterial,
+            id: materialToCopy.materialId, // Keep the current material's ID
+            timestamp: new Date().toISOString(), // Update timestamp
+          };
+        }
+        return material;
+      });
+      
+      setLocalMaterials(updatedMaterials);
+      onChange(updatedMaterials);
+    }
+    
+    setCopyDialogOpen(false);
+    setMaterialToCopy(null);
+  };
+
+  const handleSkipCopy = () => {
+    if (!materialToCopy) return;
+    
+    const materialType = materialToCopy.materialType;
+    const isCustom = isCustomMaterial(materialType);
+    
+    const updatedMaterials = localMaterials.map(material => {
+      if (material.id === materialToCopy.materialId) {
+        return { 
+          ...material, 
+          materialType: materialType,
+          customMaterialName: materialType,
+          isCustomMaterial: isCustom 
+        };
+      }
+      return material;
+    });
+    
+    setLocalMaterials(updatedMaterials);
+    onChange(updatedMaterials);
+    setCopyDialogOpen(false);
+    setMaterialToCopy(null);
   };
 
   const getMaterialUsageInfo = (materialType: string) => {
@@ -546,6 +726,65 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                           />
                         </div>
 
+                        {/* Is this tile? Checkbox */}
+                        {material.materialType && (
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`is-tile-${material.id}`}
+                                checked={material.isTile || false}
+                                onCheckedChange={(checked) => handleTileCheckboxChange(material.id, checked as boolean)}
+                                disabled={disabled}
+                              />
+                              <Label htmlFor={`is-tile-${material.id}`} className="text-sm font-medium">
+                                Is this tile?
+                              </Label>
+                            </div>
+                            <p className="text-xs text-gray-500">
+                              Checking this will automatically add Grout and Thinset materials to your list.
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Ceiling Tile Style Dropdown */}
+                        {material.materialType && 
+                         material.materialType.toLowerCase().includes('ceiling') && 
+                         material.materialType.toLowerCase().includes('tile') && (
+                          <div className="space-y-2">
+                            <Label>Ceiling Tile Style</Label>
+                            <Select
+                              value={material.ceilingTileStyle || ''}
+                              onValueChange={(value) => {
+                                if (value === '__add_new__') {
+                                  handleMaterialChange(material.id, 'ceilingTileStyle', value);
+                                } else {
+                                  handleMaterialChange(material.id, 'ceilingTileStyle', value);
+                                  handleMaterialChange(material.id, 'customCeilingTileStyle', '');
+                                }
+                              }}
+                              disabled={disabled}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select ceiling tile style" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Style 1">Style 1</SelectItem>
+                                <SelectItem value="Style 2">Style 2</SelectItem>
+                                <SelectItem value="Style 3">Style 3</SelectItem>
+                                <SelectItem value="__add_new__">Add New Style</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {material.ceilingTileStyle === '__add_new__' && (
+                              <Input
+                                placeholder="Enter new ceiling tile style"
+                                value={material.customCeilingTileStyle || ''}
+                                onChange={(e) => handleMaterialChange(material.id, 'customCeilingTileStyle', e.target.value)}
+                                disabled={disabled}
+                              />
+                            )}
+                          </div>
+                        )}
+
                         {/* Custom Material Input */}
                         {material.isCustomMaterial && 
                          (!material.customMaterialName || 
@@ -602,7 +841,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                           <Label>Location/System *</Label>
                           <Select
                             value={material.location}
-                            onValueChange={(value) => handleMaterialChange(material.id, 'location', value)}
+                            onValueChange={(value) => handleLocationChange(material.id, value)}
                             disabled={disabled}
                           >
                             <SelectTrigger>
@@ -614,8 +853,24 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                               <SelectItem value="Pipe">Pipe</SelectItem>
                               <SelectItem value="Floor">Floor</SelectItem>
                               <SelectItem value="Mechanical">Mechanical</SelectItem>
+                              <SelectItem value="Duct">Duct</SelectItem>
+                              <SelectItem value="Electrical">Electrical</SelectItem>
+                              <SelectItem value="Door">Door</SelectItem>
+                              <SelectItem value="Exterior">Exterior</SelectItem>
+                              <SelectItem value="Roof">Roof</SelectItem>
+                              <SelectItem value="Structure">Structure</SelectItem>
+                              <SelectItem value="Window">Window</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
                             </SelectContent>
                           </Select>
+                          {material.location === 'Other' && (
+                            <Input
+                              placeholder="Enter other location/system"
+                              value={material.customLocation || ''}
+                              onChange={(e) => handleMaterialChange(material.id, 'customLocation', e.target.value)}
+                              disabled={disabled}
+                            />
+                          )}
                         </div>
 
                         {/* Description */}
@@ -818,6 +1073,51 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
             >
               Remove
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Copy Material Dialog */}
+      <AlertDialog open={copyDialogOpen} onOpenChange={setCopyDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Material Already Used</AlertDialogTitle>
+            <AlertDialogDescription>
+              This material "{materialToCopy?.materialType}" is already used in other areas. Would you like to copy the form data from one of these areas?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-3">
+            {materialToCopy && Object.entries(areaMaterials).map(([areaName, materials]) => {
+              const materialName = materialToCopy.materialType;
+              const hasMaterial = materials.some(m => 
+                (m.isCustomMaterial ? m.customMaterialName : m.materialType) === materialName
+              );
+              
+              if (!hasMaterial) return null;
+              
+              return (
+                <Button
+                  key={areaName}
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => handleCopyFromArea(areaName)}
+                >
+                  Copy from {areaName}
+                </Button>
+              );
+            })}
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={handleSkipCopy}
+            >
+              Start Fresh (Don't Copy)
+            </Button>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setCopyDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

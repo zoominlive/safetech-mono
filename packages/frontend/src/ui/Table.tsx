@@ -10,12 +10,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, SquarePen, Trash, Download, FileChartLine, Send, Loader2 } from "lucide-react";
+import { Eye, SquarePen, Trash, Download, FileChartLine, Send, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { useAuthStore } from "@/store";
 import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { MoreVertical } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 
 export interface Column<T> {
   header: string;
@@ -53,6 +53,13 @@ interface TableProps<T> {
   downloadingReportId?: string | null;
   // Add prop for sending to customer ID
   sendingToCustomerId?: string | null;
+  // Add prop for resending invitation (Users table)
+  onResendInvitation?: (row: T) => void;
+  // Track which row is currently resending
+  resendingInvitationId?: string | null;
+  // Collapsible functionality props
+  collapsible?: boolean;
+  initialCollapsedLimit?: number;
 }
 
 export const StatusBadge = ({ status }: { status: string }) => {
@@ -72,6 +79,8 @@ export const StatusBadge = ({ status }: { status: string }) => {
         return "bg-sf-customer-active text-sf-black-300";
       case "inactive":
         return "bg-sf-customer-inactive text-sf-black-300";
+      case "invited":
+        return "bg-yellow-100 text-yellow-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -111,6 +120,8 @@ function ActionsCell({ row, ...props }: any) {
     onSendToCustomer,
     downloadingReportId,
     sendingToCustomerId,
+    onResendInvitation,
+    resendingInvitationId,
     user,
   } = props;
   const [isMobile, setIsMobile] = React.useState(false);
@@ -148,6 +159,51 @@ function ActionsCell({ row, ...props }: any) {
           className="justify-start w-full"
         >
           <Eye className="h-4 w-4 mr-2" /> View
+        </Button>
+      )
+    } : null,
+    // Resend Invitation action: hide for Technician role
+    onResendInvitation && user?.role?.toLowerCase() !== 'technician' ? {
+      key: 'resendInvite',
+      button: (
+        <Button
+          key="resendInvite"
+          variant="outline"
+          size="sm"
+          onClick={() => onResendInvitation(row)}
+          className="px-2 py-1 h-8"
+          title="Resend invitation"
+          disabled={
+            resendingInvitationId === (row as any).id ||
+            !((row as any)?.status && typeof (row as any).status === 'string' && (row as any).status.toLowerCase() === 'invited')
+          }
+        >
+          {resendingInvitationId === (row as any).id ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4" />
+          )}
+        </Button>
+      ),
+      menu: (
+        <Button
+          key="resendInvite-menu"
+          variant="ghost"
+          size="sm"
+          onClick={() => onResendInvitation(row)}
+          className="justify-start w-full"
+          title="Resend invitation"
+          disabled={
+            resendingInvitationId === (row as any).id ||
+            !((row as any)?.status && typeof (row as any).status === 'string' && (row as any).status.toLowerCase() === 'invited')
+          }
+        >
+          {resendingInvitationId === (row as any).id ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          ) : (
+            <Send className="h-4 w-4 mr-2" />
+          )}
+          Resend Invitation
         </Button>
       )
     } : null,
@@ -407,12 +463,26 @@ function Table<T>({
   onSendToCustomer,
   downloadingReportId,
   sendingToCustomerId,
+  onResendInvitation,
+  resendingInvitationId,
+  collapsible = false,
+  initialCollapsedLimit = 10,
 }: TableProps<T>) {
   // Calculate pagination values
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const startIndex = (currentPage - 1) * pageSize + 1;
   const endIndex = Math.min(startIndex + data.length - 1, totalCount);
   const { user } = useAuthStore();
+  
+  // Collapsible state and logic
+  const [isExpanded, setIsExpanded] = useState(false);
+  const shouldShowCollapse = collapsible && data.length > initialCollapsedLimit;
+  const displayData = shouldShowCollapse && !isExpanded 
+    ? data.slice(0, initialCollapsedLimit) 
+    : data;
+  const hiddenCount = shouldShowCollapse && !isExpanded 
+    ? data.length - initialCollapsedLimit 
+    : 0;
   
   return (
     <>
@@ -440,8 +510,8 @@ function Table<T>({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.length > 0 ? (
-              data.map((row, rowIndex) => (
+            {displayData.length > 0 ? (
+              displayData.map((row, rowIndex) => (
                 <TableRow 
                   key={rowIndex} 
                   className={cn("bg-white", onDetails && !isReportsTemplateTable && "cursor-pointer hover:bg-gray-100")}
@@ -481,6 +551,8 @@ function Table<T>({
                         onSendToCustomer={onSendToCustomer}
                         downloadingReportId={downloadingReportId}
                         sendingToCustomerId={sendingToCustomerId}
+                        onResendInvitation={onResendInvitation}
+                        resendingInvitationId={resendingInvitationId}
                         user={user}
                       />
                     </TableCell>
@@ -545,6 +617,27 @@ function Table<T>({
             </TableFooter>
           )}
         </ShadcnTable>
+        {shouldShowCollapse && (
+          <div className="flex justify-center py-4 border-t bg-gray-50">
+            <Button
+              variant="ghost"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-sm text-gray-600 hover:text-gray-800"
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronUp className="w-4 h-4 mr-2" />
+                  Show Less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4 mr-2" />
+                  Show {hiddenCount} More
+                </>
+              )}
+            </Button>
+          </div>
+        )}
       </div>
     </>
   );
