@@ -51,12 +51,14 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string, rememberMe: boolean) => {
         set({ loading: true, error: null });
         try {
-          const response: any = await BaseClient.post('auth/login', { 
+          const response = await BaseClient.post('/auth/login', { 
             email, 
             password,
             rememberMe,
             client: 'web'
           });
+          
+          console.log('Login response:', response); // Debug log
           
           set({ 
             isAuthenticated: true, 
@@ -65,15 +67,12 @@ export const useAuthStore = create<AuthState>()(
             loading: false,
             rememberMe // Save the rememberMe preference
           });
-        } catch (error) {
+        } catch (error: any) {
           console.error('Login error:', error);
+          console.error('Error response:', error?.response); // Debug log
           set({ 
             loading: false, 
-            error: error instanceof Error 
-              ? error.message 
-              : typeof error === 'object' && error !== null && 'data' in error && typeof error.data === 'object' && error.data !== null && 'message' in error.data 
-                ? (error.data as { message: string }).message 
-                : 'An error occurred'
+            error: error?.response?.data?.message || error?.message || 'An error occurred'
           });
         }
       },
