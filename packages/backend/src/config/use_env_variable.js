@@ -10,13 +10,13 @@ const MorganProd = {
 module.exports = {
   env: process.env.NODE_ENV,
   port: process.env.PORT,
-  DB: process.env.MYSQL_DB,
-  USER: process.env.MYSQL_USERNAME,
-  PASSWORD: process.env.MYSQL_PASSWORD,
-  HOST: process.env.MYSQL_HOST,
-  DIALECT: process.env.MYSQL_DIALECT,
-  JWT_SECRET: process.env.JWT_SECRET,
-  JWT_EXPIRESIN: process.env.JWT_EXPIRESIN,
+  DB: process.env.PGDATABASE,
+  USER: process.env.PGUSER,
+  PASSWORD: process.env.PGPASSWORD,
+  HOST: process.env.PGHOST,
+  DIALECT: 'postgres',
+  JWT_SECRET: process.env.JWT_SECRET,  // From Replit secrets
+  JWT_EXPIRESIN: process.env.JWT_EXPIRESIN || '7d',
 
   logType: process.env.NODE_ENV === 'development' ? 'dev' : 'combined', // Morgan logger for development & production
   morganConfig: process.env.NODE_ENV === 'development' ? {} : MorganProd, // Morgan Config for development & production
@@ -27,12 +27,12 @@ module.exports = {
   SMTP_USERNAME: process.env.SMTP_USERNAME,
   SMTP_PASSWORD: process.env.SMTP_PASSWORD,
 
-  AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
-  AWS_S3_ACCESS_KEY_ID: process.env.AWS_S3_ACCESS_KEY_ID,
-  AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
-  AWS_S3_SECRET_ACCESS_KEY: process.env.AWS_S3_SECRET_ACCESS_KEY,
-  AWS_REGION: process.env.AWS_REGION,
-  AWS_BUCKET: process.env.AWS_S3_BUCKET,
+  AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,  // From Replit secrets
+  AWS_S3_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,  // Use same as above
+  AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,  // From Replit secrets
+  AWS_S3_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,  // Use same as above
+  AWS_REGION: process.env.AWS_REGION || 'ca-central-1',
+  AWS_BUCKET: process.env.AWS_S3_BUCKET || 'safetech-dev-images',
 
   NMI_SECURITY_KEY: process.env.NMI_SECURITY_KEY,
   NMI_SIGNING_KEY: process.env.NMI_SIGNING_KEY,
@@ -55,5 +55,5 @@ module.exports = {
   HAZARD_API_TOKEN: process.env.HAZARD_API_TOKEN,
 
   FRONTEND_BASE_URL: process.env.FRONTEND_BASE_URL,
-  MOBILE_APP_KEY: process.env.MOBILE_APP_KEY,
+  MOBILE_APP_KEY: process.env.MOBILE_APP_KEY,  // From Replit secrets
 };
