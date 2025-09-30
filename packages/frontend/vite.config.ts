@@ -11,9 +11,13 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // for sharing local env over same network
-  // server: {
-  //   host: true, // This allows access from other devices on the network
-  //   port: 5173, // You can specify a port or let Vite choose
-  // },
+  server: {
+    host: '0.0.0.0',
+    port: 5000,
+    strictPort: true,
+    hmr: {
+      clientPort: 443,
+      protocol: 'wss'
+    }
+  },
 });
