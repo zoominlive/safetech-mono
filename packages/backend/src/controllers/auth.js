@@ -156,12 +156,13 @@ exports.login = async (req, res, next) => {
       }
     }
 
-    // For web, optionally verify origin if present
-    if (platform === 'web' && FRONTEND_BASE_URL && req.headers.origin) {
-      if (req.headers.origin !== FRONTEND_BASE_URL) {
-        return res.status(UNAUTHORIZED).json({ message: 'Unauthorized origin', success: false });
-      }
-    }
+    // For web, optionally verify origin if present (disabled in development)
+    // In production, uncomment this to verify origin
+    // if (platform === 'web' && FRONTEND_BASE_URL && req.headers.origin) {
+    //   if (req.headers.origin !== FRONTEND_BASE_URL) {
+    //     return res.status(UNAUTHORIZED).json({ message: 'Unauthorized origin', success: false });
+    //   }
+    // }
 
     // Update last_login field
     await User.update(
