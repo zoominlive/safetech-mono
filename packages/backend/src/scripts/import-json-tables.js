@@ -19,14 +19,15 @@ function convertMySQLJSONToPostgres(jsonString) {
     cleaned = cleaned.slice(1, -1);
   }
   
-  // Unescape the JSON string
-  cleaned = cleaned.replace(/\\"/g, '"');  // Unescape double quotes
-  cleaned = cleaned.replace(/\\\\/g, '\\'); // Unescape backslashes
+  // Unescape the JSON string - MySQL double-escapes the backslashes
+  cleaned = cleaned.replace(/\\\\/g, '\\'); // First pass: \\\\ -> \\
+  cleaned = cleaned.replace(/\\"/g, '"');   // Second pass: \\" -> "
   
   // Ensure proper single quote escaping for PostgreSQL
   cleaned = cleaned.replace(/'/g, "''");
   
-  return `'${cleaned}'`;
+  // Return as PostgreSQL JSON literal
+  return `'${cleaned}'::json`;
 }
 
 /**
@@ -38,46 +39,60 @@ function convertMySQLToPostgresJSON(line, tableName) {
   
   // Find and convert JSON columns based on table
   if (tableName === 'report_templates') {
-    // The schema column contains JSON
-    // Pattern: ...., '"{...}"', ...
-    converted = converted.replace(/('"\{.*?\}"')/g, (match) => {
-      return convertMySQLJSONToPostgres(match.slice(1, -1)); // Remove outer quotes from match
-    });
-  } else if (tableName === 'reports') {
-    // The answers and photos columns contain JSON
-    // Need to handle both columns carefully
-    const parts = converted.split(/(?<=\)),(?=\s*\()/); // Split multiple value sets
+    // The schema column (3rd value) contains JSON
+    // Pattern: ('id', 'name', '"json_data"', ...)
+    // We need to find the JSON which starts with '" and ends with "' (accounting for nested quotes)
     
-    converted = parts.map(part => {
-      // Process each INSERT value set
-      let processed = part;
-      
-      // Find JSON-like patterns and convert them
-      // Pattern 1: '"{...}"' - escaped JSON
-      processed = processed.replace(/'("\{[^']*\}")'/g, (match) => {
-        return convertMySQLJSONToPostgres(match.slice(1, -1));
-      });
-      
-      // Pattern 2: '[]' - empty JSON array
-      processed = processed.replace(/'(\[\])'/g, "'$1'");
-      
-      // Pattern 3: '{}' - empty JSON object
-      processed = processed.replace(/'(\{\})'/g, "'$1'");
-      
-      return processed;
-    }).join(',');
+    // Split by VALUES to separate the INSERT part from values
+    const [insertPart, ...valueParts] = converted.split('VALUES');
+    const valuesStr = valueParts.join('VALUES');
+    
+    // Process each value set (there might be multiple rows)
+    let processedValues = valuesStr;
+    
+    // Find and replace JSON strings that are double-quoted and escaped
+    // This regex looks for patterns like '"{...}"' where ... can contain escaped quotes
+    processedValues = processedValues.replace(/'("(?:[^"\\]|\\.)*")'/g, (match) => {
+      const jsonStr = match.slice(1, -1); // Remove outer single quotes
+      return convertMySQLJSONToPostgres(jsonStr);
+    });
+    
+    converted = insertPart + 'VALUES' + processedValues;
+    
+  } else if (tableName === 'reports') {
+    // The answers (8th) and photos (9th) columns contain JSON
+    // Similar processing as above
+    const [insertPart, ...valueParts] = converted.split('VALUES');
+    const valuesStr = valueParts.join('VALUES');
+    
+    let processedValues = valuesStr;
+    
+    // Process JSON fields - they appear as '"{...}"' or '[]' or '{}'
+    processedValues = processedValues.replace(/'("(?:[^"\\]|\\.)*")'/g, (match) => {
+      const jsonStr = match.slice(1, -1);
+      return convertMySQLJSONToPostgres(jsonStr);
+    });
+    
+    // Handle simple JSON arrays and objects
+    processedValues = processedValues.replace(/'(\[\])'|'(\{\})'/g, (match) => {
+      return match + '::json';
+    });
+    
+    converted = insertPart + 'VALUES' + processedValues;
   }
   
-  // Convert boolean values
+  // Convert boolean values (but not in JSON strings)
+  // Only convert standalone 0/1 that are column values, not inside JSON
   converted = converted.replace(/([,\(]\s*)(0|1)(\s*[,\)])/g, (match, before, value, after) => {
-    const boolValue = value === '1' ? 'TRUE' : 'FALSE';
-    return `${before}${boolValue}${after}`;
+    // Check if this is likely a boolean column (not inside a JSON string)
+    if (!match.includes('"') && !match.includes("'")) {
+      const boolValue = value === '1' ? 'TRUE' : 'FALSE';
+      return `${before}${boolValue}${after}`;
+    }
+    return match;
   });
   
-  // Convert datetime NULLs
-  converted = converted.replace(/NULL/g, 'NULL');
-  
-  // Fix escaped single quotes
+  // Fix escaped single quotes that are not in JSON
   converted = converted.replace(/\\'/g, "''");
   
   return converted;
