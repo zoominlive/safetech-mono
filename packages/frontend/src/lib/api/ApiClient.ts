@@ -158,8 +158,8 @@ class ApiClient {
   };
 }
 
-const { BASE_URL, APP_VERSION } = Config;
+const { BASE_URL } = Config;
 
-const BaseClient = new ApiClient(BASE_URL + "/" + APP_VERSION);
+const BaseClient = new ApiClient(BASE_URL);
 
 export { BaseClient };
