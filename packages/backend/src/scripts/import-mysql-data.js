@@ -87,13 +87,14 @@ async function importData() {
     const sqlContent = fs.readFileSync(sqlPath, 'utf8');
     
     // Define import order (tables with dependencies come after their parents)
+    // Skip tables with complex JSON for now
     const importOrder = [
       'customers',
       'users',           // users before locations because created_by FK
       'locations',
-      'report_templates',
+      // 'report_templates',  // Has JSON, handle separately
       'projects',
-      'reports',
+      // 'reports',          // Has JSON, handle separately
       'materials',
       'lab_reports',
       'lab_report_results',
@@ -101,6 +102,8 @@ async function importData() {
       'project_technicians',
       'project_drawings'
     ];
+    
+    const jsonTables = ['report_templates', 'reports'];
     
     // Clear existing data in reverse order to respect foreign keys
     logger.info('Clearing existing data...');
