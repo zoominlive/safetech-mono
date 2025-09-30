@@ -6,20 +6,38 @@ module.exports = {
     password: PASSWORD || null,
     database: DB || 'safetech',
     host: HOST || '127.0.0.1',
-    dialect: DIALECT || 'mysql',
+    dialect: DIALECT || 'postgres',
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    }
   },
   test: {
     username: USER || 'root',
     password: PASSWORD || null,
     database: DB || 'safetech',
     host: HOST || '127.0.0.1',
-    dialect: DIALECT || 'mysql',
+    dialect: DIALECT || 'postgres',
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    }
   },
   production: {
     username: USER || 'root',
     password: PASSWORD || null,
     database: DB || 'safetech',
     host: HOST,
-    dialect: DIALECT || 'mysql',
+    dialect: DIALECT || 'postgres',
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    }
   },
 };
