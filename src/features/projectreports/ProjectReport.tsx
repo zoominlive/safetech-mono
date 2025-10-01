@@ -768,13 +768,6 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     return userRole === "Project Manager" || userRole === "Admin";
   };
 
-  const isProjectInfoEditable = () => {
-    // Project Information can be edited by PM and Admin only
-    if (readOnly) return false;
-    if (!userRole) return false;
-    return userRole === "Project Manager" || userRole === "Admin";
-  };
-
   const handleFileUpload = async (fieldId: string, files: FileList | null) => {
     if (!files || !files.length || !id) return;
 
