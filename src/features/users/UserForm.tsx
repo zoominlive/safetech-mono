@@ -63,6 +63,7 @@ function UserForm({ onCancel }: UserFormProps) {
     role: "technician",
     password: "",
     deactivated_user: false,
+    is_verified: false,
     profile_picture: "",
   });
 
@@ -86,6 +87,7 @@ function UserForm({ onCancel }: UserFormProps) {
               role: userData.role.toLowerCase(),
               password: "", // Don't populate password on edit
               deactivated_user: userData.deactivated_user || false,
+              is_verified: userData.is_verified || false,
               profile_picture: userData.profile_picture || "",
             });
             
@@ -190,6 +192,7 @@ function UserForm({ onCancel }: UserFormProps) {
         phone: values.phone,
         role: values.role,
         deactivated_user: values.deactivated_user,
+        is_verified: values.is_verified,
         ...(values.password && { password: values.password }),
       };
       
@@ -240,7 +243,7 @@ function UserForm({ onCancel }: UserFormProps) {
   };
 
   // Remove profile picture handler
-  const handleRemoveProfilePicture = async (formikValues?: { first_name: string; last_name: string; email: string; phone: string; role: string; deactivated_user: boolean; password?: string }) => {
+  const handleRemoveProfilePicture = async (formikValues?: { first_name: string; last_name: string; email: string; phone: string; role: string; deactivated_user: boolean; is_verified: boolean; password?: string }) => {
     if (!id) {
       toast({
         title: "Remove failed",
@@ -276,6 +279,60 @@ function UserForm({ onCancel }: UserFormProps) {
       });
     } finally {
       setUploadingImage(false);
+    }
+  };
+
+  // Helper function to determine current status based on user state
+  const getStatusValue = (deactivated: boolean, verified: boolean) => {
+    if (deactivated) return "inactive";
+    if (!verified) return "invited";
+    return "active";
+  };
+
+  // Helper function to get available status options based on current status
+  const getAvailableStatusOptions = (currentStatus: string) => {
+    switch (currentStatus) {
+      case "invited":
+        return [{ value: "invited", label: "Invited" }]; // Only show current status, disable changes
+      case "active":
+        return [
+          { value: "active", label: "Active" },
+          { value: "inactive", label: "Inactive" }
+        ];
+      case "inactive":
+        return [
+          { value: "inactive", label: "Inactive" },
+          { value: "active", label: "Active" }
+        ];
+      default:
+        return [
+          { value: "invited", label: "Invited" },
+          { value: "active", label: "Active" },
+          { value: "inactive", label: "Inactive" }
+        ];
+    }
+  };
+
+  // Helper function to check if status dropdown should be disabled
+  const isStatusDropdownDisabled = (currentStatus: string) => {
+    return currentStatus === "invited";
+  };
+
+  // Helper function to handle status changes
+  const handleStatusChange = (value: string, setFieldValue: any) => {
+    switch (value) {
+      case "inactive":
+        setFieldValue("deactivated_user", true);
+        setFieldValue("is_verified", false);
+        break;
+      case "invited":
+        setFieldValue("deactivated_user", false);
+        setFieldValue("is_verified", false);
+        break;
+      case "active":
+        setFieldValue("deactivated_user", false);
+        setFieldValue("is_verified", true);
+        break;
     }
   };
 
@@ -454,26 +511,44 @@ function UserForm({ onCancel }: UserFormProps) {
 
                   <div className="grid w-full items-center gap-3">
                     <Label htmlFor="status">Status</Label>
-                    <Field name="deactivated_user">
-                      {({ field }: any) => (
-                        <Select 
-                          value={field.value ? "inactive" : "active"}
-                          onValueChange={(value) => setFieldValue("deactivated_user", value === "inactive")}
-                        >
-                          <SelectTrigger className="w-full py-7.5">
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectLabel>Status</SelectLabel>
-                              <SelectItem value="active">Active</SelectItem>
-                              <SelectItem value="inactive">Inactive</SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      )}
+                    <Field name="status">
+                      {() => {
+                        const currentStatus = getStatusValue(values.deactivated_user, values.is_verified);
+                        const availableOptions = getAvailableStatusOptions(currentStatus);
+                        const isDisabled = isStatusDropdownDisabled(currentStatus);
+                        
+                        return (
+                          <Select 
+                            value={currentStatus}
+                            onValueChange={(value) => handleStatusChange(value, setFieldValue)}
+                            disabled={isDisabled}
+                          >
+                            <SelectTrigger className={`w-full py-7.5 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectLabel>Status</SelectLabel>
+                                {availableOptions.map((option) => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                        );
+                      }}
                     </Field>
                     <div className="min-h-[20px] relative">
+                      <p className="text-sm text-gray-500">
+                        {getStatusValue(values.deactivated_user, values.is_verified) === "invited" && 
+                          "User needs to activate their account. Status cannot be changed until user activates."}
+                        {getStatusValue(values.deactivated_user, values.is_verified) === "active" && 
+                          "User has full access to the system. You can deactivate if needed."}
+                        {getStatusValue(values.deactivated_user, values.is_verified) === "inactive" && 
+                          "User cannot access the system. You can reactivate their account."}
+                      </p>
                     </div>
                   </div>
 

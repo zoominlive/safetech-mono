@@ -8,7 +8,7 @@ import { CardSkeleton } from "@/components/ui/skeletons/CardSkeleton";
 import { toast } from "@/components/ui/use-toast";
 import { reportService } from "@/services/api/reportService";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useLocation } from "react-router";
 import { Download, Trash2 } from "lucide-react";
 import {
   AlertDialogTrigger
@@ -95,6 +95,7 @@ interface Note {
 export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = false }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { user } = useAuthStore();
@@ -740,15 +741,6 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     }
   };
 
-  const handleCancel = () => {
-    if (hasUnsavedChanges && !readOnly) {
-      if (window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
-        navigate("/projects");
-      }
-    } else {
-      navigate("/projects");
-    }
-  };
 
   const isFieldEditable = () => {
     // If readOnly is true, always return false
@@ -761,6 +753,25 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     if (projectStatus === "Completed") {
       return userRole === "Project Manager";
     }
+    return userRole === "Project Manager" || userRole === "Admin";
+  };
+
+  const isEditAllowed = () => {
+    // Check if user has permission to edit regardless of readOnly mode
+    if (!userRole) return false;
+    if (userRole === "Technician") {
+      return projectStatus === "In Progress";
+    }
+    if (projectStatus === "Completed") {
+      return userRole === "Project Manager";
+    }
+    return userRole === "Project Manager" || userRole === "Admin";
+  };
+
+  const isProjectInfoEditable = () => {
+    // Project Information can be edited by PM and Admin only
+    if (readOnly) return false;
+    if (!userRole) return false;
     return userRole === "Project Manager" || userRole === "Admin";
   };
 
@@ -2240,11 +2251,27 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     return <CardSkeleton />;
   }
 
+  const handleBackNavigation = () => {
+    // Check if location state has a 'from' property (indicating where user came from)
+    const from = location.state?.from;
+    
+    if (from) {
+      // Navigate back to where the user came from
+      navigate(from);
+    } else if (window.history.length > 1) {
+      // Use browser back if there's history
+      window.history.back();
+    } else {
+      // Default fallback: navigate to project reports list
+      navigate('/project-reports');
+    }
+  };
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <BackButton />
+          <BackButton onClick={handleBackNavigation} />
           <h1 className="text-2xl font-bold">Project Report</h1>
           {/* Auto-save status indicator */}
           {!readOnly && (
@@ -2521,9 +2548,19 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
           >
             Materials
           </Button>
+          {readOnly && isEditAllowed() && (
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/project-reports/${id}/edit`)}
+              disabled={isSaving}
+              className="bg-blue-600 text-white hover:bg-blue-700"
+            >
+              Edit
+            </Button>
+          )}
           <Button
             variant="outline"
-            onClick={handleCancel}
+            onClick={handleBackNavigation}
             disabled={isSaving}
           >
             {readOnly ? "Back" : "Cancel"}
