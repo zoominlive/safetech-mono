@@ -796,10 +796,10 @@ export const SamplesManagement: React.FC = () => {
                             <TableCell>{sample.description}</TableCell>
                             <TableCell>{sample.squareFootage}</TableCell>
                             <TableCell>
-                              <div title={sample.percentageAsbestos !== undefined ? sample.percentageAsbestos.toString() : 'No value'}>
+                              <div title={sample.percentageAsbestos != null ? sample.percentageAsbestos.toString() : 'No value'}>
                                 <Input
                                   type="text"
-                                  value={sample.percentageAsbestos !== undefined ? sample.percentageAsbestos.toString() : ''}
+                                  value={sample.percentageAsbestos != null ? sample.percentageAsbestos.toString() : ''}
                                   onChange={(e) => updateSample(sample.sampleId, 'percentageAsbestos', e.target.value || undefined)}
                                   className="w-20"
                                   placeholder="%"
@@ -921,10 +921,10 @@ export const SamplesManagement: React.FC = () => {
                             <TableCell>{sample.location}</TableCell>
                             <TableCell>{sample.description}</TableCell>
                             <TableCell>
-                              <div title={sample.percentageLead !== undefined ? sample.percentageLead.toString() : 'No value'}>
+                              <div title={sample.percentageLead != null ? sample.percentageLead.toString() : 'No value'}>
                                 <Input
                                   type="text"
-                                  value={sample.percentageLead !== undefined ? sample.percentageLead.toString() : ''}
+                                  value={sample.percentageLead != null ? sample.percentageLead.toString() : ''}
                                   onChange={(e) => updateSample(sample.sampleId, 'percentageLead', e.target.value || undefined)}
                                   className="w-20"
                                   placeholder="%"
