@@ -71,7 +71,7 @@ export const StatusBadge = ({ status }: { status: string }) => {
         return "bg-orange-100 text-orange-800";
       case "pm review":
         return "bg-purple-100 text-purple-800";
-      case "completed":
+      case "complete":
         return "bg-blue-100 text-blue-800";
       case "on hold":
         return "bg-gray-100 text-gray-800";
