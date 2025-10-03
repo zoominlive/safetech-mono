@@ -9,7 +9,7 @@ type Project = {
   companyName: string;
   startDate: Date;
   technician: string;
-  status: "new" | "resent" | "completed" | "started";
+  status: "new" | "resent" | "complete" | "started";
 };
 
 export const columns: ColumnDef<Project>[] = [

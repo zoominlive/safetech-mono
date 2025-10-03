@@ -750,7 +750,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     if (userRole === "Technician") {
       return projectStatus === "In Progress";
     }
-    if (projectStatus === "Completed") {
+    if (projectStatus === "Complete") {
       return userRole === "Project Manager";
     }
     return userRole === "Project Manager" || userRole === "Admin";
@@ -762,7 +762,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     if (userRole === "Technician") {
       return projectStatus === "In Progress";
     }
-    if (projectStatus === "Completed") {
+    if (projectStatus === "Complete") {
       return userRole === "Project Manager";
     }
     return userRole === "Project Manager" || userRole === "Admin";
@@ -2670,7 +2670,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                 </>
               )}
               
-              {userRole === "Project Manager" && projectStatus === "Completed" && (
+              {userRole === "Project Manager" && projectStatus === "Complete" && (
                 <Button 
                   onClick={handleSendToCustomer} 
                   disabled={isSaving}

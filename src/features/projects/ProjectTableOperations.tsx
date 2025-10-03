@@ -56,7 +56,7 @@ function ProjectTableOperations({
     { value: "new", label: "New" },
     { value: "in progress", label: "In Progress" },
     { value: "pm review", label: "PM Review" },
-    { value: "completed", label: "Completed" },
+    { value: "complete", label: "Complete" },
     { value: "on hold", label: "On Hold" },
   ];
 
