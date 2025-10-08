@@ -224,7 +224,7 @@ export const SamplesManagement: React.FC = () => {
                 materialType: materialName,
                 location: material.location || '',
                 description: material.description || '',
-                squareFootage: material.squareFootage || '',
+                squareFootage: material.quantity || '',
                 percentageAsbestos: material.percentageAsbestos,
                 asbestosType: material.asbestosType,
                 percentageLead: material.percentageLead,
