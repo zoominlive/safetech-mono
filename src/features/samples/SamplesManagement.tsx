@@ -22,7 +22,7 @@ interface Sample {
   squareFootage: string;
   percentageAsbestos?: number;
   asbestosType?: string;
-  percentageLead?: number;
+  percentageLead?: number | string; // Can be number or string (to retain < and > symbols)
   sampleType: 'asbestos' | 'lead';
   timestamp: string;
 }
@@ -562,9 +562,12 @@ export const SamplesManagement: React.FC = () => {
               asbestosType: result.asbestosType
             };
           } else {
+            // For lead, keep the value as-is (retaining < and > symbols)
+            const leadValue = result.percentageLead || undefined;
+            console.log(`Updating lead sample ${sample.sampleNo} with %wt: "${result.percentageLead}"`);
             return {
               ...sample,
-              percentageLead: result.percentageLead
+              percentageLead: leadValue
             };
           }
         }
@@ -639,21 +642,32 @@ export const SamplesManagement: React.FC = () => {
   const parseLabResults = (data: any[]): Array<{ sample: string; percentageAsbestos?: any; asbestosType?: string; percentageLead?: any; location?: string; description?: string; areaName?: string; materialType?: string }> => {
     const results: Array<{ sample: string; percentageAsbestos?: any; asbestosType?: string; percentageLead?: any; location?: string; description?: string; areaName?: string; materialType?: string }> = [];
     data.forEach(row => {
-      const sample = row.Sample || row.Sample || row.sample || row.sample || row['Sample'] || '';
+      const sample = row.SampleNo || row.Sample || row.sample || row['Sample No'] || row['Sample'] || '';
       const content1 = row.Content_1 || row.content_1 || row['Content 1'] || row['content 1'] || '';
       const type1 = row.Type_1 || row.type_1 || row['Type 1'] || row['type 1'] || '';
-      const percentageLead = row['%wt'] || row['%wt'] || row['%wt'] || '';
-      const location = row.Location || row.location || row['Location'] || row['location'] || '';
-      const description = row.Description || row.description || row['Description'] || row['description'] || '';
+      
+      // Handle %wt column with various possible names
+      const percentageLeadRaw = row['%wt'] || row['%WT'] || row['wt%'] || row['WT%'] || row['Lead %'] || row['lead %'] || '';
+      
+      // Keep the value as-is (retain < and > symbols) and just trim whitespace
+      let percentageLeadCleaned = '';
+      if (percentageLeadRaw) {
+        percentageLeadCleaned = percentageLeadRaw.toString().trim();
+      }
+      
+      const location = row.Location || row.location || row['Location'] || '';
+      const description = row.Description || row.description || row['Material Description'] || row['description'] || '';
       const areaName = row.AreaName || row.areaName || row['Area Name'] || row['area name'] || row['Area'] || row.area || '';
       const materialType = row.MaterialType || row.materialType || row['Material Type'] || row['material type'] || row['Material'] || row.material || '';
       const percentageAsbestos = content1;
+   
+      console.log(`Parsing row - Sample: ${sample}, %wt raw: "${percentageLeadRaw}", %wt cleaned: "${percentageLeadCleaned}"`);
    
       results.push({
         sample: sample,
         percentageAsbestos,
         asbestosType: type1 || undefined,
-        percentageLead,
+        percentageLead: percentageLeadCleaned || undefined,
         location: location || undefined,
         description: description || undefined,
         areaName: areaName || undefined,
