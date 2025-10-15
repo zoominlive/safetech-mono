@@ -275,6 +275,16 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   // Add at the top of the component, after useState hooks
   const [imagePreview, setImagePreview] = useState<{ url: string; open: boolean }>({ url: '', open: false });
 
+  // Scope of Work state
+  const [scopeOfWork, setScopeOfWork] = useState<string[]>([
+    "A review of existing documents, including renovation documents and drawings, floor plans and existing environmental assessment reports, etc., where available;",
+    "A visual assessment of accessible area(s) in the project areas to identify the presence, location, condition and quantities of designated substances and other hazardous materials;",
+    "Collection, analysis and interpretation of representative bulk samples of suspect asbestos-containing building materials for the determination of asbestos content and material classification;",
+    "Collection, analysis and interpretation of representative paint chip samples for the determination of lead content; and",
+    "Preparation of a report to document findings and provide recommendations regarding control measures and/or special handling procedures for designated substances or specific hazardous materials that may be disturbed as part of planned activities."
+  ]);
+  const [isEditingScopeOfWork, setIsEditingScopeOfWork] = useState(false);
+
   const alwaysDisabledFields = [
     'clientCompanyName', 'clientAddress', 'contactName', 'contactPosition', 'contactEmail', 'contactPhone',
     'projectName', 'specificLocation', 'projectNumber', 'projectAddress', 'startDate', 'endDate', 'pmName', 'pmEmail', 'pmPhone',
@@ -315,7 +325,8 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
           mechanicalPipeInsulationStraightsPhoto: undefined,
           haslooseFillOrvermiculiteInsulationPhoto: undefined,
           areaDetails: areas,
-          notes: notes
+          notes: notes,
+          scopeOfWork: scopeOfWork
         }
       };
 
@@ -332,7 +343,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
         setAutoSaveStatus('saved');
         setLastSaved(new Date());
         setHasUnsavedChanges(false);
-        lastSavedDataRef.current = JSON.stringify({ areas, reportData, notes });
+        lastSavedDataRef.current = JSON.stringify({ areas, reportData, notes, scopeOfWork });
         
         // Show success toast only if it's been a while since last save
         const timeSinceLastToast = lastSaved ? Date.now() - lastSaved.getTime() : 60000;
@@ -358,7 +369,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
 
   // Check for changes and trigger auto-save
   const checkForChanges = useCallback(() => {
-    const currentData = JSON.stringify({ areas, reportData, notes });
+    const currentData = JSON.stringify({ areas, reportData, notes, scopeOfWork });
     const hasChanges = currentData !== lastSavedDataRef.current;
     
     if (hasChanges && !hasUnsavedChanges) {
@@ -370,7 +381,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     if (hasChanges) {
       debouncedAutoSave();
     }
-  }, [areas, reportData, notes, hasUnsavedChanges, debouncedAutoSave]);
+  }, [areas, reportData, notes, scopeOfWork, hasUnsavedChanges, debouncedAutoSave]);
 
   // Set up periodic auto-save
   useEffect(() => {
@@ -401,12 +412,12 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     };
   }, []);
 
-  // Check for changes whenever areas, reportData, or notes changes
+  // Check for changes whenever areas, reportData, notes, or scopeOfWork changes
   useEffect(() => {
     if (areas.length > 0 && reportData) {
       checkForChanges();
     }
-  }, [areas, reportData, notes, checkForChanges]);
+  }, [areas, reportData, notes, scopeOfWork, checkForChanges]);
 
   // Warn user before leaving with unsaved changes
   useEffect(() => {
@@ -453,7 +464,9 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
           sprayedFireproofingPhoto: undefined,
           mechanicalPipeInsulationStraightsPhoto: undefined,
           haslooseFillOrvermiculiteInsulationPhoto: undefined,
-          areaDetails: areas
+          areaDetails: areas,
+          notes: notes,
+          scopeOfWork: scopeOfWork
         }
       };
       
@@ -468,7 +481,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
         setAutoSaveStatus('saved');
         setLastSaved(new Date());
         setHasUnsavedChanges(false);
-        lastSavedDataRef.current = JSON.stringify({ areas, reportData, notes });
+        lastSavedDataRef.current = JSON.stringify({ areas, reportData, notes, scopeOfWork });
         toast({
           title: "Success",
           description: "Report saved successfully",
@@ -614,14 +627,25 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
         const savedNotes = Array.isArray(answers?.notes) ? answers.notes : [];
         setNotes(savedNotes);
 
+        // Load scope of work from the report data
+        const savedScopeOfWork = Array.isArray(answers?.scopeOfWork) ? answers.scopeOfWork : [
+          "A review of existing documents, including renovation documents and drawings, floor plans and existing environmental assessment reports, etc., where available;",
+          "A visual assessment of accessible area(s) in the project areas to identify the presence, location, condition and quantities of designated substances and other hazardous materials;",
+          "Collection, analysis and interpretation of representative bulk samples of suspect asbestos-containing building materials for the determination of asbestos content and material classification;",
+          "Collection, analysis and interpretation of representative paint chip samples for the determination of lead content; and",
+          "Preparation of a report to document findings and provide recommendations regarding control measures and/or special handling procedures for designated substances or specific hazardous materials that may be disturbed as part of planned activities."
+        ];
+        setScopeOfWork(savedScopeOfWork);
+
         const mergedAnswers = {
           ...answers,
-          areaDetails: initialAreas
+          areaDetails: initialAreas,
+          scopeOfWork: savedScopeOfWork
         };
         setReportData(mergedAnswers);
 
         // Initialize last saved data reference
-        lastSavedDataRef.current = JSON.stringify({ areas: initialAreas, reportData: mergedAnswers, notes: savedNotes });
+        lastSavedDataRef.current = JSON.stringify({ areas: initialAreas, reportData: mergedAnswers, notes: savedNotes, scopeOfWork: savedScopeOfWork });
 
         if (response.data.template?.schema) {
           try {
@@ -709,7 +733,8 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
           mechanicalPipeInsulationStraightsPhoto: undefined,
           haslooseFillOrvermiculiteInsulationPhoto: undefined,
           areaDetails: areas,
-          notes: notes
+          notes: notes,
+          scopeOfWork: scopeOfWork
         }
       };
       // Remove undefined fields with type guard
@@ -722,7 +747,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
       if (response.success) {
         setHasUnsavedChanges(false);
         setLastSaved(new Date());
-        lastSavedDataRef.current = JSON.stringify({ areas, reportData, notes });
+        lastSavedDataRef.current = JSON.stringify({ areas, reportData, notes, scopeOfWork });
         toast({
           title: "Success",
           description: "Report updated successfully",
@@ -2882,6 +2907,96 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                       )}
                     </div>
                   </div>
+                  
+                  {/* Scope of Work section */}
+                  <div className="mt-8 pt-6 border-t border-gray-200">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-semibold text-lg">Scope of Work</h4>
+                      {!readOnly && (userRole && ["Project Manager", "Admin"].includes(userRole)) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setIsEditingScopeOfWork(!isEditingScopeOfWork)}
+                        >
+                          {isEditingScopeOfWork ? "Save" : "Edit"}
+                        </Button>
+                      )}
+                    </div>
+                    
+                    {isEditingScopeOfWork && (userRole && ["Project Manager", "Admin"].includes(userRole)) ? (
+                      <div className="space-y-3">
+                        {scopeOfWork.map((item, index) => (
+                          <div key={index} className="flex items-start space-x-2">
+                            <span className="text-gray-500 mt-3 flex-shrink-0">•</span>
+                            <Textarea
+                              value={item}
+                              onChange={(e) => {
+                                const newScopeOfWork = [...scopeOfWork];
+                                newScopeOfWork[index] = e.target.value;
+                                setScopeOfWork(newScopeOfWork);
+                                setHasUnsavedChanges(true);
+                              }}
+                              className="flex-1 min-h-[60px]"
+                              placeholder="Enter scope of work item..."
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                const newScopeOfWork = scopeOfWork.filter((_, i) => i !== index);
+                                setScopeOfWork(newScopeOfWork);
+                                setHasUnsavedChanges(true);
+                              }}
+                              className="mt-2"
+                            >
+                              <CircleX className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setScopeOfWork([...scopeOfWork, ""]);
+                            setHasUnsavedChanges(true);
+                          }}
+                          className="w-full"
+                        >
+                          <CirclePlus className="h-4 w-4 mr-2" />
+                          Add Scope Item
+                        </Button>
+                        <div className="flex space-x-2 pt-2">
+                          <Button
+                            onClick={() => {
+                              setIsEditingScopeOfWork(false);
+                              // Save changes would be handled by auto-save
+                            }}
+                          >
+                            Save Changes
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setIsEditingScopeOfWork(false);
+                              // Reset to original scope of work if needed
+                              // For now, we'll keep the current state
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {scopeOfWork.map((item, index) => (
+                          <div key={index} className="flex items-center space-x-2">
+                            <span className="text-gray-500 flex-shrink-0">•</span>
+                            <p className="text-gray-700">{item}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
                   {/* Site Drawings under Project Information */}
                   <div className="mt-8 pt-6 border-t border-gray-200">
                     <h4 className="font-semibold text-lg mb-4">Site Drawings</h4>
