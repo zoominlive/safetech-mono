@@ -835,8 +835,13 @@
             </ul>
             <p>Documents reviewed to aid in the assessment included the following:</p>
             <ul>
-                <li>Document 1 Placeholder</li>
-                <li>Document 2 Placeholder</li>
+                {{#if documentsUsedList.length}}
+                    {{#each documentsUsedList}}
+                    <li>{{this}}</li>
+                    {{/each}}
+                {{else}}
+                    <li>N/A</li>
+                {{/if}}
             </ul>
             <p>This assessment only identified designated substances and hazardous materials that were deemed to be part of the building or somehow otherwise incorporated into the building structure and its finishes. The following items were not included in our scope of work:</p>
             <ul>
