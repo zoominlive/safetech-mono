@@ -21,21 +21,22 @@ export const transformMercurySchema = (originalSchema: SchemaSection[]): SchemaS
             name: "mercuryMaterials",
             showWhen: "mercuryObserved=Yes"
           },
-          {
-            id: "hasLamps",
-            type: "radio",
-            label: "Are there lamps?",
-            name: "hasLamps",
-            showWhen: "mercuryObserved=Yes",
-            options: ["Yes", "No"]
-          },
+          // {
+          //   id: "hasLamps",
+          //   type: "radio",
+          //   label: "Are there lamps?",
+          //   name: "hasLamps",
+          //   showWhen: "mercuryObserved=Yes",
+          //   options: ["Yes", "No"]
+          // },
           {
             id: "lampCount",
             type: "select",
             label: "How many lamps?",
             options: [
               "<=15",
-              ">15"
+              ">15",
+              "None"
               ],
             showWhen: "mercuryObserved=Yes",
             name: "lampCount"
@@ -54,7 +55,7 @@ export const transformMercurySchema = (originalSchema: SchemaSection[]): SchemaS
             label: "Will the mercury-containing equipment be removed/disturbed?",
             name: "willTheMercuryContainingEquipmentBeRemoved",
             showWhen: "mercuryObserved=Yes",
-            options: ["Removed", "Distributed", "Unknown"]
+            options: ["Removed", "Disturbed", "Unknown"]
           }
         ],
         type: "conditional",
