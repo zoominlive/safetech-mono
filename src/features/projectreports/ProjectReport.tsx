@@ -1,4 +1,4 @@
-import { CirclePlus, CircleX, Upload, List, Loader2, TestTube, StickyNote, Edit3 } from "lucide-react";
+import { CirclePlus, CircleX, Upload, List, Loader2, TestTube, StickyNote, Edit3, Eye, MoreVertical, CheckCircle, AlertCircle, Send } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -37,6 +37,7 @@ import {
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import LabImport from "@/components/LabImport";
 import { Textarea } from "@/components/ui/textarea";
 import { AsbestosAssessmentForm } from "@/components/AsbestosAssessmentForm";
@@ -53,6 +54,7 @@ import { transformMouldSchema, convertOldMouldDataToNew } from "@/lib/mouldSchem
 import { transformPcbSchema, convertOldPcbDataToNew } from "@/lib/pcbSchemaTransformer";
 import { transformPestInfestationSchema } from "@/lib/pestInfestationSchemaTransformer";
 import { transformOzoneSchema } from "@/lib/ozoneSchemaTransformer";
+import { StatusBadge } from "@/ui/Table";
 
 
 interface SchemaField {
@@ -2265,6 +2267,16 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     }
   }, [isDrawerOpen, scrollTarget]);
 
+  // Update page title with project name
+  useEffect(() => {
+    if (projectData?.name) {
+      document.title = `${projectData.name} - Project Report`;
+    }
+    return () => {
+      document.title = 'Project Report';
+    };
+  }, [projectData?.name]);
+
   if (isLoading) {
     return <CardSkeleton />;
   }
@@ -2287,25 +2299,36 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      {/* Compact Header */}
+      <div className="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-4">
+        <div className="flex items-start space-x-4 min-w-0 flex-1">
           <BackButton onClick={handleBackNavigation} />
-          <h1 className="text-2xl font-bold">Project Report</h1>
-          {/* Auto-save status indicator */}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-2xl font-bold truncate">
+                {projectData?.name || selectedArea?.assessments.projectName || 'Project Report'}
+              </h1>
+              <StatusBadge status={projectStatus} />
+            </div>
+            <div className="text-sm text-gray-500">
+              {projectData?.company?.company_name || selectedArea?.assessments.clientCompanyName}
+            </div>
+          </div>
+          {/* Auto-save status indicator - moved to button area for cleaner layout */}
           {!readOnly && (
             <div className="flex items-center space-x-2 text-sm">
               {autoSaveStatus === 'saving' && (
                 <div className="flex items-center space-x-1 text-blue-600">
                   <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                  <span>Saving...</span>
+                  <span className="hidden sm:inline">Saving...</span>
                 </div>
               )}
               {autoSaveStatus === 'saved' && (
                 <div className="flex items-center space-x-1 text-green-600">
                   <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                  <span>Saved</span>
+                  <span className="hidden sm:inline">Saved</span>
                   {lastSaved && (
-                    <span className="text-gray-500">
+                    <span className="text-gray-500 hidden md:inline">
                       {lastSaved.toLocaleTimeString()}
                     </span>
                   )}
@@ -2314,24 +2337,25 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               {autoSaveStatus === 'error' && (
                 <div className="flex items-center space-x-1 text-red-600">
                   <div className="w-2 h-2 bg-red-600 rounded-full"></div>
-                  <span>Save failed</span>
+                  <span className="hidden sm:inline">Save failed</span>
                 </div>
               )}
               {hasUnsavedChanges && autoSaveStatus === 'idle' && (
                 <div className="flex items-center space-x-1 text-orange-600">
                   <div className="w-2 h-2 bg-orange-600 rounded-full animate-pulse"></div>
-                  <span>Unsaved changes</span>
+                  <span className="hidden sm:inline">Unsaved changes</span>
                 </div>
               )}
             </div>
           )}
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap items-center gap-2 min-w-0 justify-end xl:ml-4">
           <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" className="flex items-center space-x-2">
+              <Button variant="outline" className="flex items-center space-x-2 text-sm">
                 {drawerMode === 'toc' ? <List className="h-4 w-4" /> : <StickyNote className="h-4 w-4" />}
-                <span>{drawerMode === 'toc' ? 'Table of Contents' : 'Notes'}</span>
+                <span className="hidden sm:inline">{drawerMode === 'toc' ? 'Table of Contents' : 'Notes'}</span>
+                <span className="sm:hidden">{drawerMode === 'toc' ? 'TOC' : 'Notes'}</span>
               </Button>
             </SheetTrigger>
             <SheetContent className="flex flex-col h-full">
@@ -2551,35 +2575,61 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               )}
             </SheetContent>
           </Sheet>
-          <Button
-            variant="outline"
-            onClick={() => navigate(`/project-reports/${id}/samples`)}
-            disabled={isSaving}
-          >
-            <TestTube className="h-4 w-4 mr-2" />
-            Samples
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigate(`/project-reports/${id}/materials`)}
-            disabled={isSaving}
-          >
-            Materials
-          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="text-sm">
+                <TestTube className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Tools</span>
+                <span className="sm:hidden">Tools</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-48 p-2">
+              <div className="space-y-1">
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate(`/project-reports/${id}/samples`)}
+                  disabled={isSaving}
+                  className="w-full justify-start text-sm"
+                >
+                  <TestTube className="h-4 w-4 mr-2" />
+                  <span>Samples</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate(`/project-reports/${id}/materials`)}
+                  disabled={isSaving}
+                  className="w-full justify-start text-sm"
+                >
+                  <List className="h-4 w-4 mr-2" />
+                  <span>Materials</span>
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
           {readOnly && isEditAllowed() && (
             <Button
-              variant="outline"
               onClick={() => navigate(`/project-reports/${id}/edit`)}
               disabled={isSaving}
-              className="bg-blue-600 text-white hover:bg-blue-700"
+              className="bg-blue-600 text-white hover:bg-blue-600 hover:text-white"
             >
               Edit
             </Button>
           )}
           <Button
             variant="outline"
+            onClick={() => navigate(`/projects/${projectId}`)}
+            disabled={isSaving}
+            className="flex items-center space-x-2 text-sm"
+          >
+            <Eye className="h-4 w-4" />
+            <span className="hidden sm:inline">View Project</span>
+            <span className="sm:hidden">View</span>
+          </Button>
+          <Button
+            variant="outline"
             onClick={handleBackNavigation}
             disabled={isSaving}
+            className="text-sm"
           >
             {readOnly ? "Back" : "Cancel"}
           </Button>
@@ -2595,14 +2645,18 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                   {isSaving ? "Retrying..." : "Retry Save"}
                 </Button>
               )}
-              <Button onClick={handleManualSave} disabled={isSaving}>
+              <Button onClick={handleManualSave} disabled={isSaving} className="text-sm">
                 {isSaving ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
+                    <span className="hidden sm:inline">Saving...</span>
+                    <span className="sm:hidden">Saving</span>
                   </>
                 ) : (
-                  "Save Report"
+                  <>
+                    <span className="hidden sm:inline">Save Report</span>
+                    <span className="sm:hidden">Save</span>
+                  </>
                 )}
               </Button>
               
@@ -2612,15 +2666,19 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                   <Button 
                     onClick={handleOpenSubmitToPMDialog} 
                     disabled={isSaving}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-sm"
                   >
                     {isSaving ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Submitting...
+                        <span className="hidden sm:inline">Submitting...</span>
+                        <span className="sm:hidden">Submitting</span>
                       </>
                     ) : (
-                      "Submit to PM Review"
+                      <>
+                        <span className="hidden sm:inline">Submit to PM Review</span>
+                        <span className="sm:hidden">Submit</span>
+                      </>
                     )}
                   </Button>
                   <AlertDialog open={isSubmitToPMReviewDialogOpen} onOpenChange={setIsSubmitToPMReviewDialogOpen}>
@@ -2649,66 +2707,75 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               )}
               
               {userRole === "Project Manager" && projectStatus === "PM Review" && (
-                <>
-                  <Button 
-                    onClick={handleApproveAndComplete} 
-                    disabled={isSaving}
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                  >
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Approving...
-                      </>
-                    ) : (
-                      "Approve & Complete"
-                    )}
-                  </Button>
-                  <Button 
-                    onClick={handleRequestChanges} 
-                    disabled={isSaving}
-                    className="bg-yellow-600 hover:bg-yellow-700 text-white"
-                  >
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Requesting...
-                      </>
-                    ) : (
-                      "Request Changes"
-                    )}
-                  </Button>
-                  <Button 
-                    onClick={handleSendToCustomer} 
-                    disabled={isSaving}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                  >
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      "Send to Customer"
-                    )}
-                  </Button>
-                </>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button 
+                      className="flex items-center space-x-2 text-sm bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 border-0 shadow-md"
+                      disabled={isSaving}
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                      <span>PM Actions</span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-56 p-2">
+                    <div className="space-y-1">
+                      <Button
+                        variant="ghost"
+                        onClick={handleApproveAndComplete}
+                        disabled={isSaving}
+                        className="w-full justify-start text-sm"
+                      >
+                        {isSaving ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                        )}
+                        <span>Approve & Complete</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={handleRequestChanges}
+                        disabled={isSaving}
+                        className="w-full justify-start text-sm"
+                      >
+                        {isSaving ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <AlertCircle className="h-4 w-4 mr-2 text-yellow-600" />
+                        )}
+                        <span>Request Changes</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={handleSendToCustomer}
+                        disabled={isSaving}
+                        className="w-full justify-start text-sm"
+                      >
+                        {isSaving ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Send className="h-4 w-4 mr-2 text-purple-600" />
+                        )}
+                        <span>Send to Customer</span>
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               )}
               
               {userRole === "Project Manager" && projectStatus === "Complete" && (
                 <Button 
                   onClick={handleSendToCustomer} 
                   disabled={isSaving}
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                  className="bg-purple-600 hover:bg-purple-700 text-white text-sm flex items-center space-x-2"
                 >
                   {isSaving ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Sending...
-                    </>
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    "Send to Customer"
+                    <Send className="h-4 w-4" />
                   )}
+                  <span className="hidden sm:inline">Send to Customer</span>
+                  <span className="sm:hidden">Send</span>
                 </Button>
               )}
             </>
@@ -2755,6 +2822,25 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
       {/* If no areas, show Add Area button and dialog */}
       {areas.length === 0 ? (
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="text-center mb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No Areas Added Yet
+            </h3>
+            <p className="text-gray-600 mb-1">
+              Project: <span className="font-medium">{projectData?.name || selectedArea?.assessments.projectName}</span>
+            </p>
+            <p className="text-sm text-gray-500">
+              Start by adding assessment areas for this project.
+            </p>
+            <div className="flex items-center justify-center space-x-2 mt-3">
+              <StatusBadge status={projectStatus} />
+              {projectData?.company?.company_name && (
+                <span className="text-sm text-gray-600">
+                  • {projectData.company.company_name}
+                </span>
+              )}
+            </div>
+          </div>
           {!readOnly ? (
             <Button size="lg" onClick={openAddAreaDialog}>
               <CirclePlus className="h-5 w-5 mr-2" /> Add Area
