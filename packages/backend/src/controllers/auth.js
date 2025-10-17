@@ -21,6 +21,7 @@ const {
   ACTIVATION_LINK_INVALID,
   ACCOUNT_ALREADY_ACTIVATED,
   ACCOUNT_ACTIVATED,
+  CONFLICT
 } = require("../helpers/constants");
 const { generateToken } = require('../utils/token');
 const { sendEmail } = require('../utils/email');
@@ -34,7 +35,7 @@ exports.register = async (req, res, next) => {
   try {
     const { first_name, last_name, email, password, role } = req.body;
     const existing = await User.findOne({ where: { email } });
-    if (existing) return res.status(BAD_REQUEST).json({ message: 'Email already exists' });
+    if (existing) return res.status(CONFLICT).json({ message: 'Email already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({ first_name, last_name, email, password: hashedPassword, role });
@@ -256,14 +257,14 @@ exports.isValidResetPage = async (req, res, next) => {
           const ApiError = new APIError(
             RESET_PASSWORD_LINK_EXPIRED,
             null,
-            BAD_REQUEST
+            UNAUTHORIZED
           );
           return ErrorHandler(ApiError, req, res, next);
         } else {
           const ApiError = new APIError(
             RESET_PASSWORD_LINK_INVALID,
             null,
-            BAD_REQUEST
+            UNAUTHORIZED
           );
           return ErrorHandler(ApiError, req, res, next);
         }
@@ -315,7 +316,7 @@ exports.resetPassword = async (req, res, next) => {
           const ApiError = new APIError(
             RESET_PASSWORD_LINK_EXPIRED,
             null,
-            BAD_REQUEST
+            UNAUTHORIZED
           );
           return ErrorHandler(ApiError, req, res, next);
         } else {
@@ -324,7 +325,7 @@ exports.resetPassword = async (req, res, next) => {
           const ApiError = new APIError(
             err,
             null,
-            BAD_REQUEST
+            UNAUTHORIZED
           );
           return ErrorHandler(ApiError, req, res, next);
         }
@@ -391,10 +392,10 @@ exports.verifyEmail = async (req, res, next) => {
     jwt.verify(token, JWT_SECRET, async (err, decoded) => {
       if (err) {
         if (err.name === 'TokenExpiredError') {
-          const ApiError = new APIError(ACTIVATION_LINK_EXPIRED, null, BAD_REQUEST);
+          const ApiError = new APIError(ACTIVATION_LINK_EXPIRED, null, UNAUTHORIZED);
           return ErrorHandler(ApiError, req, res, next);
         } else {
-          const ApiError = new APIError(ACTIVATION_LINK_INVALID, null, BAD_REQUEST);
+          const ApiError = new APIError(ACTIVATION_LINK_INVALID, null, UNAUTHORIZED);
           return ErrorHandler(ApiError, req, res, next);
         }
       } else {
@@ -407,7 +408,7 @@ exports.verifyEmail = async (req, res, next) => {
         }
 
         if (isUserExists.is_verified) {
-          const ApiError = new APIError(ACCOUNT_ALREADY_ACTIVATED, null, BAD_REQUEST);
+          const ApiError = new APIError(ACCOUNT_ALREADY_ACTIVATED, null, CONFLICT);
           return ErrorHandler(ApiError, req, res, next);
         }
 
@@ -466,7 +467,7 @@ exports.loginWithToken = async (req, res, next) => {
         const ApiError = new APIError(
           'Your token has been expired, Please login again',
           null,
-          BAD_REQUEST
+          UNAUTHORIZED
         );
         return ErrorHandler(ApiError, req, res, next);
       } else {

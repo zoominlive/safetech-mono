@@ -11,6 +11,8 @@ const {
   RECORDS_FOUND,
   NOT_ACCESS,
   BAD_REQUEST,
+  FORBIDDEN,
+  UNPROCESSABLE_ENTITY,
 } = require("../helpers/constants");
 const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
@@ -44,7 +46,7 @@ exports.createProject = async (req, res, next) => {
     } = req.body;
 
     if (user.role == USER_ROLE.TECHNICIAN) {
-      const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
+      const ApiError = new APIError(NOT_ACCESS, null, FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -266,7 +268,7 @@ exports.updateProject = async (req, res, next) => {
     } = req.body;
 
     if (user.role == USER_ROLE.TECHNICIAN) {
-      const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
+      const ApiError = new APIError(NOT_ACCESS, null, FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
     const fetchProject = await Project.findOne({ where: { id: id } });
@@ -348,7 +350,7 @@ exports.deleteProject = async (req, res, next) => {
     const fetchedProject = await Project.findByPk(id);
 
     if (user.role == USER_ROLE.TECHNICIAN) {
-      const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
+      const ApiError = new APIError(NOT_ACCESS, null, FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -400,8 +402,8 @@ exports.updateProjectStatus = async (req, res, next) => {
     // Validate status
     const validStatuses = ['New', 'In Progress', 'PM Review', 'Complete'];
     if (!validStatuses.includes(status)) {
-      return res.status(BAD_REQUEST).json({ 
-        code: BAD_REQUEST, 
+      return res.status(UNPROCESSABLE_ENTITY).json({ 
+        code: UNPROCESSABLE_ENTITY, 
         message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`, 
         success: false 
       });
@@ -426,20 +428,20 @@ exports.updateProjectStatus = async (req, res, next) => {
       // Technicians can only update for their assigned projects
       const isAssigned = (project.technicians || []).some(t => t.id === user.id) || project.technician_id === user.id;
       if (!isAssigned) {
-        const ApiError = new APIError(NOT_ACCESS, "You can only update status for your assigned projects", BAD_REQUEST);
+        const ApiError = new APIError(NOT_ACCESS, "You can only update status for your assigned projects", FORBIDDEN);
         return ErrorHandler(ApiError, req, res, next);
       }
     } else if (user.role === USER_ROLE.PROJECT_MANAGER) {
       // PMs can update status for their assigned projects
       if (project.pm_id !== user.id) {
-        const ApiError = new APIError(NOT_ACCESS, "You can only update status for your assigned projects", BAD_REQUEST);
+        const ApiError = new APIError(NOT_ACCESS, "You can only update status for your assigned projects", FORBIDDEN);
         return ErrorHandler(ApiError, req, res, next);
       }
     } else if (user.role === USER_ROLE.ADMIN) {
       // Admins can update any project status
       // No additional checks needed
     } else {
-      const ApiError = new APIError(NOT_ACCESS, "Insufficient permissions to update project status", BAD_REQUEST);
+      const ApiError = new APIError(NOT_ACCESS, "Insufficient permissions to update project status", FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
