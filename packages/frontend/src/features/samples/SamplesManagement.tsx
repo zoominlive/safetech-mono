@@ -459,10 +459,12 @@ export const SamplesManagement: React.FC = () => {
     }
 
     const csvData = samplesToExport.map(sample => {
-      // For lead samples, the sampleNo already contains the area name, so don't duplicate it
-      const sampleNo = sample.sampleType === 'lead' 
-        ? sample.sampleNo 
-        : sample.areaName.replace(/\s+/g, '') + "-" + sample.sampleNo;
+      // Export only the material number/letter without area name or hyphen
+      // For lead, drop area prefix if present (e.g., "MainRoof-L1A" -> "L1A")
+      // For asbestos, just use the computed sample.sampleNo (e.g., "1A")
+      const sampleNo = sample.sampleType === 'lead'
+        ? (sample.sampleNo.includes('-') ? sample.sampleNo.split('-').pop() || sample.sampleNo : sample.sampleNo)
+        : sample.sampleNo;
       
       const baseData = {
         'SampleNo': sampleNo,
@@ -545,9 +547,11 @@ export const SamplesManagement: React.FC = () => {
             match = csvSampleNumber.toLowerCase().trim() === managementSampleNo.toLowerCase().trim();
             console.log(`Matching asbestos CSV sample "${csvSampleName}" (extracted: "${csvSampleNumber}") with management sample "${managementSampleNo}": ${match}`);
           } else if (sample.sampleType === 'lead') {
-            // For lead samples, match the full sample name (e.g., "MainRoof-L1A" should match "MainRoof-L1A")
-            match = csvSampleName.toLowerCase().trim() === managementSampleNo.toLowerCase().trim();
-            console.log(`Matching lead CSV sample "${csvSampleName}" with management sample "${managementSampleNo}": ${match}`);
+            // For lead samples, compare core sample code without area prefix (e.g., "MainRoof-L1A" or "L1A" -> "L1A")
+            const csvCore = csvSampleName.includes('-') ? (csvSampleName.split('-').pop() || '') : csvSampleName;
+            const mgmtCore = managementSampleNo.includes('-') ? (managementSampleNo.split('-').pop() || '') : managementSampleNo;
+            match = csvCore.toLowerCase().trim() === mgmtCore.toLowerCase().trim();
+            console.log(`Matching lead CSV sample "${csvSampleName}" (core: "${csvCore}") with management sample "${managementSampleNo}" (core: "${mgmtCore}"): ${match}`);
           }
           
           return match;
@@ -800,8 +804,8 @@ export const SamplesManagement: React.FC = () => {
                               />
                             </TableCell> */}
                             <TableCell className="font-mono text-sm">
-                              <div className="truncate" title={sample.areaName.replace(/\s+/g, '') + "-" + sample.sampleNo}>
-                                {sample.areaName.replace(/\s+/g, '') + "-" + sample.sampleNo}
+                              <div className="truncate" title={sample.sampleNo}>
+                                {sample.sampleNo}
                               </div>
                             </TableCell>
                             <TableCell>{sample.areaName}</TableCell>
@@ -926,8 +930,8 @@ export const SamplesManagement: React.FC = () => {
                               />
                             </TableCell> */}
                             <TableCell className="font-mono text-sm">
-                              <div className="truncate" title={sample.sampleNo}>
-                                {sample.sampleNo}
+                              <div className="truncate" title={sample.sampleNo.split('-').pop() || sample.sampleNo}>
+                                {sample.sampleNo.split('-').pop() || sample.sampleNo}
                               </div>
                             </TableCell>
                             <TableCell>{sample.areaName}</TableCell>

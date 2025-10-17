@@ -48,10 +48,6 @@ export const convertOldSilicaDataToNew = (oldData: any): any => {
       id: item.id || `silica-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       materialType: item.materialType || "",
       customMaterialName: item.customMaterialName || "",
-      location: item.materialLocation || "",
-      description: item.materialDescription || "",
-      photos: item.materialPhoto ? [item.materialPhoto] : [],
-      sampleCollected: 'No',
       isCustomMaterial: item.materialType === "Other",
       timestamp: new Date().toISOString()
     }));

@@ -424,6 +424,8 @@ function DashboardLayout() {
               title="Awaiting PM Review" 
               hasActions={true}
               onDetails={handleProjectDetails}
+              isReportsTable={true}
+              onDownload={(report) => report.latestReportId && handleDownloadPDF(report.latestReportId)}
               downloadingReportId={downloadingReportId}
               collapsible={true}
               initialCollapsedLimit={10}
