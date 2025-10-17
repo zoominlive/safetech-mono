@@ -2584,6 +2584,18 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     
     // Assessment details
     areasAssessed: `${areaDetails.length} area(s) were comprehensively assessed for designated substances and hazardous materials in accordance with regulatory requirements.`,
+    // Documents used list for Section 1.2 (prefer root answers.documentsUsed, fallback to first area's documentsUsed)
+    documentsUsedList: (() => {
+      const answersObj = answers || {};
+      const rawRoot = typeof answersObj.documentsUsed === 'string' ? answersObj.documentsUsed : null;
+      const rawArea = typeof primaryArea.documentsUsed === 'string' ? primaryArea.documentsUsed : null;
+      const raw = rawRoot || rawArea;
+      if (!raw) return [];
+      return raw
+        .split(/\n|,/)
+        .map(s => s.trim())
+        .filter(Boolean);
+    })(),
     
     // Logo URL
     logoUrl: 'https://safetech-dev-images.s3.ca-central-1.amazonaws.com/profiles/image.png',
