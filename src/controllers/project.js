@@ -26,7 +26,7 @@ exports.createProject = async (req, res, next) => {
     console.log('user==>', user);
     
     const {
-      project_no,
+      project_number,
       name,
       site_name,
       site_contact_name,
@@ -57,7 +57,7 @@ exports.createProject = async (req, res, next) => {
 
     const projectCreated = await Project.create(
       {
-        project_no: project_no,
+        project_no: project_number,
         name: name,
         site_name: site_name,
         site_contact_name,
@@ -248,7 +248,7 @@ exports.updateProject = async (req, res, next) => {
     const { user } = req;
     const { id } = req.params;
     const {
-      project_no,
+      project_number,
       name,
       site_name,
       site_contact_name,
@@ -285,7 +285,7 @@ exports.updateProject = async (req, res, next) => {
       // Only allow status change through controlled flows (not direct update)
       const updated = await Project.update(
         {
-          project_no: project_no,
+          project_no: project_number,
           name: name,
           site_name: site_name,
           site_contact_name,
