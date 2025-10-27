@@ -86,8 +86,15 @@ const classifyAsbestosMaterial = (material) => {
     !isNaN(parseFloat(material.percentageAsbestos)) && 
     parseFloat(material.percentageAsbestos) > 0;
   
-  // Classify as ACM if laboratory confirmed positive OR suspected
-  if (isPositiveNumber || material.suspectedAcm === 'Yes') {
+  // Check if percentageAsbestos contains or starts with "Positive" (but not "not positive" or "negative")
+  const isPositiveString = material.percentageAsbestos && 
+    typeof material.percentageAsbestos === 'string' &&
+    material.percentageAsbestos.toLowerCase().includes('positive') &&
+    !material.percentageAsbestos.toLowerCase().includes('not positive') &&
+    !material.percentageAsbestos.toLowerCase().includes('negative');
+  
+  // Classify as ACM if laboratory confirmed positive OR suspected OR contains "Positive" string
+  if (isPositiveNumber || material.suspectedAcm === 'Yes' || isPositiveString) {
     return 'ACM';
   }
   
