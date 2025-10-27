@@ -2591,8 +2591,28 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
       const rawArea = typeof primaryArea.documentsUsed === 'string' ? primaryArea.documentsUsed : null;
       const raw = rawRoot || rawArea;
       if (!raw) return [];
+      
+      // Smart parsing: Look for numbered items (1., 2., etc.) as document separators
+      // This preserves complete sentences within each document description
+      const numberedItems = raw.match(/\d+\.\s[^]*?(?=\n\d+\.\s|$)/g);
+      
+      if (numberedItems && numberedItems.length > 1) {
+        // Split by numbered items and clean up each document
+        return numberedItems
+          .map(item => {
+            // Remove extra whitespace and newlines within the document description
+            // but preserve the sentence structure
+            return item
+              .replace(/\s*\n\s*/g, ' ') // Replace newlines with spaces
+              .replace(/\s+/g, ' ') // Normalize multiple spaces to single space
+              .trim();
+          })
+          .filter(Boolean);
+      }
+      
+      // Fallback: If no numbered items, split by double newlines or periods followed by newlines
       return raw
-        .split(/\n|,/)
+        .split(/\n\s*\n|\.\s*\n/)
         .map(s => s.trim())
         .filter(Boolean);
     })(),
