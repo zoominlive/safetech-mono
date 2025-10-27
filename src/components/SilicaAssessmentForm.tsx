@@ -182,7 +182,7 @@ export const SilicaAssessmentForm: React.FC<SilicaAssessmentFormProps> = ({
         return { 
           ...material, 
           materialType: materialType,
-          customMaterialName: materialType, // Set the custom material name to the selected material type
+          customMaterialName: isCustom ? materialType : '', // Only set customMaterialName if it's a custom material
           isCustomMaterial: isCustom 
         };
       }
@@ -391,7 +391,7 @@ export const SilicaAssessmentForm: React.FC<SilicaAssessmentFormProps> = ({
                             )}
                           </div>
                           <MaterialSelect
-                            value={material.materialType || ""}
+                            value={getDisplayMaterialName(material) || ""}
                             onValueChange={(value) => handleMaterialTypeChange(material.id, value)}
                             options={materialOptions}
                             placeholder={materialsLoading ? "Loading materials..." : "Select material type"}
