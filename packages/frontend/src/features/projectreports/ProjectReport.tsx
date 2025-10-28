@@ -1208,6 +1208,15 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                     onChange={e => {
                       if (selectedArea) updateAreaName(selectedArea.id, e.target.value);
                     }}
+                    onBlur={e => {
+                      if (selectedArea) {
+                        const trimmedName = e.target.value.trim();
+                        if (trimmedName && validateAreaName(selectedArea.id, trimmedName)) {
+                          // Update with trimmed name if validation passes
+                          updateAreaName(selectedArea.id, trimmedName);
+                        }
+                      }
+                    }}
                   />
                   <Input
                     placeholder="Area Description"
@@ -1277,8 +1286,15 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                   {!readOnly && (
                     <Button
                       onClick={() => {
-                        handleSave(true);
-                        setIsEditingAreaDetails(false);
+                        if (selectedArea) {
+                          const trimmedName = selectedArea.name.trim();
+                          if (validateAreaName(selectedArea.id, trimmedName)) {
+                            // Update with trimmed name if validation passes
+                            updateAreaName(selectedArea.id, trimmedName);
+                            handleSave(true);
+                            setIsEditingAreaDetails(false);
+                          }
+                        }
                       }}
                     >
                       Save Details
@@ -1932,6 +1948,36 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     }
   };
 
+  // Helper to validate area name when editing is complete
+  const validateAreaName = (areaId: string, newName: string) => {
+    const trimmedName = newName.trim();
+    
+    if (!trimmedName) {
+      toast({
+        title: "Area name required",
+        description: "Area name cannot be empty.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    // Check if area name already exists (case-insensitive) excluding current area
+    const areaExists = areas.some(area => 
+      area.id !== areaId && area.name.toLowerCase() === trimmedName.toLowerCase()
+    );
+    
+    if (areaExists) {
+      toast({
+        title: "Area name already exists",
+        description: `An area with the name "${trimmedName}" already exists. Please choose a different name.`,
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
   // Helper to open Add Area dialog and reset fields
   const openAddAreaDialog = () => {
     setNewAreaName("");
@@ -1946,9 +1992,25 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   // Helper to add area from dialog
   const handleAddAreaFromDialog = () => {
     if (!newAreaName.trim()) return;
+    
+    // Check if area name already exists (case-insensitive)
+    const trimmedAreaName = newAreaName.trim();
+    const areaExists = areas.some(area => 
+      area.name.toLowerCase() === trimmedAreaName.toLowerCase()
+    );
+    
+    if (areaExists) {
+      toast({
+        title: "Area already exists",
+        description: `An area with the name "${trimmedAreaName}" already exists. Please choose a different name.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const newArea = {
       id: `area-${areas.length + 1}-${Date.now()}`,
-      name: newAreaName,
+      name: trimmedAreaName,
       areaNumber: nextAreaNumber,
       assessments: {
         // Only prefill client/project info fields if needed, but reset all area-specific fields
@@ -1973,7 +2035,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
         technicianTitle: areas[0]?.assessments.technicianTitle || '',
         technicianSignature: areas[0]?.assessments.technicianSignature || '',
         // Reset area-specific fields
-        areaName: newAreaName,
+        areaName: trimmedAreaName,
         areaDescription: newAreaDescription,
         floor: newAreaFloor,
         areaSquareFeet: newAreaSqft,

@@ -600,7 +600,7 @@ const ProjectForm: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        <SelectItem value="Renovations or Building Demolition">Renovations or Building Demolition</SelectItem>
+                        <SelectItem value="Renovation">Renovation</SelectItem>
                         <SelectItem value="Demolition">Demolition</SelectItem>
                       </SelectGroup>
                     </SelectContent>
