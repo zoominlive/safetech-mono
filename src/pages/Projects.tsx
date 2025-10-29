@@ -57,6 +57,8 @@ function Projects() {
         onFilterPMs={setProjectManagers}
         onFilterTechnicians={setTechnicians}
         onDateRangeChange={setDateRange}
+        searchQuery={searchQuery}
+        dateRange={dateRange}
       />
       <ProjectTable 
         searchQuery={searchQuery} 

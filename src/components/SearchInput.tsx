@@ -7,15 +7,24 @@ interface SearchInputProps {
   placeholder?: string;
   onSearch?: (query: string) => void;
   className?: string;
+  value?: string;
 }
 
 export function SearchInput({
   placeholder = "Search...",
   onSearch,
   className,
+  value,
 }: SearchInputProps) {
   const [query, setQuery] = useState("");
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync from external value when provided
+  React.useEffect(() => {
+    if (value !== undefined) {
+      setQuery(value);
+    }
+  }, [value]);
 
   const handleSearch = () => {
     if (onSearch) {

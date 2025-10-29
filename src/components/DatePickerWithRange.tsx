@@ -25,6 +25,7 @@ import {
 export interface DatePickerWithRangeProps
   extends React.HTMLAttributes<HTMLDivElement> {
   onDateChange?: (dateRange: { from: Date | undefined; to: Date | undefined }) => void;
+  value?: { from: Date | undefined; to: Date | undefined } | undefined;
 }
 
 const quickRanges = [
@@ -92,11 +93,24 @@ const quickRanges = [
 export function DatePickerWithRange({
   className,
   onDateChange,
+  value,
   ...rest
 }: DatePickerWithRangeProps) {
   const [date, setDate] = React.useState<DateRange | undefined>(undefined);
   const [popoverOpen, setPopoverOpen] = React.useState(false);
   const [currentMonth, setCurrentMonth] = React.useState<Date>(date?.from || startOfToday());
+
+  // Sync from external value when provided
+  React.useEffect(() => {
+    if (value) {
+      setDate(value as DateRange);
+      if (value.from) setCurrentMonth(value.from);
+    }
+    if (value === undefined) {
+      setDate(undefined);
+      setCurrentMonth(startOfToday());
+    }
+  }, [value]);
 
   const handleSelect = (range: DateRange | undefined) => {
     setDate(range);
