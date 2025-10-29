@@ -258,17 +258,17 @@ exports.updateReport = async (req, res, next) => {
       !(typeof answers === 'object' && Object.keys(answers).length === 0 && answers.constructor === Object)
     );
     
-    if (isAnswersFilled && project_id) {
-      await Project.update(
-        { status: 'In Progress' },
-        {
-          where: {
-            id: project_id,
-            status: { [Op.ne]: 'In Progress' }
-          }
-        }
-      );
-    }
+    // if (isAnswersFilled && project_id) {
+    //   await Project.update(
+    //     { status: 'In Progress' },
+    //     {
+    //       where: {
+    //         id: project_id,
+    //         status: { [Op.ne]: 'In Progress' }
+    //       }
+    //     }
+    //   );
+    // }
 
     if (!updated) {
       return res
