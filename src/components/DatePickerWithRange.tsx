@@ -46,7 +46,7 @@ const quickRanges = [
     label: "This week",
     getRange: () => {
       const today = startOfToday();
-      return { from: startOfWeek(today), to: endOfWeek(today) };
+      return { from: startOfWeek(today), to: today };
     },
   },
   {
@@ -69,7 +69,7 @@ const quickRanges = [
     label: "This Month",
     getRange: () => {
       const today = startOfToday();
-      return { from: startOfMonth(today), to: endOfMonth(today) };
+      return { from: startOfMonth(today), to: today };
     },
   },
   {
@@ -175,6 +175,8 @@ export function DatePickerWithRange({
                 onSelect={handleSelect}
                 numberOfMonths={2}
                 className="sm:max-w-none max-w-[600px]"
+                disabled={(d) => d > today}
+                toMonth={today}
               />
             </div>
             <div className="flex flex-col gap-2 min-w-[150px]">
