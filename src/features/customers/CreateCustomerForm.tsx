@@ -62,7 +62,15 @@ function CreateCustomerForm({ customerId, onCancel, status, onStatusChange }: Cr
     first_name: Yup.string().required("First name is required"),
     last_name: Yup.string().required("Last name is required"),
     email: Yup.string().email("Invalid email format").required("Email is required"),
-    phone: Yup.string(),
+    phone: Yup.string()
+      .test(
+        "is-valid-phone",
+        "Phone must be 10-15 digits",
+        (value) => {
+          if (!value) return true; // optional
+          return /^[0-9]{10,15}$/.test(value);
+        }
+      ),
     address_line_1: Yup.string().required("Address Line 1 is required"),
     city: Yup.string().required("City is required"),
     province: Yup.string().required("Province is required"),
@@ -252,7 +260,12 @@ function CreateCustomerForm({ customerId, onCancel, status, onStatusChange }: Cr
                   placeholder="Phone number"
                   className="py-7.5"
                   value={values.phone}
-                  onChange={handleChange}
+                  maxLength={15}
+                  onChange={(e) => {
+                    const digitsOnly = e.target.value.replace(/\D/g, "");
+                    e.target.value = digitsOnly;
+                    handleChange(e);
+                  }}
                   onBlur={handleBlur}
                 />
                 <div className="min-h-[20px] relative">
