@@ -20,6 +20,8 @@ interface ProjectTableOperationsProps {
   onDateRangeChange?: (dateRange: { from: Date | undefined; to: Date | undefined }) => void;
   onFilterPMs?: (pms: string) => void;
   onFilterTechnicians?: (techs: string) => void;
+  searchQuery?: string;
+  dateRange?: { from: Date | undefined; to: Date | undefined };
 }
 
 function ProjectTableOperations({
@@ -27,7 +29,9 @@ function ProjectTableOperations({
   onFilterStatus,
   onDateRangeChange,
   onFilterPMs,
-  onFilterTechnicians
+  onFilterTechnicians,
+  searchQuery,
+  dateRange,
 }: ProjectTableOperationsProps) {
   const { user } = useAuthStore();
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(["all"]);
@@ -76,18 +80,39 @@ function ProjectTableOperations({
     if (onFilterTechnicians) onFilterTechnicians(values.join(","));
   };
 
+  const handleClearFilters = () => {
+    // Reset local selections
+    setSelectedStatuses(["all"]);
+    setSelectedPMs([]);
+    setSelectedTechnicians([]);
+    // Notify parent resets
+    if (onSearch) onSearch("");
+    if (onFilterStatus) onFilterStatus("");
+    if (onFilterPMs) onFilterPMs("");
+    if (onFilterTechnicians) onFilterTechnicians("");
+    if (onDateRangeChange) onDateRangeChange({ from: undefined, to: undefined });
+  };
+
   return (
     <>
       <div className="flex flex-col lg:flex-row items-start lg:items-center w-full gap-4 lg:gap-6 mb-4">
         <div className="w-full lg:w-auto">
           <SearchInput 
             placeholder="Search Project" 
+            value={searchQuery}
             onSearch={(value: string) => onSearch && onSearch(value)}
           />
         </div>
         <div className="w-full lg:w-auto">
-          <DatePickerWithRange onDateChange={onDateRangeChange} />
+          <DatePickerWithRange onDateChange={onDateRangeChange} value={dateRange} />
         </div>
+        <Button
+          variant="outline"
+          className="h-[60px]"
+          onClick={handleClearFilters}
+        >
+          Clear Filters
+        </Button>
         {user?.role !== "Technician" && 
         <Button
           className="lg:ml-auto h-[60px] w-[200px] bg-sf-gray-600 hover:bg-sf-gray-600"

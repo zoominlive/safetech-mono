@@ -34,7 +34,14 @@ const userSchema = Yup.object({
   first_name: Yup.string().required("First name is required"),
   last_name: Yup.string().required("Last name is required"),
   email: Yup.string().email("Invalid email format").required("Email is required"),
-  phone: Yup.string(),
+  phone: Yup.string().test(
+    "is-valid-phone",
+    "Phone must be 10-15 digits",
+    (value) => {
+      if (!value) return true; // optional
+      return /^[0-9]{10,15}$/.test(value);
+    }
+  ),
   role: Yup.string().required("Role is required"),
   // Only require password for new users
   password: Yup.string().when('isNewUser', {
@@ -457,14 +464,24 @@ function UserForm({ onCancel }: UserFormProps) {
 
                   <div className="grid w-full items-center gap-3">
                     <Label htmlFor="phone">Phone</Label>
-                    <Field
-                      as={Input}
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      placeholder="Phone number"
-                      className="py-7.5"
-                    />
+                    <Field name="phone">
+                      {({ field, form }: any) => (
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="Phone number"
+                          className="py-7.5"
+                          value={field.value}
+                          maxLength={15}
+                          onChange={(e) => {
+                            const digitsOnly = e.target.value.replace(/\D/g, "");
+                            form.setFieldValue("phone", digitsOnly);
+                          }}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                        />
+                      )}
+                    </Field>
                     <div className="min-h-[20px] relative">
                       <ErrorMessage
                         name="phone"
