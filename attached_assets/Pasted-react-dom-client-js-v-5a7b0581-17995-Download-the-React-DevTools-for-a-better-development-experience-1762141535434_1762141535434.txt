@@ -1,0 +1,93 @@
+react-dom_client.js?v=5a7b0581:17995 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+main.tsx:37 -- pf - starting script detection
+contentScript.bundle.js:2 Loading the script 'https://9ddf8f58-2768-4062-96b6-6f709c8dbac2-00-1omg4hp6qmbo2.picard.replit.dev/43.bundle.js' violates the following Content Security Policy directive: "script-src 'self' 'wasm-unsafe-eval' 'inline-speculation-rules' chrome-extension://1bb85cf1-08e4-46b9-9724-d62d6a2c634e/". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.
+a.l @ contentScript.bundle.js:2
+main.tsx:37 -- pf - starting script detection
+content.js:59321 🎯 Initiating mount
+contentScript.bundle.js:2 Failed to load font styles: ChunkLoadError: Loading chunk 43 failed.
+(error: https://9ddf8f58-2768-4062-96b6-6f709c8dbac2-00-1omg4hp6qmbo2.picard.replit.dev/43.bundle.js)
+    at a.f.j (contentScript.bundle.js:2:2505284)
+    at contentScript.bundle.js:2:2503863
+    at Array.reduce (<anonymous>)
+    at a.e (contentScript.bundle.js:2:2503842)
+    at contentScript.bundle.js:2:4642003
+    at Generator.<anonymous> (contentScript.bundle.js:2:4635369)
+    at Generator.next (contentScript.bundle.js:2:4636307)
+    at CMe (contentScript.bundle.js:2:4637453)
+    at a (contentScript.bundle.js:2:4637657)
+    at contentScript.bundle.js:2:4637720
+(anonymous) @ contentScript.bundle.js:2
+main.tsx:37 -- pf - starting script detection
+api/v1/auth/login:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
+index.ts:71 Login error: Object
+login @ index.ts:71
+index.ts:72 Error response: undefined
+login @ index.ts:72
+ApiClient.ts:54  POST https://9ddf8f58-2768-4062-96b6-6f709c8dbac2-00-1omg4hp6qmbo2.picard.replit.dev/api/v1/auth/login 401 (Unauthorized)
+dispatchXhrRequest @ axios.js?v=5a7b0581:1683
+xhr @ axios.js?v=5a7b0581:1560
+dispatchRequest @ axios.js?v=5a7b0581:2085
+Promise.then
+_request @ axios.js?v=5a7b0581:2288
+request @ axios.js?v=5a7b0581:2197
+httpMethod @ axios.js?v=5a7b0581:2334
+wrap @ axios.js?v=5a7b0581:8
+post @ ApiClient.ts:54
+login @ index.ts:54
+handleSubmit @ Login.tsx:23
+(anonymous) @ formik.js?v=5a7b0581:2279
+(anonymous) @ formik.js?v=5a7b0581:2514
+(anonymous) @ formik.js?v=5a7b0581:2213
+Promise.then
+(anonymous) @ formik.js?v=5a7b0581:2207
+(anonymous) @ formik.js?v=5a7b0581:2514
+(anonymous) @ formik.js?v=5a7b0581:2259
+(anonymous) @ formik.js?v=5a7b0581:2514
+executeDispatch @ react-dom_client.js?v=5a7b0581:11736
+runWithFiberInDEV @ react-dom_client.js?v=5a7b0581:1485
+processDispatchQueue @ react-dom_client.js?v=5a7b0581:11772
+(anonymous) @ react-dom_client.js?v=5a7b0581:12182
+batchedUpdates$1 @ react-dom_client.js?v=5a7b0581:2628
+dispatchEventForPluginEventSystem @ react-dom_client.js?v=5a7b0581:11877
+dispatchEvent @ react-dom_client.js?v=5a7b0581:14792
+dispatchDiscreteEvent @ react-dom_client.js?v=5a7b0581:14773
+index.ts:71 Login error: {data: {…}, status: 401, statusText: 'Unauthorized', headers: AxiosHeaders, config: {…}, …}
+login @ index.ts:71
+await in login
+handleSubmit @ Login.tsx:23
+(anonymous) @ formik.js?v=5a7b0581:2279
+(anonymous) @ formik.js?v=5a7b0581:2514
+(anonymous) @ formik.js?v=5a7b0581:2213
+Promise.then
+(anonymous) @ formik.js?v=5a7b0581:2207
+(anonymous) @ formik.js?v=5a7b0581:2514
+(anonymous) @ formik.js?v=5a7b0581:2259
+(anonymous) @ formik.js?v=5a7b0581:2514
+executeDispatch @ react-dom_client.js?v=5a7b0581:11736
+runWithFiberInDEV @ react-dom_client.js?v=5a7b0581:1485
+processDispatchQueue @ react-dom_client.js?v=5a7b0581:11772
+(anonymous) @ react-dom_client.js?v=5a7b0581:12182
+batchedUpdates$1 @ react-dom_client.js?v=5a7b0581:2628
+dispatchEventForPluginEventSystem @ react-dom_client.js?v=5a7b0581:11877
+dispatchEvent @ react-dom_client.js?v=5a7b0581:14792
+dispatchDiscreteEvent @ react-dom_client.js?v=5a7b0581:14773
+index.ts:72 Error response: undefined
+login @ index.ts:72
+await in login
+handleSubmit @ Login.tsx:23
+(anonymous) @ formik.js?v=5a7b0581:2279
+(anonymous) @ formik.js?v=5a7b0581:2514
+(anonymous) @ formik.js?v=5a7b0581:2213
+Promise.then
+(anonymous) @ formik.js?v=5a7b0581:2207
+(anonymous) @ formik.js?v=5a7b0581:2514
+(anonymous) @ formik.js?v=5a7b0581:2259
+(anonymous) @ formik.js?v=5a7b0581:2514
+executeDispatch @ react-dom_client.js?v=5a7b0581:11736
+runWithFiberInDEV @ react-dom_client.js?v=5a7b0581:1485
+processDispatchQueue @ react-dom_client.js?v=5a7b0581:11772
+(anonymous) @ react-dom_client.js?v=5a7b0581:12182
+batchedUpdates$1 @ react-dom_client.js?v=5a7b0581:2628
+dispatchEventForPluginEventSystem @ react-dom_client.js?v=5a7b0581:11877
+dispatchEvent @ react-dom_client.js?v=5a7b0581:14792
+dispatchDiscreteEvent @ react-dom_client.js?v=5a7b0581:14773
