@@ -118,7 +118,18 @@ Migration files exist in `packages/backend/src/migrations/` but the initial sche
 
 ### November 3, 2025
 
-#### Lab Data Import (Latest)
+#### Reports Data Import (Latest)
+- **Imported environmental assessment reports from SQL dump**
+  - Added 3 complete assessment reports with detailed JSON data
+  - Reports linked to existing projects:
+    * Window Replacement Project (Phase 1) - Toronto Metropolitan University
+    * Demolition Project - New Company
+    * Interior test - Safetech Env
+  - Script: `packages/backend/src/scripts/import-reports.js`
+  - Reports include comprehensive designated substances and hazardous materials assessments
+  - All reports use the standard template: "Designated Substances and Hazardous Materials Assessment Report"
+
+#### Lab Data Import (Earlier)
 - **Imported missing lab reports and results from SQL dump**
   - Added 2 lab reports with work order #2518431 for Safetech Environmental Limited (Mississauga)
   - Imported 94 lab report results (47 results per lab report)
