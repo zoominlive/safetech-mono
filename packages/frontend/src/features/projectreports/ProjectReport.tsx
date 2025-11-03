@@ -1035,7 +1035,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
           <div className="space-y-4">
             <div className="flex items-center space-x-4">
               <Label htmlFor={`file-${field.id}`} className="cursor-pointer">
-                <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
+                <div className="flex items-center space-x-2 bg-gray-700 dark:bg-gray-600 text-white py-2 px-4 rounded-md">
                   <Upload size={18} />
                   <span>{uploadingFiles[field.id] ? "Uploading..." : "Upload Files"}</span>
                 </div>
@@ -1110,7 +1110,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                         <div className="space-y-4">
                           <div className="flex items-center space-x-4">
                             <Label htmlFor={`file-${nestedField.id}-${index}`} className="cursor-pointer">
-                              <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
+                              <div className="flex items-center space-x-2 bg-gray-700 dark:bg-gray-600 text-white py-2 px-4 rounded-md">
                                 <Upload size={18} />
                                 <span>{uploadingFiles[`${nestedField.id}-${index}`] ? "Uploading..." : "Upload Files"}</span>
                               </div>
@@ -1245,7 +1245,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                     <div className="space-y-4">
                       <div className="flex items-center space-x-4">
                         <Label htmlFor={`file-areaPhoto`} className="cursor-pointer">
-                          <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
+                          <div className="flex items-center space-x-2 bg-gray-700 dark:bg-gray-600 text-white py-2 px-4 rounded-md">
                             <Upload size={18} />
                             <span>{uploadingFiles["areaPhoto"] ? "Uploading..." : "Upload Files"}</span>
                           </div>
@@ -1378,7 +1378,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                           <div className="space-y-4">
                             <div className="flex items-center space-x-4">
                               <Label htmlFor={`file-${nestedField.id}-${index}`} className="cursor-pointer">
-                                <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
+                                <div className="flex items-center space-x-2 bg-gray-700 dark:bg-gray-600 text-white py-2 px-4 rounded-md">
                                   <Upload size={18} />
                                   <span>{uploadingFiles[`${nestedField.id}-${index}`] ? "Uploading..." : "Upload Files"}</span>
                                 </div>
@@ -2524,7 +2524,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                     })}
                   </div>
                   {!readOnly && (
-                    <div className="pt-4 pb-2 bg-white sticky bottom-0">
+                    <div className="pt-4 pb-2 bg-background sticky bottom-0">
                       <Button
                         variant="outline"
                         className="w-full justify-start"
@@ -2847,12 +2847,12 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
 
       {/* Auto-save info message */}
       {!readOnly && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
           <div className="flex items-start space-x-2">
             <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
-            <div className="text-sm text-blue-800">
+            <div className="text-sm text-blue-800 dark:text-blue-200">
               <p className="font-medium">Auto-save enabled</p>
-              <p className="text-blue-600">
+              <p className="text-blue-600 dark:text-blue-300">
                 Your changes are automatically saved every 30 seconds or 2 seconds after you stop typing. 
                 You can also save manually using Ctrl+S (or Cmd+S on Mac).
               </p>
@@ -2913,7 +2913,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
             </div>
           )}
           <Dialog open={isAddAreaDialogOpen} onOpenChange={setIsAddAreaDialogOpen}>
-            <DialogContent className="bg-white">
+            <DialogContent className="bg-background">
               <DialogHeader>
                 <DialogTitle>Add Area</DialogTitle>
               </DialogHeader>
@@ -2926,7 +2926,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                   <div className="space-y-4">
                     <div className="flex items-center space-x-4">
                       <Label htmlFor={`dialog-file-areaPhoto`} className="cursor-pointer">
-                        <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
+                        <div className="flex items-center space-x-2 bg-gray-700 dark:bg-gray-600 text-white py-2 px-4 rounded-md">
                           <Upload size={18} />
                           <span>{uploadingFiles["areaPhoto"] ? "Uploading..." : "Upload Files"}</span>
                         </div>
@@ -2977,7 +2977,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
           {/* Accordions for Client and Project Info */}
           <div className="mb-6">
             <Accordion type="multiple" value={openAccordionItems} onValueChange={setOpenAccordionItems}>
-              <AccordionItem value="client-info" className="bg-white rounded-md shadow-sm mb-4">
+              <AccordionItem value="client-info" className="bg-card dark:bg-gray-800 rounded-md shadow-sm mb-4">
                 <AccordionTrigger className="pl-4" id="client-info-section">Client Information</AccordionTrigger>
                 <AccordionContent className="p-6">
                   {/* Render client info fields (read-only) */}
@@ -2991,7 +2991,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                   </div>
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="project-info" className="bg-white rounded-md shadow-sm mb-4">
+              <AccordionItem value="project-info" className="bg-card dark:bg-gray-800 rounded-md shadow-sm mb-4">
                 <AccordionTrigger className="pl-4" id="project-info-section">Project Information</AccordionTrigger>
                 <AccordionContent className="p-6">
                   {/* Render project info fields (read-only) */}
@@ -3280,7 +3280,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                   )}
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="docs-limits" className="bg-white rounded-md shadow-sm">
+              <AccordionItem value="docs-limits" className="bg-card dark:bg-gray-800 rounded-md shadow-sm">
                 <AccordionTrigger className="pl-4" id="docs-limits-section">Docs and Limits</AccordionTrigger>
                 <AccordionContent className="p-6">
                   {schema
@@ -3289,7 +3289,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                       <div key={section.title} className="space-y-3">
                         <div className="space-y-3">
                           {section.fields.map((field, fieldIndex) => (
-                            <div key={field.id} className={`p-3 rounded-md ${fieldIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
+                            <div key={field.id} className={`p-3 rounded-md ${fieldIndex % 2 === 0 ? 'bg-gray-50 dark:bg-gray-900' : 'bg-white dark:bg-gray-800'}`}>
                               <Label className="block mb-2">
                                 {field.label}
                                 {field.required && <span className="text-red-500 ml-1">*</span>}
@@ -3336,7 +3336,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                             <div 
                               key={field.id} 
                               className={`p-4 rounded-lg ${
-                                fieldIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                                fieldIndex % 2 === 0 ? 'bg-gray-50 dark:bg-gray-900' : 'bg-white dark:bg-gray-800'
                               }`}
                             >
                               <div className="space-y-2">
@@ -3373,7 +3373,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
           </Card>
           {/* Add Area Dialog */}
           <Dialog open={isAddAreaDialogOpen} onOpenChange={setIsAddAreaDialogOpen}>
-            <DialogContent className="bg-white">
+            <DialogContent className="bg-background">
               <DialogHeader>
                 <DialogTitle>Add Area</DialogTitle>
               </DialogHeader>
@@ -3387,7 +3387,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                   <div className="space-y-4">
                     <div className="flex items-center space-x-4">
                       <Label htmlFor={`dialog-file-areaPhoto-2`} className="cursor-pointer">
-                        <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
+                        <div className="flex items-center space-x-2 bg-gray-700 dark:bg-gray-600 text-white py-2 px-4 rounded-md">
                           <Upload size={18} />
                           <span>{uploadingFiles["areaPhoto"] ? "Uploading..." : "Upload Files"}</span>
                         </div>
