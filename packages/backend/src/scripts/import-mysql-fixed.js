@@ -318,30 +318,6 @@ async function importData() {
         }
       }
       
-      // Import materials
-      if (tableData.materials.length > 0) {
-        logger.info(`Importing ${tableData.materials.length} materials...`);
-        for (const material of tableData.materials) {
-          // Fix empty enum values
-          if (material.material_type === '' || material.material_type === null) {
-            material.material_type = 'Asbestos'; // Default value
-          }
-          
-          await sequelize.query(`INSERT INTO "materials" (
-              "id", "material_type", "area", "location", "material", "description",
-              "quantity", "unit", "condition", "potential_hazard",
-              "created_at", "updated_at", "deleted_at"
-            ) VALUES (
-              :id, :material_type, :area, :location, :material, :description,
-              :quantity, :unit, :condition, :potential_hazard,
-              :created_at, :updated_at, :deleted_at
-            )`, {
-            replacements: material,
-            transaction
-          });
-        }
-      }
-      
       // Import users - first pass (with NULL created_by)
       if (tableData.users.length > 0) {
         logger.info(`Importing ${tableData.users.length} users (first pass)...`);
@@ -371,6 +347,46 @@ async function importData() {
               transaction
             });
           }
+        }
+      }
+      
+      // Import materials (after users since it has created_by FK)
+      if (tableData.materials.length > 0) {
+        logger.info(`Importing ${tableData.materials.length} materials...`);
+        
+        // Get a default user for created_by if missing
+        const [defaultUser] = await sequelize.query(
+          `SELECT id FROM "users" WHERE deleted_at IS NULL LIMIT 1`,
+          { transaction }
+        );
+        const defaultUserId = defaultUser[0]?.id;
+        
+        for (const material of tableData.materials) {
+          // Ensure created_by is valid
+          if (!material.created_by) {
+            material.created_by = defaultUserId;
+          }
+          
+          // Check if the created_by user exists
+          const [userExists] = await sequelize.query(
+            `SELECT 1 FROM "users" WHERE id = :id`,
+            { replacements: { id: material.created_by }, transaction }
+          );
+          
+          if (!userExists.length && defaultUserId) {
+            material.created_by = defaultUserId;
+          }
+          
+          await sequelize.query(`INSERT INTO "materials" (
+              "id", "name", "type", "created_by", 
+              "created_at", "updated_at", "is_active"
+            ) VALUES (
+              :id, :name, :type, :created_by,
+              :created_at, :updated_at, :is_active
+            )`, {
+            replacements: material,
+            transaction
+          });
         }
       }
       
