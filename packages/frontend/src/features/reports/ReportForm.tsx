@@ -238,7 +238,7 @@ export const ReportForm: React.FC<ReportFormProps> = ({ onCancel }) => {
                   })
                 }
               />
-              <Button className="bg-safetech-gray text-black">
+              <Button className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                 <CirclePlus />
               </Button>
             </div>
@@ -288,13 +288,13 @@ export const ReportForm: React.FC<ReportFormProps> = ({ onCancel }) => {
               <div className="space-x-2 flex flex-row ps-10">
                 <Button
                   variant="outline"
-                  className="rounded-b-none bg-safetech-gray"
+                  className="rounded-b-none bg-gray-100 dark:bg-gray-800"
                 >
                   <Pen />
                 </Button>
                 <Button
                   variant="outline"
-                  className="rounded-b-none bg-safetech-gray"
+                  className="rounded-b-none bg-gray-100 dark:bg-gray-800"
                   onClick={() =>
                     setReportData({
                       ...reportData,
@@ -311,14 +311,14 @@ export const ReportForm: React.FC<ReportFormProps> = ({ onCancel }) => {
       </Card>
       <div className="text-end bg-white py-5 pe-8 space-x-6 absolute bottom-0 w-full left-0">
         <Button
-          className="bg-sf-gray-600 text-white w-[150px] h-[48px]"
+          className="bg-gray-700 dark:bg-gray-600 text-white hover:bg-gray-800 dark:hover:bg-gray-700 w-[150px] h-[48px]"
           onClick={handleSave}
           disabled={isSaving}
         >
           {isSaving ? "Saving..." : "Save"} <Bookmark />
         </Button>
         <Button
-          className="bg-sf-secondary text-black w-[150px] h-[48px]"
+          className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 w-[150px] h-[48px]"
           onClick={handleCancel}
           disabled={isSaving}
         >

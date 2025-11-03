@@ -106,7 +106,7 @@ const LabImport: React.FC<LabImportProps> = ({ projectId }) => {
               type="button"
               onClick={handleButtonClick}
               disabled={loading}
-              className="bg-sf-gray-600 text-white px-4 py-2 rounded hover:bg-sf-gray-700 transition-colors"
+              className="bg-gray-700 dark:bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
             >
               Import Lab Results (CSV)
             </button>

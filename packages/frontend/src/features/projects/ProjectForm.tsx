@@ -1005,14 +1005,14 @@ const ProjectForm: React.FC = () => {
               <CardFooter className="flex justify-end space-x-6 pb-6">
                 <Button 
                   type="submit"
-                  className="bg-sf-gray-600 text-white w-[150px] h-[48px]"
+                  className="bg-gray-700 dark:bg-gray-600 text-white hover:bg-gray-800 dark:hover:bg-gray-700 w-[150px] h-[48px]"
                   disabled={isSubmitting || isLoading}
                 >
                   {isSubmitting || isLoading ? "Saving..." : "Save"} <Bookmark />
                 </Button>
                 <Button 
                   type="button"
-                  className="bg-sf-secondary text-foreground w-[150px] h-[48px]"
+                  className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 w-[150px] h-[48px]"
                   onClick={handleCancel}
                   disabled={isSubmitting || isLoading}
                 >

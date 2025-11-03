@@ -572,14 +572,14 @@ function UserForm({ onCancel }: UserFormProps) {
                 </CardContent>
                 <CardFooter className="flex justify-end space-x-6">
                   <Button 
-                    className="bg-sf-gray-600 text-white w-[150px] h-[48px]"
+                    className="bg-gray-700 dark:bg-gray-600 text-white hover:bg-gray-800 dark:hover:bg-gray-700 w-[150px] h-[48px]"
                     type="submit"
                     disabled={isLoading}
                   >
                     {isLoading ? "Saving..." : "Save"} <Bookmark />
                   </Button>
                   <Button 
-                    className="w-[150px] h-[48px] bg-sf-secondary text-foreground"
+                    className="w-[150px] h-[48px] bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600"
                     onClick={handleCancel}
                     type="button"
                     disabled={isLoading}

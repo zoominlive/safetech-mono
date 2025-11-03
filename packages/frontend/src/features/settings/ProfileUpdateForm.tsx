@@ -505,7 +505,7 @@ const ProfileUpdateForm = () => {
 
               <Button 
                 type="submit" 
-                className="bg-sf-gray-600 py-6" 
+                className="bg-gray-700 dark:bg-gray-600 text-white hover:bg-gray-800 dark:hover:bg-gray-700 py-6" 
                 disabled={isLoading}
               >
                 {isLoading ? (

@@ -35,7 +35,7 @@ function UserLayout() {
           </h2>
           {id && !isEdit && (
             <Button
-              className="bg-sf-secondary-300 text-black w-[150px] h-[48px]"
+              className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 w-[150px] h-[48px]"
               onClick={() => setIsEdit(true)}
             >
               Edit <SquarePen />

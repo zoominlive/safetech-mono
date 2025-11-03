@@ -399,7 +399,7 @@ function CreateCustomerForm({ customerId, onCancel, status, onStatusChange }: Cr
                     setEditLocation(undefined);
                     setEditLocationIndex(undefined);
                   }}
-                  className="bg-sf-gray-600 text-white w-[150px] h-[48px] flex items-center justify-center"
+                  className="bg-gray-700 dark:bg-gray-600 text-white hover:bg-gray-800 dark:hover:bg-gray-700 w-[150px] h-[48px] flex items-center justify-center"
                 >
                   Add Location
                 </Button>
@@ -412,7 +412,7 @@ function CreateCustomerForm({ customerId, onCancel, status, onStatusChange }: Cr
                       <div className="font-semibold">{loc.name}</div>
                       <div className="text-xs text-sf-gray-500">{loc.address_line_1}, {loc.address_line_2} {loc.city}, {loc.province}, {loc.postal_code}</div>
                     </div>
-                    <Button type="button" size="sm" className="bg-sf-secondary text-foreground" onClick={() => { setEditLocationIndex(idx); setEditLocation(loc); setShowLocationModal(true); }}>Edit</Button>
+                    <Button type="button" size="sm" className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600" onClick={() => { setEditLocationIndex(idx); setEditLocation(loc); setShowLocationModal(true); }}>Edit</Button>
                     <Button type="button" size="sm" variant="destructive" onClick={() => handleRemoveLocation(idx)}>Remove</Button>
                   </div>
                 ))}
@@ -421,14 +421,14 @@ function CreateCustomerForm({ customerId, onCancel, status, onStatusChange }: Cr
             <CardFooter className="flex justify-end space-x-6">
               <Button 
                 type="submit"
-                className="bg-sf-gray-600 text-white w-[150px] h-[48px]"
+                className="bg-gray-700 dark:bg-gray-600 text-white hover:bg-gray-800 dark:hover:bg-gray-700 w-[150px] h-[48px]"
                 disabled={isSubmitting || isLoading}
               >
                 {isSubmitting || isLoading ? "Saving..." : "Save"} <Bookmark />
               </Button>
               <Button 
                 type="button"
-                className="w-[150px] h-[48px] bg-sf-secondary text-foreground"
+                className="w-[150px] h-[48px] bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600"
                 onClick={handleCancel}
                 disabled={isSubmitting || isLoading}
               >

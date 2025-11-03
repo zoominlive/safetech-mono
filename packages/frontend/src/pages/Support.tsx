@@ -10,7 +10,7 @@ const Support: React.FC = () => {
       </div>
       <div className="bg-white rounded-lg shadow p-6 min-h-[200px] flex flex-col items-center justify-center">
         <p className="text-gray-500 mb-4">No support tickets yet.</p>
-        <Button className="bg-sf-secondary-300 text-black w-[180px] h-[44px]">
+        <Button className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 w-[180px] h-[44px]">
           <a href="mailto:support@dastech.ca?subject=Support%20Request">
             Create New Ticket
           </a>
