@@ -161,7 +161,7 @@ export function DatePickerWithRange({
                 {selectionLabel}
               </span>
             </div>
-            <span className="ml-auto h-full min-w-[68px] bg-sf-prefix-btn flex items-center justify-center">
+            <span className="ml-auto h-full min-w-[68px] bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
               <CalendarIcon className="" />
             </span>
           </Button>
@@ -206,7 +206,7 @@ export function DatePickerWithRange({
                 </Button>
               ))}
               <Button
-                className="mt-2 bg-sf-gray-600 text-white w-full"
+                className="mt-2 bg-gray-700 dark:bg-gray-600 text-white hover:bg-gray-800 dark:hover:bg-gray-700 w-full"
                 onClick={handleOk}
               >
                 OK

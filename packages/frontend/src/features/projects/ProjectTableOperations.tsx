@@ -115,7 +115,7 @@ function ProjectTableOperations({
         </Button>
         {user?.role !== "Technician" && 
         <Button
-          className="lg:ml-auto h-[60px] w-[200px] bg-sf-gray-600 hover:bg-sf-gray-600"
+          className="lg:ml-auto h-[60px] w-[200px] bg-gray-700 dark:bg-gray-600 text-white hover:bg-gray-800 dark:hover:bg-gray-700"
           asChild
         >
           <Link to="/projects/create">

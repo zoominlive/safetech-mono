@@ -47,7 +47,7 @@ function CustomersTableOperations({
         </SelectContent>
       </Select>
       {user?.role !== "Technician" && 
-      <Button className="md:ml-auto py-7.5 md:w-[200px] bg-sf-gray-600" asChild>
+      <Button className="md:ml-auto py-7.5 md:w-[200px] bg-gray-700 dark:bg-gray-600 text-white hover:bg-gray-800 dark:hover:bg-gray-700" asChild>
         <Link to="/customers/add">
           Add Customer <CirclePlus />
         </Link>

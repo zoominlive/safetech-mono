@@ -44,7 +44,7 @@ function UsersTableOperations({ onSearch, onSort }: UsersTableOperationsProps) {
         </SelectContent>
       </Select>
       {user?.role !== "Technician" && 
-      <Button className="md:ml-auto py-7.5 md:w-[200px] bg-sf-gray-600" asChild>
+      <Button className="md:ml-auto py-7.5 md:w-[200px] bg-gray-700 dark:bg-gray-600 text-white hover:bg-gray-800 dark:hover:bg-gray-700" asChild>
         <Link to="/staff/add">
           Add Staff Member<CirclePlus />
         </Link>

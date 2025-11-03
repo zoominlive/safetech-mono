@@ -63,7 +63,7 @@ export function SearchInput({
         <Button
           type="submit"
           onClick={handleSearch}
-          className="absolute right-0 top-0 w-[68px] h-full rounded-l-none bg-sf-prefix-btn"
+          className="absolute right-0 top-0 w-[68px] h-full rounded-l-none bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600"
           size="icon"
           variant="ghost"
         >
