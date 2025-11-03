@@ -86,6 +86,59 @@ function parseValues(valuesString) {
 }
 
 /**
+ * Extract complete INSERT statement for a table, respecting quotes and nested structures
+ */
+function extractInsertStatement(sqlContent, tableName) {
+  // Find the start of the INSERT statement
+  const startPattern = `INSERT INTO \`${tableName}\``;
+  const startIndex = sqlContent.indexOf(startPattern);
+  
+  if (startIndex === -1) return null;
+  
+  // State machine to find the ending semicolon
+  let i = startIndex;
+  let inString = false;
+  let stringChar = '';
+  let depth = 0;
+  
+  while (i < sqlContent.length) {
+    const char = sqlContent[i];
+    const prevChar = i > 0 ? sqlContent[i - 1] : '';
+    
+    // Handle escape sequences
+    if (prevChar === '\\') {
+      i++;
+      continue;
+    }
+    
+    // Track string state
+    if ((char === "'" || char === '"') && prevChar !== '\\') {
+      if (!inString) {
+        inString = true;
+        stringChar = char;
+      } else if (char === stringChar) {
+        inString = false;
+      }
+    }
+    
+    if (!inString) {
+      // Track parentheses depth
+      if (char === '(') depth++;
+      else if (char === ')') depth--;
+      
+      // Found the ending semicolon
+      if (char === ';' && depth === 0 && i > startIndex + startPattern.length) {
+        return sqlContent.substring(startIndex, i + 1);
+      }
+    }
+    
+    i++;
+  }
+  
+  return null;
+}
+
+/**
  * Parse and extract table data from SQL dump
  */
 function extractTableData(sqlContent) {
@@ -107,13 +160,10 @@ function extractTableData(sqlContent) {
 
   // Extract INSERT statements for each table
   Object.keys(tables).forEach(tableName => {
-    // Find the INSERT INTO statement for this table using backticks
-    const insertRegex = new RegExp(`INSERT INTO \\\`${tableName}\\\`[^;]+;`, 's');
-    const insertMatch = sqlContent.match(insertRegex);
+    // Use state-machine parser to extract complete INSERT statement
+    const insertStatement = extractInsertStatement(sqlContent, tableName);
     
-    if (!insertMatch) return;
-    
-    const insertStatement = insertMatch[0];
+    if (!insertStatement) return;
     
     // Extract column names
     const columnsMatch = insertStatement.match(/\(`[^)]+`\)\s+VALUES/);
