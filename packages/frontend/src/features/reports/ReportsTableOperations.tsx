@@ -31,7 +31,7 @@ function ReportsTableOperations({
         onSearch={onSearch}
       />
       <Select value={sortValue} onValueChange={handleSortChange}>
-        <SelectTrigger className="w-full md:w-[332px] py-7.5 bg-safetech-gray text-gray-600 rounded-md">
+        <SelectTrigger className="w-full md:w-[332px] py-7.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-md">
           <SelectValue placeholder="Sort by" />
         </SelectTrigger>
         <SelectContent>

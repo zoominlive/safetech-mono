@@ -151,13 +151,13 @@ export function DatePickerWithRange({
             id="date"
             variant={"outline"}
             className={cn(
-              "w-full h-[60px] p-0 justify-start text-left font-normal bg-safetech-gray ps-4 overflow-hidden",
+              "w-full h-[60px] p-0 justify-start text-left font-normal bg-gray-100 dark:bg-gray-800 ps-4 overflow-hidden",
               !date && "text-muted-foreground"
             )}
           >
             <div className="flex flex-col w-full">
-              <span className="text-xs text-gray-400">Today: {format(today, "LLL dd, y")}</span>
-              <span className="truncate text-base font-medium text-gray-800">
+              <span className="text-xs text-gray-400 dark:text-gray-500">Today: {format(today, "LLL dd, y")}</span>
+              <span className="truncate text-base font-medium text-gray-700 dark:text-gray-200">
                 {selectionLabel}
               </span>
             </div>
