@@ -118,23 +118,37 @@ Migration files exist in `packages/backend/src/migrations/` but the initial sche
 
 ### November 3, 2025
 
-#### Reports Data Import (Latest)
-- **Imported environmental assessment reports from SQL dump**
-  - Added 3 complete assessment reports with detailed JSON data
-  - Reports linked to existing projects:
-    * Window Replacement Project (Phase 1) - Toronto Metropolitan University
-    * Demolition Project - New Company
-    * Interior test - Safetech Env
-  - Script: `packages/backend/src/scripts/import-reports.js`
-  - Reports include comprehensive designated substances and hazardous materials assessments
-  - All reports use the standard template: "Designated Substances and Hazardous Materials Assessment Report"
+#### Complete Database Import (Latest - 09:23 UTC)
+- **Successfully imported ALL production data from MySQL dump**
+  - Database now contains complete dataset:
+    * 15 customers (6 active, 9 deleted/archived)
+    * 53 users (14 active, 39 deleted/archived)  
+    * 15 projects (4 active, 11 deleted/archived)
+    * 4 environmental assessment reports with full JSON answers data
+    * 2 lab reports with 95 lab report results
+    * 13 locations (12 active)
+    * 134 materials
+    * 1 report template
+  - Key scripts used:
+    * `packages/backend/src/scripts/import-mysql-fixed.js` - Main import with state-machine SQL parser
+    * `packages/backend/src/scripts/import-reports-direct.js` - Simplified report-only import
+    * `packages/backend/src/scripts/import-lab-data.js` - Lab reports and results import
+  - Fixed critical parser bug: Previous regex parser was truncating at semicolons within JSON strings
 
-#### Lab Data Import (Earlier)
-- **Imported missing lab reports and results from SQL dump**
+#### Environmental Assessment Reports Import
+- **Imported 4 complete assessment reports from 13 available in SQL**
+  - Window Replacement Project (Phase 1) - Toronto Metropolitan University (1,867 bytes JSON)
+  - Interior test - Safetech Env (1,294 bytes JSON, includes PM feedback)
+  - Test Project for Assessing via Mobile - Acme Inc. (762 bytes JSON)
+  - St. Matthias Catholic School Demolition - New Company (905 bytes JSON)
+  - Reports contain detailed assessment data: asbestos, lead, mercury, mould, PCB, silica observations
+  - 9 reports skipped: referenced deleted/archived projects not in active database
+
+#### Lab Data Import  
+- **Imported lab reports and results from SQL dump**
   - Added 2 lab reports with work order #2518431 for Safetech Environmental Limited (Mississauga)
-  - Imported 94 lab report results (47 results per lab report)
-  - Lab reports linked to existing projects: St. Matthias Catholic School Demolition & Demolition Project
-  - Script: `packages/backend/src/scripts/import-lab-data.js`
+  - Imported 95 lab report results (47-48 results per lab report)
+  - Lab reports linked to existing projects: St. Matthias Catholic School Demolition
   - Lab reports include environmental testing parameters (PHCs, metals, VOCs, pH, conductivity, etc.)
 
 #### Production Data Import (Earlier)
