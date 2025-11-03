@@ -490,12 +490,12 @@ function Table<T>({
       <div className={cn("w-full overflow-x-auto rounded-md border", className)}>
         <ShadcnTable className="min-w-full table-fixed">
           <TableHeader>
-            <TableRow className="bg-safetech-gray hover:bg-safetech-gray">
+            <TableRow className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800">
               {columns.map((column, index) => (
                 <TableHead
                   key={index}
                   className={cn(
-                    "font-medium text-muted-foreground truncate overflow-hidden whitespace-nowrap",
+                    "font-medium text-gray-700 dark:text-gray-200 truncate overflow-hidden whitespace-nowrap",
                     column.className,
                     column.width
                   )}
@@ -505,7 +505,7 @@ function Table<T>({
                 </TableHead>
               ))}
               {hasActions && (
-                <TableHead className="font-bold text-lg text-center min-w-[180px] max-w-[220px] sm:min-w-[220px] sm:max-w-[260px]">Actions</TableHead>
+                <TableHead className="font-bold text-lg text-gray-700 dark:text-gray-200 text-center min-w-[180px] max-w-[220px] sm:min-w-[220px] sm:max-w-[260px]">Actions</TableHead>
               )}
             </TableRow>
           </TableHeader>

@@ -28,7 +28,7 @@ export function TableSkeleton({
       <Table>
         {showHeader && (
           <TableHeader>
-            <TableRow className="bg-safetech-gray">
+            <TableRow className="bg-gray-100 dark:bg-gray-800">
               {Array(actualColumns)
                 .fill(null)
                 .map((_, index) => (
@@ -43,7 +43,7 @@ export function TableSkeleton({
           {Array(rows)
             .fill(null)
             .map((_, rowIndex) => (
-              <TableRow key={rowIndex} className="bg-white">
+              <TableRow key={rowIndex} className="bg-white dark:bg-gray-900">
                 {Array(columns)
                   .fill(null)
                   .map((_, colIndex) => (

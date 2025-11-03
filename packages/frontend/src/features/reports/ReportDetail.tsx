@@ -195,12 +195,12 @@ const ReportDetail: React.FC = () => {
             <div className="border rounded">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-safetech-gray">
-                    <TableHead>Sample ID</TableHead>
-                    <TableHead>Material</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Result</TableHead>
+                  <TableRow className="bg-gray-100 dark:bg-gray-800">
+                    <TableHead className="text-gray-700 dark:text-gray-200">Sample ID</TableHead>
+                    <TableHead className="text-gray-700 dark:text-gray-200">Material</TableHead>
+                    <TableHead className="text-gray-700 dark:text-gray-200">Quantity</TableHead>
+                    <TableHead className="text-gray-700 dark:text-gray-200">Location</TableHead>
+                    <TableHead className="text-gray-700 dark:text-gray-200">Result</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
