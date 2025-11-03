@@ -322,18 +322,41 @@ async function importData() {
       if (tableData.users.length > 0) {
         logger.info(`Importing ${tableData.users.length} users (first pass)...`);
         for (const user of tableData.users) {
+          // Map MySQL columns to PostgreSQL columns
+          const userRecord = {
+            id: user.id,
+            first_name: user.first_name || '',
+            last_name: user.last_name || '',
+            profile_picture: user.profile_picture || null,
+            technician_signature: user.technician_signature || null,
+            role: user.role || 'Technician',
+            email: user.email,
+            phone: user.phone || null,
+            status: user.status || 'active',
+            activation_token: user.activation_token || null,
+            activation_token_expires: user.activation_token_expires || null,
+            last_login: user.last_login || null,
+            is_verified: user.is_verified === 1 || user.is_verified === true,
+            deactivated_user: user.deactivated_user === 1 || user.deactivated_user === true,
+            password: user.password || '',
+            created_at: user.created_at,
+            updated_at: user.updated_at,
+            deleted_at: user.deleted_at,
+            created_by: null // Will be updated in second pass
+          };
+          
           await sequelize.query(`INSERT INTO "users" (
-              "id", "first_name", "last_name", "email", "role",
-              "password", "phone", "is_verified", "deactivated_user", "created_by",
-              "created_at", "updated_at", "deleted_at", "reset_password_token", "reset_password_expires",
-              "province", "address_line_1", "address_line_2", "city", "postal_code"
+              "id", "first_name", "last_name", "profile_picture", "technician_signature",
+              "role", "email", "phone", "status", "activation_token",
+              "activation_token_expires", "last_login", "is_verified", "deactivated_user",
+              "password", "created_at", "updated_at", "deleted_at", "created_by"
             ) VALUES (
-              :id, :first_name, :last_name, :email, :role,
-              :password, :phone, :is_verified, :deactivated_user, NULL,
-              :created_at, :updated_at, :deleted_at, :reset_password_token, :reset_password_expires,
-              :province, :address_line_1, :address_line_2, :city, :postal_code
+              :id, :first_name, :last_name, :profile_picture, :technician_signature,
+              :role, :email, :phone, :status, :activation_token,
+              :activation_token_expires, :last_login, :is_verified, :deactivated_user,
+              :password, :created_at, :updated_at, :deleted_at, :created_by
             )`, {
-            replacements: user,
+            replacements: userRecord,
             transaction
           });
         }
@@ -377,6 +400,11 @@ async function importData() {
             material.created_by = defaultUserId;
           }
           
+          // Fix empty type values - default to 'custom'
+          if (!material.type || material.type === '') {
+            material.type = 'custom';
+          }
+          
           await sequelize.query(`INSERT INTO "materials" (
               "id", "name", "type", "created_by", 
               "created_at", "updated_at", "is_active"
@@ -413,26 +441,37 @@ async function importData() {
       if (tableData.report_templates.length > 0) {
         logger.info(`Importing ${tableData.report_templates.length} report templates...`);
         for (const template of tableData.report_templates) {
-          // Fix JSON data if needed
-          if (typeof template.config === 'string') {
+          // Map MySQL schema field to PostgreSQL schema field
+          const templateRecord = {
+            id: template.id,
+            name: template.name || 'Unnamed Template',
+            schema: template.schema || template.config || '{}',
+            status: template.status || 'active',
+            created_at: template.created_at,
+            updated_at: template.updated_at
+          };
+          
+          // Parse JSON if it's a string
+          if (typeof templateRecord.schema === 'string') {
             try {
-              template.config = JSON.parse(template.config);
+              // Validate it's JSON
+              JSON.parse(templateRecord.schema);
             } catch (e) {
-              logger.warn(`Failed to parse config for template ${template.id}, using as string`);
+              logger.warn(`Invalid JSON in template ${template.id}, using empty object`);
+              templateRecord.schema = '{}';
             }
+          } else {
+            templateRecord.schema = JSON.stringify(templateRecord.schema);
           }
           
           await sequelize.query(`INSERT INTO "report_templates" (
-              "id", "name", "description", "version", "config",
-              "created_at", "updated_at", "deleted_at", "status"
+              "id", "name", "schema", "status",
+              "created_at", "updated_at"
             ) VALUES (
-              :id, :name, :description, :version, :config,
-              :created_at, :updated_at, :deleted_at, :status
+              :id, :name, :schema, :status,
+              :created_at, :updated_at
             )`, {
-            replacements: {
-              ...template,
-              config: JSON.stringify(template.config)
-            },
+            replacements: templateRecord,
             transaction
           });
         }
@@ -448,6 +487,13 @@ async function importData() {
           { transaction }
         );
         const defaultUserId = adminUsers[0]?.id || tableData.users[0]?.id;
+        
+        // Get default template if available
+        const [templates] = await sequelize.query(
+          `SELECT id FROM "report_templates" LIMIT 1`,
+          { transaction }
+        );
+        const defaultTemplateId = templates[0]?.id;
         
         for (const project of tableData.projects) {
           // Validate foreign keys
@@ -470,6 +516,42 @@ async function importData() {
             if (!techExists.length) {
               logger.warn(`Technician ${project.technician_id} not found, using default`);
               project.technician_id = defaultUserId;
+            }
+          }
+          
+          // Validate report_template_id
+          if (project.report_template_id) {
+            const [templateExists] = await sequelize.query(
+              `SELECT 1 FROM "report_templates" WHERE id = :id`,
+              { replacements: { id: project.report_template_id }, transaction }
+            );
+            if (!templateExists.length) {
+              logger.warn(`Template ${project.report_template_id} not found, using ${defaultTemplateId ? 'default' : 'NULL'}`);
+              project.report_template_id = defaultTemplateId || null;
+            }
+          }
+          
+          // Validate location_id
+          if (project.location_id) {
+            const [locationExists] = await sequelize.query(
+              `SELECT 1 FROM "locations" WHERE id = :id`,
+              { replacements: { id: project.location_id }, transaction }
+            );
+            if (!locationExists.length) {
+              logger.warn(`Location ${project.location_id} not found, setting to NULL`);
+              project.location_id = null;
+            }
+          }
+          
+          // Validate customer_id
+          if (project.customer_id) {
+            const [customerExists] = await sequelize.query(
+              `SELECT 1 FROM "customers" WHERE id = :id`,
+              { replacements: { id: project.customer_id }, transaction }
+            );
+            if (!customerExists.length) {
+              logger.warn(`Customer ${project.customer_id} not found, setting to NULL`);
+              project.customer_id = null;
             }
           }
           
