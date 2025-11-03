@@ -354,3 +354,53 @@ export const useMaterialStore = create<MaterialState>()(
     clearError: () => set({ error: null }),
   })
 );
+
+// Theme store for dark mode
+interface ThemeState {
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
+  setTheme: (theme: 'light' | 'dark') => void;
+}
+
+export const useThemeStore = create<ThemeState>()(
+  persist(
+    (set) => ({
+      theme: 'light',
+      
+      toggleTheme: () => set((state) => {
+        const newTheme = state.theme === 'light' ? 'dark' : 'light';
+        
+        // Apply theme to document
+        if (newTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        
+        return { theme: newTheme };
+      }),
+      
+      setTheme: (theme: 'light' | 'dark') => set(() => {
+        // Apply theme to document
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        
+        return { theme };
+      }),
+    }),
+    {
+      name: 'theme-storage',
+      onRehydrateStorage: () => (state) => {
+        // Apply theme on page load
+        if (state?.theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      },
+    }
+  )
+);
