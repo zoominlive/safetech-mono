@@ -18,20 +18,44 @@ const SignaturePad: React.FC<SignaturePadProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [drawing, setDrawing] = useState(false);
   const [hasDrawn, setHasDrawn] = useState(false);
+  const devicePixelRatioRef = useRef<number>(1);
+  const contextRef = useRef<CanvasRenderingContext2D | null>(null);
 
+  // Ensure crisp rendering on high-DPI displays and keep a cached context
   useEffect(() => {
-    if (initialImage && canvasRef.current) {
-      const ctx = canvasRef.current.getContext('2d');
-      if (ctx) {
-        const img = new window.Image();
-        img.onload = () => {
-          ctx.clearRect(0, 0, width, height);
-          ctx.drawImage(img, 0, 0, width, height);
-        };
-        img.src = initialImage;
-      }
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const dpr = Math.max(window.devicePixelRatio || 1, 1);
+    devicePixelRatioRef.current = dpr;
+
+    // Size the canvas drawing buffer to device pixels, while keeping CSS size as given width/height
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // reset transform before scaling
+    ctx.scale(dpr, dpr);
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#222';
+    contextRef.current = ctx;
+
+    // If there is an initial image, redraw it after resizing
+    if (initialImage) {
+      const img = new window.Image();
+      img.onload = () => {
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        setHasDrawn(true); // Treat loaded image as drawable content so Clear is enabled
+      };
+      img.src = initialImage;
     }
-  }, [initialImage, width, height]);
+  }, [width, height, initialImage]);
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     if (disabled) return;
@@ -39,25 +63,24 @@ const SignaturePad: React.FC<SignaturePadProps> = ({
     setHasDrawn(true);
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = contextRef.current;
     if (!ctx) return;
     ctx.beginPath();
     const { x, y } = getPointerPosition(e, canvas);
     ctx.moveTo(x, y);
+    // Draw a minimal dot to register taps without movement
+    ctx.lineTo(x + 0.01, y + 0.01);
+    ctx.stroke();
   };
 
   const draw = (e: React.MouseEvent | React.TouchEvent) => {
     if (!drawing || disabled) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = contextRef.current;
     if (!ctx) return;
     const { x, y } = getPointerPosition(e, canvas);
     ctx.lineTo(x, y);
-    ctx.strokeStyle = '#222';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
     ctx.stroke();
   };
 
@@ -73,7 +96,7 @@ const SignaturePad: React.FC<SignaturePadProps> = ({
   const clear = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = contextRef.current;
     if (!ctx) return;
     ctx.clearRect(0, 0, width, height);
     setHasDrawn(false);

@@ -1,6 +1,13 @@
-import { Outlet } from "react-router";
+import { Outlet, Navigate } from "react-router";
+import { useAuthStore } from "@/store";
 
 export default function AuthLayout() {
+  const { isAuthenticated } = useAuthStore();
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-8">
       <div className="max-w-md w-full bg-white p-4 sm:p-8 rounded-xl shadow relative space-y-2">

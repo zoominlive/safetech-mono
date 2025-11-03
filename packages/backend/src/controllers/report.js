@@ -11,6 +11,8 @@ const {
   RECORDS_FOUND,
   NOT_ACCESS,
   BAD_REQUEST,
+  FORBIDDEN,
+  UNPROCESSABLE_ENTITY,
 } = require("../helpers/constants");
 const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
@@ -80,7 +82,7 @@ exports.createReport = async (req, res, next) => {
     } = req.body;
 
     if (user.role == USER_ROLE.TECHNICIAN) {
-      const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
+      const ApiError = new APIError(NOT_ACCESS, null, FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -256,17 +258,17 @@ exports.updateReport = async (req, res, next) => {
       !(typeof answers === 'object' && Object.keys(answers).length === 0 && answers.constructor === Object)
     );
     
-    if (isAnswersFilled && project_id) {
-      await Project.update(
-        { status: 'In Progress' },
-        {
-          where: {
-            id: project_id,
-            status: { [Op.ne]: 'In Progress' }
-          }
-        }
-      );
-    }
+    // if (isAnswersFilled && project_id) {
+    //   await Project.update(
+    //     { status: 'In Progress' },
+    //     {
+    //       where: {
+    //         id: project_id,
+    //         status: { [Op.ne]: 'In Progress' }
+    //       }
+    //     }
+    //   );
+    // }
 
     if (!updated) {
       return res
@@ -296,7 +298,7 @@ exports.toggleStatus = async (req, res, next) => {
     const report = await Report.findByPk(id);
 
     if (user.role == USER_ROLE.TECHNICIAN) {
-      const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
+      const ApiError = new APIError(NOT_ACCESS, null, FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -327,7 +329,7 @@ exports.deleteReport = async (req, res, next) => {
     const fetchedReport = await Report.findByPk(id);
 
     if (user.role == USER_ROLE.TECHNICIAN) {
-      const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
+      const ApiError = new APIError(NOT_ACCESS, null, FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -655,7 +657,7 @@ exports.sendReportToCustomer = async (req, res, next) => {
   try {
     const { user } = req;
     if (!user || user.role !== USER_ROLE.PROJECT_MANAGER) {
-      const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
+      const ApiError = new APIError(NOT_ACCESS, null, FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
     const { reportId } = req.params;
@@ -753,7 +755,7 @@ exports.submitToPMReview = async (req, res, next) => {
 
     // Only technicians can submit reports to PM review
     if (user.role !== USER_ROLE.TECHNICIAN) {
-      const ApiError = new APIError(NOT_ACCESS, "Only technicians can submit reports to PM review", BAD_REQUEST);
+      const ApiError = new APIError(NOT_ACCESS, "Only technicians can submit reports to PM review", FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -778,14 +780,14 @@ exports.submitToPMReview = async (req, res, next) => {
     });
     const isAssignedTech = assignedCount > 0 || report.project?.technician_id === user.id;
     if (!isAssignedTech) {
-      const ApiError = new APIError(NOT_ACCESS, "You can only submit your own reports", BAD_REQUEST);
+      const ApiError = new APIError(NOT_ACCESS, "You can only submit your own reports", FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
     // Check if report has content (answers)
     if (!report.answers || Object.keys(report.answers).length === 0) {
-      return res.status(BAD_REQUEST).json({ 
-        code: BAD_REQUEST, 
+      return res.status(UNPROCESSABLE_ENTITY).json({ 
+        code: UNPROCESSABLE_ENTITY, 
         message: "Report must have content before submitting to PM review", 
         success: false 
       });
@@ -814,7 +816,7 @@ exports.approveAndCompleteReport = async (req, res, next) => {
 
     // Only project managers can approve and complete reports
     if (user.role !== USER_ROLE.PROJECT_MANAGER) {
-      const ApiError = new APIError(NOT_ACCESS, "Only project managers can approve and complete reports", BAD_REQUEST);
+      const ApiError = new APIError(NOT_ACCESS, "Only project managers can approve and complete reports", FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -835,14 +837,14 @@ exports.approveAndCompleteReport = async (req, res, next) => {
 
     // Check if project is assigned to the PM
     if (report.project.pm_id !== user.id) {
-      const ApiError = new APIError(NOT_ACCESS, "You can only approve reports for your assigned projects", BAD_REQUEST);
+      const ApiError = new APIError(NOT_ACCESS, "You can only approve reports for your assigned projects", FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
     // Check if project is in PM Review status
     if (report.project.status !== "PM Review") {
-      return res.status(BAD_REQUEST).json({ 
-        code: BAD_REQUEST, 
+      return res.status(UNPROCESSABLE_ENTITY).json({ 
+        code: UNPROCESSABLE_ENTITY, 
         message: "Project must be in PM Review status to be approved", 
         success: false 
       });
@@ -872,7 +874,7 @@ exports.requestReportChanges = async (req, res, next) => {
 
     // Only project managers can request changes
     if (user.role !== USER_ROLE.PROJECT_MANAGER) {
-      const ApiError = new APIError(NOT_ACCESS, "Only project managers can request report changes", BAD_REQUEST);
+      const ApiError = new APIError(NOT_ACCESS, "Only project managers can request report changes", FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -893,14 +895,14 @@ exports.requestReportChanges = async (req, res, next) => {
 
     // Check if project is assigned to the PM
     if (report.project.pm_id !== user.id) {
-      const ApiError = new APIError(NOT_ACCESS, "You can only request changes for your assigned projects", BAD_REQUEST);
+      const ApiError = new APIError(NOT_ACCESS, "You can only request changes for your assigned projects", FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
     // Check if project is in PM Review status
     if (report.project.status !== "PM Review") {
-      return res.status(BAD_REQUEST).json({ 
-        code: BAD_REQUEST, 
+      return res.status(UNPROCESSABLE_ENTITY).json({ 
+        code: UNPROCESSABLE_ENTITY, 
         message: "Project must be in PM Review status to request changes", 
         success: false 
       });

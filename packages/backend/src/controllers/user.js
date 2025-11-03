@@ -11,6 +11,7 @@ const {
   RECORDS_FOUND,
   NOT_ACCESS,
   BAD_REQUEST,
+  FORBIDDEN
 } = require("../helpers/constants");
 const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
@@ -61,7 +62,7 @@ exports.createUser = async (req, res, next) => {
     const { email, phone, role, first_name, last_name, profile_picture, technician_signature } = req.body;
 
     if (user.role == USER_ROLE.TECHNICIAN) {
-      const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
+      const ApiError = new APIError(NOT_ACCESS, null, FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -195,7 +196,7 @@ exports.updateUser = async (req, res, next) => {
     const { email, phone, role, created_by, first_name, last_name, profile_picture, technician_signature, deactivated_user } = req.body;
 
     if (user.role == USER_ROLE.TECHNICIAN && user.id != id) {
-      const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
+      const ApiError = new APIError(NOT_ACCESS, null, FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -267,7 +268,7 @@ exports.deleteUser = async (req, res, next) => {
     const fetchedUser = await User.findByPk(id);
 
     if (user.role == USER_ROLE.TECHNICIAN) {
-      const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
+      const ApiError = new APIError(NOT_ACCESS, null, FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 

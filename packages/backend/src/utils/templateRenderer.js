@@ -76,6 +76,32 @@ const parseLeadConcentration = (leadValue) => {
 };
 
 /**
+ * Classify asbestos material as ACM or Non-ACM based on laboratory results and suspected status
+ * @param {object} material - Material object with percentageAsbestos and suspectedAcm properties
+ * @returns {string} - 'ACM' or 'Non-ACM'
+ */
+const classifyAsbestosMaterial = (material) => {
+  // Check if percentageAsbestos is a positive number
+  const isPositiveNumber = material.percentageAsbestos && 
+    !isNaN(parseFloat(material.percentageAsbestos)) && 
+    parseFloat(material.percentageAsbestos) > 0;
+  
+  // Check if percentageAsbestos contains or starts with "Positive" (but not "not positive" or "negative")
+  const isPositiveString = material.percentageAsbestos && 
+    typeof material.percentageAsbestos === 'string' &&
+    material.percentageAsbestos.toLowerCase().includes('positive') &&
+    !material.percentageAsbestos.toLowerCase().includes('not positive') &&
+    !material.percentageAsbestos.toLowerCase().includes('negative');
+  
+  // Classify as ACM if laboratory confirmed positive OR suspected OR contains "Positive" string
+  if (isPositiveNumber || material.suspectedAcm === 'Yes' || isPositiveString) {
+    return 'ACM';
+  }
+  
+  return 'Non-ACM';
+};
+
+/**
  * Extract area details from answers
  * @param {object} answers - Parsed answers object
  * @returns {array} - Array of area details (with assessments merged)
@@ -1569,17 +1595,8 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
   areaDetails.forEach(area => {
     if (Array.isArray(area.asbestosMaterials)) {
       area.asbestosMaterials.forEach((material, index) => {
-        // Determine material classification based on percentage and suspected status
-        let materialClassification = 'Non-ACM';
-        
-        // Check if percentageAsbestos is a positive number
-        const isPositiveNumber = material.percentageAsbestos && 
-          !isNaN(parseFloat(material.percentageAsbestos)) && 
-          parseFloat(material.percentageAsbestos) > 0;
-        
-        if (isPositiveNumber || material.suspectedAcm === 'Yes') {
-          materialClassification = 'ACM';
-        }
+        // Determine material classification using consistent logic
+        const materialClassification = classifyAsbestosMaterial(material);
         
         // Format sample number with area name
         const sampleNo = `${area.name || 'Area'}-${material.sampleNo || (index + 1)}`;
@@ -2099,7 +2116,7 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
         const system = material.location || '';
         const materialName = material.materialType || material.customMaterialName || '';
         const description = material.description || '';
-        const classification = material.suspectedAcm === 'Yes' ? 'ACM' : '';
+        const classification = classifyAsbestosMaterial(material);
         const friability = material.friability || '';
         const condition = material.condition || '';
         const estQuantity = material.quantity || material.squareFootage || '';
@@ -2584,6 +2601,38 @@ const prepareReportData = (report, project, customer, options = {}, templateSche
     
     // Assessment details
     areasAssessed: `${areaDetails.length} area(s) were comprehensively assessed for designated substances and hazardous materials in accordance with regulatory requirements.`,
+    // Documents used list for Section 1.2 (prefer root answers.documentsUsed, fallback to first area's documentsUsed)
+    documentsUsedList: (() => {
+      const answersObj = answers || {};
+      const rawRoot = typeof answersObj.documentsUsed === 'string' ? answersObj.documentsUsed : null;
+      const rawArea = typeof primaryArea.documentsUsed === 'string' ? primaryArea.documentsUsed : null;
+      const raw = rawRoot || rawArea;
+      if (!raw) return [];
+      
+      // Smart parsing: Look for numbered items (1., 2., etc.) as document separators
+      // This preserves complete sentences within each document description
+      const numberedItems = raw.match(/\d+\.\s[^]*?(?=\n\d+\.\s|$)/g);
+      
+      if (numberedItems && numberedItems.length > 1) {
+        // Split by numbered items and clean up each document
+        return numberedItems
+          .map(item => {
+            // Remove extra whitespace and newlines within the document description
+            // but preserve the sentence structure
+            return item
+              .replace(/\s*\n\s*/g, ' ') // Replace newlines with spaces
+              .replace(/\s+/g, ' ') // Normalize multiple spaces to single space
+              .trim();
+          })
+          .filter(Boolean);
+      }
+      
+      // Fallback: If no numbered items, split by double newlines or periods followed by newlines
+      return raw
+        .split(/\n\s*\n|\.\s*\n/)
+        .map(s => s.trim())
+        .filter(Boolean);
+    })(),
     
     // Logo URL
     logoUrl: 'https://safetech-dev-images.s3.ca-central-1.amazonaws.com/profiles/image.png',

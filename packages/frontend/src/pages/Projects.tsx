@@ -9,7 +9,7 @@ type Project = {
   companyName: string;
   startDate: Date;
   technician: string;
-  status: "new" | "resent" | "completed" | "started";
+  status: "new" | "resent" | "complete" | "started";
 };
 
 export const columns: ColumnDef<Project>[] = [
@@ -57,6 +57,8 @@ function Projects() {
         onFilterPMs={setProjectManagers}
         onFilterTechnicians={setTechnicians}
         onDateRangeChange={setDateRange}
+        searchQuery={searchQuery}
+        dateRange={dateRange}
       />
       <ProjectTable 
         searchQuery={searchQuery} 

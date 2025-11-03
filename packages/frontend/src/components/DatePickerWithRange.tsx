@@ -25,6 +25,7 @@ import {
 export interface DatePickerWithRangeProps
   extends React.HTMLAttributes<HTMLDivElement> {
   onDateChange?: (dateRange: { from: Date | undefined; to: Date | undefined }) => void;
+  value?: { from: Date | undefined; to: Date | undefined } | undefined;
 }
 
 const quickRanges = [
@@ -46,7 +47,7 @@ const quickRanges = [
     label: "This week",
     getRange: () => {
       const today = startOfToday();
-      return { from: startOfWeek(today), to: endOfWeek(today) };
+      return { from: startOfWeek(today), to: today };
     },
   },
   {
@@ -69,7 +70,7 @@ const quickRanges = [
     label: "This Month",
     getRange: () => {
       const today = startOfToday();
-      return { from: startOfMonth(today), to: endOfMonth(today) };
+      return { from: startOfMonth(today), to: today };
     },
   },
   {
@@ -92,11 +93,24 @@ const quickRanges = [
 export function DatePickerWithRange({
   className,
   onDateChange,
+  value,
   ...rest
 }: DatePickerWithRangeProps) {
   const [date, setDate] = React.useState<DateRange | undefined>(undefined);
   const [popoverOpen, setPopoverOpen] = React.useState(false);
   const [currentMonth, setCurrentMonth] = React.useState<Date>(date?.from || startOfToday());
+
+  // Sync from external value when provided
+  React.useEffect(() => {
+    if (value) {
+      setDate(value as DateRange);
+      if (value.from) setCurrentMonth(value.from);
+    }
+    if (value === undefined) {
+      setDate(undefined);
+      setCurrentMonth(startOfToday());
+    }
+  }, [value]);
 
   const handleSelect = (range: DateRange | undefined) => {
     setDate(range);
@@ -175,6 +189,8 @@ export function DatePickerWithRange({
                 onSelect={handleSelect}
                 numberOfMonths={2}
                 className="sm:max-w-none max-w-[600px]"
+                disabled={(d) => d > today}
+                toMonth={today}
               />
             </div>
             <div className="flex flex-col gap-2 min-w-[150px]">

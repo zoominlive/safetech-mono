@@ -11,6 +11,8 @@ const {
   NOT_ACCESS,
   BAD_REQUEST,
   VALIDATION_ERROR,
+  CONFLICT,
+  UNPROCESSABLE_ENTITY,
 } = require("../helpers/constants");
 const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
@@ -158,7 +160,7 @@ exports.addMaterial = async (req, res, next) => {
     const { name, type = 'custom' } = req.body;
 
     if (!name || name.trim() === '') {
-      const ApiError = new APIError(VALIDATION_ERROR, 'Material name is required', BAD_REQUEST);
+      const ApiError = new APIError(VALIDATION_ERROR, 'Material name is required', UNPROCESSABLE_ENTITY);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -171,7 +173,7 @@ exports.addMaterial = async (req, res, next) => {
     });
 
     if (existingMaterial) {
-      const ApiError = new APIError('Material already exists', null, BAD_REQUEST);
+      const ApiError = new APIError('Material already exists', null, CONFLICT);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -206,7 +208,7 @@ exports.updateMaterial = async (req, res, next) => {
     const { name, type } = req.body;
 
     if (!name || name.trim() === '') {
-      const ApiError = new APIError(VALIDATION_ERROR, 'Material name is required', BAD_REQUEST);
+      const ApiError = new APIError(VALIDATION_ERROR, 'Material name is required', UNPROCESSABLE_ENTITY);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -227,7 +229,7 @@ exports.updateMaterial = async (req, res, next) => {
     });
 
     if (existingMaterial) {
-      const ApiError = new APIError('Material with this name already exists', null, BAD_REQUEST);
+      const ApiError = new APIError('Material with this name already exists', null, CONFLICT);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -266,7 +268,7 @@ exports.deleteMaterial = async (req, res, next) => {
     }
 
     if (material.type === 'standard') {
-      const ApiError = new APIError('Cannot delete standard materials', null, BAD_REQUEST);
+      const ApiError = new APIError('Cannot delete standard materials', null, FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -325,7 +327,7 @@ exports.searchMaterials = async (req, res, next) => {
     const { q, page = 1, limit = 10, type } = req.query;
     
     if (!q || q.trim() === '') {
-      const ApiError = new APIError(VALIDATION_ERROR, 'Search query is required', BAD_REQUEST);
+      const ApiError = new APIError(VALIDATION_ERROR, 'Search query is required', UNPROCESSABLE_ENTITY);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -382,7 +384,7 @@ exports.bulkImportMaterials = async (req, res, next) => {
     const { materials } = req.body;
 
     if (!materials || !Array.isArray(materials) || materials.length === 0) {
-      const ApiError = new APIError(VALIDATION_ERROR, 'Materials array is required', BAD_REQUEST);
+      const ApiError = new APIError(VALIDATION_ERROR, 'Materials array is required', UNPROCESSABLE_ENTITY);
       return ErrorHandler(ApiError, req, res, next);
     }
 

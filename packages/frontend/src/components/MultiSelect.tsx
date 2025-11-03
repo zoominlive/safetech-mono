@@ -19,6 +19,8 @@ export interface MultiSelectProps {
   showOtherOption?: boolean;
   otherOptionLabel?: string;
   triggerClassName?: string;
+  searchable?: boolean;
+  allowClearAll?: boolean;
 }
 
 export const MultiSelect: React.FC<MultiSelectProps> = ({
@@ -31,9 +33,12 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
   showOtherOption = false,
   otherOptionLabel = "Other",
   triggerClassName,
+  searchable = true,
+  allowClearAll = true,
 }) => {
   const [showOtherInput, setShowOtherInput] = useState(false);
   const [otherInputValue, setOtherInputValue] = useState('');
+  const [filterText, setFilterText] = useState('');
 
   const handleSelect = (value: string) => {
     if (value === 'other') {
@@ -77,13 +82,17 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
     }
   };
 
-  const filteredOptions = showOtherOption 
+  const baseOptions = showOtherOption 
     ? [...options, { value: 'other', label: otherOptionLabel }]
     : options;
 
+  const filteredOptions = searchable && filterText
+    ? baseOptions.filter((opt) => opt.label.toLowerCase().includes(filterText.toLowerCase()))
+    : baseOptions;
+
   const currentValue = selected.length > 0 
     ? selected[selected.length - 1].value 
-    : undefined;
+    : "";
 
   return (
     <div className={className}>
@@ -96,6 +105,30 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
+          {searchable && (
+            <div className="p-2 border-b">
+              <Input
+                placeholder="Search..."
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+                disabled={disabled}
+                className="h-8"
+              />
+            </div>
+          )}
+          {allowClearAll && selected.length > 0 && (
+            <div className="px-2 py-1 border-b flex justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => onChange([])}
+                disabled={disabled}
+              >
+                Clear all
+              </Button>
+            </div>
+          )}
           {filteredOptions.map((option) => (
             <SelectItem
               key={option.value}

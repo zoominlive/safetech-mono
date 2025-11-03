@@ -21,11 +21,12 @@ const {
   ACTIVATION_LINK_INVALID,
   ACCOUNT_ALREADY_ACTIVATED,
   ACCOUNT_ACTIVATED,
+  CONFLICT
 } = require("../helpers/constants");
 const { generateToken } = require('../utils/token');
 const { sendEmail } = require('../utils/email');
 const APIError = require('../helpers/apiError');
-const { JWT_SECRET, env, JWT_EXPIRESIN, FRONTEND_BASE_URL, MOBILE_APP_KEY } = require('../config/use_env_variable');
+const { JWT_SECRET, env, JWT_EXPIRESIN, FRONTEND_BASE_URL } = require('../config/use_env_variable');
 const { ErrorHandler } = require('../helpers/errorHandler');
 const logger = require('../config/logger');
 const { updateUserWithLogs } = require('./user');
@@ -34,7 +35,7 @@ exports.register = async (req, res, next) => {
   try {
     const { first_name, last_name, email, password, role } = req.body;
     const existing = await User.findOne({ where: { email } });
-    if (existing) return res.status(BAD_REQUEST).json({ message: 'Email already exists' });
+    if (existing) return res.status(CONFLICT).json({ message: 'Email already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({ first_name, last_name, email, password: hashedPassword, role });
@@ -91,14 +92,9 @@ exports.register = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
   try {
-    const { email, password, rememberMe, client } = req.body; // client: 'web' | 'mobile'
+    const { email, password, rememberMe } = req.body;
     const remember = rememberMe === true || rememberMe === 'true' || rememberMe === 1 || rememberMe === '1';
 
-    // Validate client platform
-    const platform = (client || '').toLowerCase();
-    if (!['web', 'mobile'].includes(platform)) {
-      return res.status(BAD_REQUEST).json({ message: 'Invalid client platform', success: false });
-    }
     const user = await User.findOne({ 
       where: { 
         email,
@@ -140,30 +136,6 @@ exports.login = async (req, res, next) => {
       });
     }
 
-    // Enforce platform policy
-    if (platform === 'mobile' && user.role !== 'Technician') {
-      return res.status(UNAUTHORIZED).json({ 
-        message: 'Only Technicians can log in via mobile',
-        success: false
-      });
-    }
-
-    // If mobile, require a valid app key header to prevent spoofing
-    if (platform === 'mobile') {
-      const appKey = req.headers['x-app-key'];
-      if (!MOBILE_APP_KEY || appKey !== MOBILE_APP_KEY) {
-        return res.status(UNAUTHORIZED).json({ message: 'Invalid mobile app key', success: false });
-      }
-    }
-
-    // For web, optionally verify origin if present (disabled in development)
-    // In production, uncomment this to verify origin
-    // if (platform === 'web' && FRONTEND_BASE_URL && req.headers.origin) {
-    //   if (req.headers.origin !== FRONTEND_BASE_URL) {
-    //     return res.status(UNAUTHORIZED).json({ message: 'Unauthorized origin', success: false });
-    //   }
-    // }
-
     // Update last_login field
     await User.update(
       { last_login: new Date() },
@@ -172,10 +144,9 @@ exports.login = async (req, res, next) => {
 
     // Determine expiry: default 1 day, remember => 30 days
     const accessTokenTtl = remember ? '30d' : '1d';
-    const token = generateToken({ id: user.id, role: user.role, email: user.email, platform }, accessTokenTtl);
+    const token = generateToken({ id: user.id, role: user.role, email: user.email }, accessTokenTtl);
 
-    const isMobileUser = user.role === 'Technician';
-    res.json({ token, user, rememberMe: remember, isMobileUser, platform });
+    res.json({ token, user, rememberMe: remember });
   } catch (err) {
     next(err);
   }
@@ -286,14 +257,14 @@ exports.isValidResetPage = async (req, res, next) => {
           const ApiError = new APIError(
             RESET_PASSWORD_LINK_EXPIRED,
             null,
-            BAD_REQUEST
+            UNAUTHORIZED
           );
           return ErrorHandler(ApiError, req, res, next);
         } else {
           const ApiError = new APIError(
             RESET_PASSWORD_LINK_INVALID,
             null,
-            BAD_REQUEST
+            UNAUTHORIZED
           );
           return ErrorHandler(ApiError, req, res, next);
         }
@@ -345,7 +316,7 @@ exports.resetPassword = async (req, res, next) => {
           const ApiError = new APIError(
             RESET_PASSWORD_LINK_EXPIRED,
             null,
-            BAD_REQUEST
+            UNAUTHORIZED
           );
           return ErrorHandler(ApiError, req, res, next);
         } else {
@@ -354,7 +325,7 @@ exports.resetPassword = async (req, res, next) => {
           const ApiError = new APIError(
             err,
             null,
-            BAD_REQUEST
+            UNAUTHORIZED
           );
           return ErrorHandler(ApiError, req, res, next);
         }
@@ -421,10 +392,10 @@ exports.verifyEmail = async (req, res, next) => {
     jwt.verify(token, JWT_SECRET, async (err, decoded) => {
       if (err) {
         if (err.name === 'TokenExpiredError') {
-          const ApiError = new APIError(ACTIVATION_LINK_EXPIRED, null, BAD_REQUEST);
+          const ApiError = new APIError(ACTIVATION_LINK_EXPIRED, null, UNAUTHORIZED);
           return ErrorHandler(ApiError, req, res, next);
         } else {
-          const ApiError = new APIError(ACTIVATION_LINK_INVALID, null, BAD_REQUEST);
+          const ApiError = new APIError(ACTIVATION_LINK_INVALID, null, UNAUTHORIZED);
           return ErrorHandler(ApiError, req, res, next);
         }
       } else {
@@ -437,7 +408,7 @@ exports.verifyEmail = async (req, res, next) => {
         }
 
         if (isUserExists.is_verified) {
-          const ApiError = new APIError(ACCOUNT_ALREADY_ACTIVATED, null, BAD_REQUEST);
+          const ApiError = new APIError(ACCOUNT_ALREADY_ACTIVATED, null, CONFLICT);
           return ErrorHandler(ApiError, req, res, next);
         }
 
@@ -496,7 +467,7 @@ exports.loginWithToken = async (req, res, next) => {
         const ApiError = new APIError(
           'Your token has been expired, Please login again',
           null,
-          BAD_REQUEST
+          UNAUTHORIZED
         );
         return ErrorHandler(ApiError, req, res, next);
       } else {

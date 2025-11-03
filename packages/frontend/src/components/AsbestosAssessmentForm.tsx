@@ -48,6 +48,7 @@ interface AsbestosMaterial {
   condition: 'Good' | 'Fair' | 'Poor' | 'Unknown'; // Add condition field
   friability: 'Friable' | 'Non-Friable'; // Add friability field
   isTile?: boolean; // Add tile checkbox field
+  tileType?: 'Ceramic' | 'Vinyl'; // Add tile type field
   ceilingTileStyle?: string; // Add ceiling tile style field
   customCeilingTileStyle?: string; // Add custom ceiling tile style field
 }
@@ -326,7 +327,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
         return { 
           ...material, 
           materialType: materialType,
-          customMaterialName: materialType, // Set the custom material name to the selected material type
+          customMaterialName: isCustom ? materialType : '', // Only set customMaterialName if it's a custom material
           isCustomMaterial: isCustom 
         };
       }
@@ -717,7 +718,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                             )}
                           </div>
                           <MaterialSelect
-                            value={material.materialType || ""}
+                            value={getDisplayMaterialName(material) || ""}
                             onValueChange={(value) => handleMaterialTypeChange(material.id, value)}
                             options={materialOptions}
                             placeholder={materialsLoading ? "Loading materials..." : "Select material type"}
@@ -743,6 +744,28 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                             <p className="text-xs text-gray-500">
                               Checking this will automatically add Grout and Thinset materials to your list.
                             </p>
+                          </div>
+                        )}
+
+                        {/* Tile Type - Only show if isTile is true */}
+                        {material.isTile && (
+                          <div className="space-y-2">
+                            <Label>Is the tile Ceramic or Vinyl?</Label>
+                            <RadioGroup
+                              value={material.tileType || ''}
+                              onValueChange={(value) => handleMaterialChange(material.id, 'tileType', value)}
+                              disabled={disabled}
+                              className="flex space-x-4"
+                            >
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="Ceramic" id={`tile-ceramic-${material.id}`} />
+                                <Label htmlFor={`tile-ceramic-${material.id}`}>Ceramic</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="Vinyl" id={`tile-vinyl-${material.id}`} />
+                                <Label htmlFor={`tile-vinyl-${material.id}`}>Vinyl</Label>
+                              </div>
+                            </RadioGroup>
                           </div>
                         )}
 

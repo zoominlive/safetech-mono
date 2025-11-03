@@ -21,7 +21,7 @@ exports.authenticate = (req, res, next) => {
             const ApiError = new APIError(
               'Your token has been expired, Please login again',
               null,
-              BAD_REQUEST
+              UNAUTHORIZED
             );
             return ErrorHandler(ApiError, req, res, next);
           } else {            

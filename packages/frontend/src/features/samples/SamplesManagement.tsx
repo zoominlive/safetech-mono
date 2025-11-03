@@ -22,7 +22,7 @@ interface Sample {
   squareFootage: string;
   percentageAsbestos?: number;
   asbestosType?: string;
-  percentageLead?: number;
+  percentageLead?: number | string; // Can be number or string (to retain < and > symbols)
   sampleType: 'asbestos' | 'lead';
   timestamp: string;
 }
@@ -224,7 +224,7 @@ export const SamplesManagement: React.FC = () => {
                 materialType: materialName,
                 location: material.location || '',
                 description: material.description || '',
-                squareFootage: material.squareFootage || '',
+                squareFootage: material.quantity || '',
                 percentageAsbestos: material.percentageAsbestos,
                 asbestosType: material.asbestosType,
                 percentageLead: material.percentageLead,
@@ -459,10 +459,12 @@ export const SamplesManagement: React.FC = () => {
     }
 
     const csvData = samplesToExport.map(sample => {
-      // For lead samples, the sampleNo already contains the area name, so don't duplicate it
-      const sampleNo = sample.sampleType === 'lead' 
-        ? sample.sampleNo 
-        : sample.areaName.replace(/\s+/g, '') + "-" + sample.sampleNo;
+      // Export only the material number/letter without area name or hyphen
+      // For lead, drop area prefix if present (e.g., "MainRoof-L1A" -> "L1A")
+      // For asbestos, just use the computed sample.sampleNo (e.g., "1A")
+      const sampleNo = sample.sampleType === 'lead'
+        ? (sample.sampleNo.includes('-') ? sample.sampleNo.split('-').pop() || sample.sampleNo : sample.sampleNo)
+        : sample.sampleNo;
       
       const baseData = {
         'SampleNo': sampleNo,
@@ -545,9 +547,11 @@ export const SamplesManagement: React.FC = () => {
             match = csvSampleNumber.toLowerCase().trim() === managementSampleNo.toLowerCase().trim();
             console.log(`Matching asbestos CSV sample "${csvSampleName}" (extracted: "${csvSampleNumber}") with management sample "${managementSampleNo}": ${match}`);
           } else if (sample.sampleType === 'lead') {
-            // For lead samples, match the full sample name (e.g., "MainRoof-L1A" should match "MainRoof-L1A")
-            match = csvSampleName.toLowerCase().trim() === managementSampleNo.toLowerCase().trim();
-            console.log(`Matching lead CSV sample "${csvSampleName}" with management sample "${managementSampleNo}": ${match}`);
+            // For lead samples, compare core sample code without area prefix (e.g., "MainRoof-L1A" or "L1A" -> "L1A")
+            const csvCore = csvSampleName.includes('-') ? (csvSampleName.split('-').pop() || '') : csvSampleName;
+            const mgmtCore = managementSampleNo.includes('-') ? (managementSampleNo.split('-').pop() || '') : managementSampleNo;
+            match = csvCore.toLowerCase().trim() === mgmtCore.toLowerCase().trim();
+            console.log(`Matching lead CSV sample "${csvSampleName}" (core: "${csvCore}") with management sample "${managementSampleNo}" (core: "${mgmtCore}"): ${match}`);
           }
           
           return match;
@@ -562,9 +566,12 @@ export const SamplesManagement: React.FC = () => {
               asbestosType: result.asbestosType
             };
           } else {
+            // For lead, keep the value as-is (retaining < and > symbols)
+            const leadValue = result.percentageLead || undefined;
+            console.log(`Updating lead sample ${sample.sampleNo} with %wt: "${result.percentageLead}"`);
             return {
               ...sample,
-              percentageLead: result.percentageLead
+              percentageLead: leadValue
             };
           }
         }
@@ -639,21 +646,32 @@ export const SamplesManagement: React.FC = () => {
   const parseLabResults = (data: any[]): Array<{ sample: string; percentageAsbestos?: any; asbestosType?: string; percentageLead?: any; location?: string; description?: string; areaName?: string; materialType?: string }> => {
     const results: Array<{ sample: string; percentageAsbestos?: any; asbestosType?: string; percentageLead?: any; location?: string; description?: string; areaName?: string; materialType?: string }> = [];
     data.forEach(row => {
-      const sample = row.Sample || row.Sample || row.sample || row.sample || row['Sample'] || '';
+      const sample = row.SampleNo || row.Sample || row.sample || row['Sample No'] || row['Sample'] || '';
       const content1 = row.Content_1 || row.content_1 || row['Content 1'] || row['content 1'] || '';
       const type1 = row.Type_1 || row.type_1 || row['Type 1'] || row['type 1'] || '';
-      const percentageLead = row['%wt'] || row['%wt'] || row['%wt'] || '';
-      const location = row.Location || row.location || row['Location'] || row['location'] || '';
-      const description = row.Description || row.description || row['Description'] || row['description'] || '';
+      
+      // Handle %wt column with various possible names
+      const percentageLeadRaw = row['%wt'] || row['%WT'] || row['wt%'] || row['WT%'] || row['Lead %'] || row['lead %'] || '';
+      
+      // Keep the value as-is (retain < and > symbols) and just trim whitespace
+      let percentageLeadCleaned = '';
+      if (percentageLeadRaw) {
+        percentageLeadCleaned = percentageLeadRaw.toString().trim();
+      }
+      
+      const location = row.Location || row.location || row['Location'] || '';
+      const description = row.Description || row.description || row['Material Description'] || row['description'] || '';
       const areaName = row.AreaName || row.areaName || row['Area Name'] || row['area name'] || row['Area'] || row.area || '';
       const materialType = row.MaterialType || row.materialType || row['Material Type'] || row['material type'] || row['Material'] || row.material || '';
       const percentageAsbestos = content1;
+   
+      console.log(`Parsing row - Sample: ${sample}, %wt raw: "${percentageLeadRaw}", %wt cleaned: "${percentageLeadCleaned}"`);
    
       results.push({
         sample: sample,
         percentageAsbestos,
         asbestosType: type1 || undefined,
-        percentageLead,
+        percentageLead: percentageLeadCleaned || undefined,
         location: location || undefined,
         description: description || undefined,
         areaName: areaName || undefined,
@@ -786,8 +804,8 @@ export const SamplesManagement: React.FC = () => {
                               />
                             </TableCell> */}
                             <TableCell className="font-mono text-sm">
-                              <div className="truncate" title={sample.areaName.replace(/\s+/g, '') + "-" + sample.sampleNo}>
-                                {sample.areaName.replace(/\s+/g, '') + "-" + sample.sampleNo}
+                              <div className="truncate" title={sample.sampleNo}>
+                                {sample.sampleNo}
                               </div>
                             </TableCell>
                             <TableCell>{sample.areaName}</TableCell>
@@ -796,10 +814,10 @@ export const SamplesManagement: React.FC = () => {
                             <TableCell>{sample.description}</TableCell>
                             <TableCell>{sample.squareFootage}</TableCell>
                             <TableCell>
-                              <div title={sample.percentageAsbestos !== undefined ? sample.percentageAsbestos.toString() : 'No value'}>
+                              <div title={sample.percentageAsbestos != null ? sample.percentageAsbestos.toString() : 'No value'}>
                                 <Input
                                   type="text"
-                                  value={sample.percentageAsbestos !== undefined ? sample.percentageAsbestos.toString() : ''}
+                                  value={sample.percentageAsbestos != null ? sample.percentageAsbestos.toString() : ''}
                                   onChange={(e) => updateSample(sample.sampleId, 'percentageAsbestos', e.target.value || undefined)}
                                   className="w-20"
                                   placeholder="%"
@@ -912,8 +930,8 @@ export const SamplesManagement: React.FC = () => {
                               />
                             </TableCell> */}
                             <TableCell className="font-mono text-sm">
-                              <div className="truncate" title={sample.sampleNo}>
-                                {sample.sampleNo}
+                              <div className="truncate" title={sample.sampleNo.split('-').pop() || sample.sampleNo}>
+                                {sample.sampleNo.split('-').pop() || sample.sampleNo}
                               </div>
                             </TableCell>
                             <TableCell>{sample.areaName}</TableCell>
@@ -921,10 +939,10 @@ export const SamplesManagement: React.FC = () => {
                             <TableCell>{sample.location}</TableCell>
                             <TableCell>{sample.description}</TableCell>
                             <TableCell>
-                              <div title={sample.percentageLead !== undefined ? sample.percentageLead.toString() : 'No value'}>
+                              <div title={sample.percentageLead != null ? sample.percentageLead.toString() : 'No value'}>
                                 <Input
                                   type="text"
-                                  value={sample.percentageLead !== undefined ? sample.percentageLead.toString() : ''}
+                                  value={sample.percentageLead != null ? sample.percentageLead.toString() : ''}
                                   onChange={(e) => updateSample(sample.sampleId, 'percentageLead', e.target.value || undefined)}
                                   className="w-20"
                                   placeholder="%"

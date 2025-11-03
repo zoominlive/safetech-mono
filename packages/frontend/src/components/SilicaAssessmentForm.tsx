@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MaterialSelect } from "@/components/MaterialSelect";
 import { Card, CardContent } from "@/components/ui/card";
-import { CirclePlus, CircleX, Upload, Info, ChevronDown, ChevronRight } from "lucide-react";
+import { CirclePlus, CircleX, Info, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import {
   Tooltip,
@@ -29,10 +28,6 @@ interface SilicaMaterial {
   id: string;
   materialType: string;
   customMaterialName: string;
-  location: string;
-  description: string;
-  photos: string[];
-  sampleCollected: 'Yes' | 'No';
   isCustomMaterial: boolean;
   sampleId?: string;
   sampleNo?: string;
@@ -57,11 +52,9 @@ export const SilicaAssessmentForm: React.FC<SilicaAssessmentFormProps> = ({
   value = [],
   onChange,
   disabled = false,
-  onFileUpload,
   materialUsageStats = {},
 }) => {
   const [localMaterials, setLocalMaterials] = useState<SilicaMaterial[]>(value);
-  const [uploadingFiles, setUploadingFiles] = useState<Record<string, boolean>>({});
   const [expandedMaterials, setExpandedMaterials] = useState<Set<string>>(new Set());
   const [materialToDelete, setMaterialToDelete] = useState<SilicaMaterial | null>(null);
 
@@ -110,10 +103,6 @@ export const SilicaAssessmentForm: React.FC<SilicaAssessmentFormProps> = ({
       id: `silica-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       materialType: "",
       customMaterialName: "",
-      location: "",
-      description: "",
-      photos: [],
-      sampleCollected: 'No',
       isCustomMaterial: false,
       timestamp: new Date().toISOString()
     };
@@ -159,64 +148,6 @@ export const SilicaAssessmentForm: React.FC<SilicaAssessmentFormProps> = ({
     onChange(updatedMaterials);
   };
 
-  const handleFileUpload = async (materialId: string, files: FileList | null) => {
-    if (!files || files.length === 0) return;
-
-    setUploadingFiles(prev => ({ ...prev, [materialId]: true }));
-
-    try {
-      let uploadedUrls: string[] = [];
-      
-      if (onFileUpload) {
-        uploadedUrls = await onFileUpload(files);
-      } else {
-        // Simulate file upload for demo purposes
-        uploadedUrls = Array.from(files).map(file => URL.createObjectURL(file));
-      }
-
-      const updatedMaterials = localMaterials.map(material => {
-        if (material.id === materialId) {
-          return {
-            ...material,
-            photos: [...material.photos, ...uploadedUrls]
-          };
-        }
-        return material;
-      });
-
-      setLocalMaterials(updatedMaterials);
-      onChange(updatedMaterials);
-
-      toast({
-        title: "Files uploaded successfully",
-        description: `${files.length} file(s) uploaded.`,
-      });
-    } catch (error) {
-      console.error('Error uploading files:', error);
-      toast({
-        title: "Upload failed",
-        description: "Failed to upload files. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setUploadingFiles(prev => ({ ...prev, [materialId]: false }));
-    }
-  };
-
-  const handleRemovePhoto = (materialId: string, photoUrl: string) => {
-    const updatedMaterials = localMaterials.map(material => {
-      if (material.id === materialId) {
-        return {
-          ...material,
-          photos: material.photos.filter(photo => photo !== photoUrl)
-        };
-      }
-      return material;
-    });
-    setLocalMaterials(updatedMaterials);
-    onChange(updatedMaterials);
-  };
-
   const handleMaterialTypeChange = (materialId: string, materialType: string) => {
     console.log('handleMaterialTypeChange called with:', { materialId, materialType });
     
@@ -251,7 +182,7 @@ export const SilicaAssessmentForm: React.FC<SilicaAssessmentFormProps> = ({
         return { 
           ...material, 
           materialType: materialType,
-          customMaterialName: materialType, // Set the custom material name to the selected material type
+          customMaterialName: isCustom ? materialType : '', // Only set customMaterialName if it's a custom material
           isCustomMaterial: isCustom 
         };
       }
@@ -460,7 +391,7 @@ export const SilicaAssessmentForm: React.FC<SilicaAssessmentFormProps> = ({
                             )}
                           </div>
                           <MaterialSelect
-                            value={material.materialType || ""}
+                            value={getDisplayMaterialName(material) || ""}
                             onValueChange={(value) => handleMaterialTypeChange(material.id, value)}
                             options={materialOptions}
                             placeholder={materialsLoading ? "Loading materials..." : "Select material type"}
@@ -519,94 +450,6 @@ export const SilicaAssessmentForm: React.FC<SilicaAssessmentFormProps> = ({
                             </p>
                           </div>
                         )}
-
-                        {/* Location */}
-                        <div className="space-y-2">
-                          <Label>Location *</Label>
-                          <Input
-                            value={material.location}
-                            onChange={(e) => handleMaterialChange(material.id, 'location', e.target.value)}
-                            placeholder="Describe the location"
-                            disabled={disabled}
-                          />
-                        </div>
-
-                        {/* Description */}
-                        <div className="space-y-2">
-                          <Label>Description</Label>
-                          <Input
-                            value={material.description}
-                            onChange={(e) => handleMaterialChange(material.id, 'description', e.target.value)}
-                            placeholder="Describe the material"
-                            disabled={disabled}
-                          />
-                        </div>
-
-                        {/* Photos */}
-                        <div className="space-y-2">
-                          <Label>Photos</Label>
-                          <div className="space-y-4">
-                            <div className="flex items-center space-x-4">
-                              <Label htmlFor={`file-${material.id}`} className="cursor-pointer">
-                                <div className="flex items-center space-x-2 bg-sf-gray-600 text-white py-2 px-4 rounded-md">
-                                  <Upload size={18} />
-                                  <span>{uploadingFiles[material.id] ? "Uploading..." : "Upload Files"}</span>
-                                </div>
-                              </Label>
-                              <input
-                                id={`file-${material.id}`}
-                                type="file"
-                                multiple
-                                accept="image/*"
-                                className="hidden"
-                                onChange={(e) => handleFileUpload(material.id, e.target.files)}
-                                disabled={disabled || uploadingFiles[material.id]}
-                              />
-                            </div>
-                            {material.photos.length > 0 && (
-                              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                {material.photos.map((photoUrl, photoIndex) => (
-                                  <div key={photoIndex} className="relative group">
-                                    <img
-                                      src={photoUrl}
-                                      alt={`Material photo ${photoIndex + 1}`}
-                                      className="w-full h-32 object-cover rounded-lg"
-                                    />
-                                    {!disabled && (
-                                      <button
-                                        type="button"
-                                        onClick={() => handleRemovePhoto(material.id, photoUrl)}
-                                        className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                      >
-                                        <CircleX className="h-4 w-4" />
-                                      </button>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Sample Collected */}
-                        <div className="space-y-2">
-                          <Label>Sample Collected?</Label>
-                          <RadioGroup
-                            value={material.sampleCollected}
-                            onValueChange={(value) => handleMaterialChange(material.id, 'sampleCollected', value)}
-                            disabled={disabled}
-                            className="flex space-x-4"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="Yes" id={`sample-yes-${material.id}`} />
-                              <Label htmlFor={`sample-yes-${material.id}`}>Yes</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="No" id={`sample-no-${material.id}`} />
-                              <Label htmlFor={`sample-no-${material.id}`}>No</Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
 
                       </div>
                     )}
