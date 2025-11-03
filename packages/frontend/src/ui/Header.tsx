@@ -46,7 +46,7 @@ function Header() {
       </h2>
       <div className="flex items-center gap-1 md:gap-2">
         <ThemeToggle />
-        <Button onClick={() => navigate('/settings')} className="bg-white dark:bg-gray-800 hidden md:flex text-black dark:text-white">
+        <Button onClick={() => navigate('/settings')} className="bg-card hidden md:flex text-foreground">
           <Settings className="size-4" />
         </Button>
         <div className="flex items-center gap-2 relative">
@@ -67,9 +67,9 @@ function Header() {
               <AvatarFallback>{user?.first_name?.charAt(0) + '' + user?.last_name?.charAt(0) || "U"}</AvatarFallback>
             </Avatar>
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow z-50">
+              <div className="absolute right-0 mt-2 w-40 bg-popover border border-border rounded shadow z-50">
                 <button
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-black dark:text-white"
+                  className="w-full text-left px-4 py-2 hover:bg-muted text-popover-foreground"
                   onClick={handleSignOut}
                 >
                   Sign Out

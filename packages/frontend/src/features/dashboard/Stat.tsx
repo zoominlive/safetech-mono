@@ -29,10 +29,10 @@ function Stat({
       <CardContent className="flex flex-col">
         <div className="flex justify-between">
           <div className="">
-            <p className="text-xs lg:text-sm text-gray-600 mb-2 font-semibold">
+            <p className="text-xs lg:text-sm text-muted-foreground mb-2 font-semibold">
               {title}
             </p>
-            <p className="text-xl lg:text-3xl font-bold text-gray-900">
+            <p className="text-xl lg:text-3xl font-bold text-foreground">
               {value}
             </p>
           </div>
@@ -60,7 +60,7 @@ function Stat({
           >
             {percentage}
           </span>
-          <span className="text-gray-600">{subtitle}</span>
+          <span className="text-muted-foreground">{subtitle}</span>
         </div>
       </CardContent>
     </Card>

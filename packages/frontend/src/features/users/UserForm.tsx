@@ -398,7 +398,7 @@ function UserForm({ onCancel }: UserFormProps) {
                           onChange={(e) => handleImageChange(e, setFieldValue)}
                           disabled={uploadingImage}
                         />
-                        <p className="text-sm text-gray-500 mt-2">
+                        <p className="text-sm text-muted-foreground mt-2">
                           JPG, PNG or GIF. Max size 2MB.
                         </p>
                       </div>
@@ -558,7 +558,7 @@ function UserForm({ onCancel }: UserFormProps) {
                       }}
                     </Field>
                     <div className="min-h-[20px] relative">
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         {getStatusValue(values.deactivated_user, values.is_verified) === "invited" && 
                           "User needs to activate their account. Status cannot be changed until user activates."}
                         {getStatusValue(values.deactivated_user, values.is_verified) === "active" && 
@@ -579,7 +579,7 @@ function UserForm({ onCancel }: UserFormProps) {
                     {isLoading ? "Saving..." : "Save"} <Bookmark />
                   </Button>
                   <Button 
-                    className="w-[150px] h-[48px] bg-sf-secondary text-black"
+                    className="w-[150px] h-[48px] bg-sf-secondary text-foreground"
                     onClick={handleCancel}
                     type="button"
                     disabled={isLoading}

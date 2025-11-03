@@ -36,7 +36,7 @@ export default function Login() {
       <h2 className="font-inter font-extrabold text-xl sm:text-2xl mt-4">
         Sign in to your account
       </h2>
-      <h4 className="text-gray-400 mb-4">Welcome back!</h4>
+      <h4 className="text-muted-foreground mb-4">Welcome back!</h4>
       {error && <div className="text-red-500 mt-2">{error}</div>}
       <Formik
         initialValues={{ email: "", password: "" }}
@@ -56,7 +56,7 @@ export default function Login() {
                   name="email"
                   type="email"
                   placeholder="Email"
-                  className="w-full px-3 py-2 pl-10 border-2 rounded-md border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  className="w-full px-3 py-2 pl-10 border-2 rounded-md border-border focus:outline-none focus:ring-2 focus:ring-muted"
                 />
               </div>
               <ErrorMessage
@@ -76,7 +76,7 @@ export default function Login() {
                   name="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
-                  className="w-full px-3 py-2 pl-10 pr-10 border-2 rounded-md border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  className="w-full px-3 py-2 pl-10 pr-10 border-2 rounded-md border-border focus:outline-none focus:ring-2 focus:ring-muted"
                 />
                 <button
                   type="button"
@@ -84,9 +84,9 @@ export default function Login() {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-500 hover:text-gray-700" />
+                    <EyeOff className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                   ) : (
-                    <Eye className="h-4 w-4 text-gray-500 hover:text-gray-700" />
+                    <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                   )}
                 </button>
               </div>
@@ -101,7 +101,7 @@ export default function Login() {
                 <input 
                   type="checkbox"
                   id="rememberMe"
-                  className="mr-2 h-4 w-4 rounded border-gray-300"
+                  className="mr-2 h-4 w-4 rounded border-border"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
                 />
@@ -110,7 +110,7 @@ export default function Login() {
               <Link to="/forgot-password">Forgot Password?</Link>
             </div>
             <button
-              className="w-full text-center bg-gray-950 text-white rounded-xl p-3 sm:p-4 font-bold hover:bg-gray-800 transition-colors"
+              className="w-full text-center bg-primary text-primary-foreground rounded-xl p-3 sm:p-4 font-bold hover:bg-primary/90 transition-colors"
               type="submit"
               disabled={loading}
             >

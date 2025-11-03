@@ -34,8 +34,8 @@ const SidebarItem = ({
       className={cn(
         "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors",
         active
-          ? "bg-safetech-gray text-gray-900"
-          : "text-gray-500 hover:text-gray-900 hover:bg-gray-100",
+          ? "bg-primary/10 text-primary"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted",
         showLabel ? "" : "justify-center"
       )}
       onClick={onClick}
@@ -83,7 +83,7 @@ function MainNav({ onItemClick, expanded }: MainNavProps) {
               <div
                 key={item.label}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-400 cursor-not-allowed",
+                  "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-muted-foreground/50 cursor-not-allowed",
                   expanded ? "" : "justify-center"
                 )}
               >
@@ -111,7 +111,7 @@ function MainNav({ onItemClick, expanded }: MainNavProps) {
           <a
             href="mailto:support@dastech.ca?subject=Support%20Request"
             className={cn(
-              "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors text-gray-500 hover:text-gray-900 hover:bg-gray-100",
+              "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors text-muted-foreground hover:text-foreground hover:bg-muted",
               expanded ? "" : "justify-center"
             )}
             style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}

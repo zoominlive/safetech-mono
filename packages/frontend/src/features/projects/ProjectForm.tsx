@@ -526,14 +526,14 @@ const ProjectForm: React.FC = () => {
             {id ? "Edit Project" : "Add Project"}
           </h2>
           {projectNumber && (
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Project Number: {projectNumber}
             </p>
           )}
         </div>
         {id && initialValues.report_id && (
           <Button
-            className="bg-safetech-gray text-black"
+            className="bg-safetech-gray text-foreground"
             onClick={() => navigate(`/project-reports/${initialValues?.report_id}/edit`)}
           >
             Edit Report <SquarePen className="ml-2 h-4 w-4" />
@@ -637,11 +637,11 @@ const ProjectForm: React.FC = () => {
                     <SelectContent>
                       <SelectGroup>
                         {!values.customer_id ? (
-                          <div className="text-center text-gray-500 py-2">
+                          <div className="text-center text-muted-foreground py-2">
                             Please select a customer first
                           </div>
                         ) : locations.length === 0 ? (
-                          <div className="text-center text-gray-500 py-2">
+                          <div className="text-center text-muted-foreground py-2">
                             {(() => {
                               const selectedCustomer = _customers.find(c => c.id === values.customer_id);
                               return `No Data Found for ${selectedCustomer ? selectedCustomer.first_name + ' ' + selectedCustomer.last_name : 'this customer'}`;
@@ -828,7 +828,7 @@ const ProjectForm: React.FC = () => {
                       <SelectContent>
                         <SelectGroup>
                           {projectManagers.length === 0 ? (
-                            <div className="text-center text-gray-500 py-2">No Project Managers Found</div>
+                            <div className="text-center text-muted-foreground py-2">No Project Managers Found</div>
                           ) : (
                             projectManagers.map(pm => (
                               <SelectItem key={pm.id} value={pm.id}>{pm.first_name} {pm.last_name}</SelectItem>
@@ -902,12 +902,12 @@ const ProjectForm: React.FC = () => {
                       <div className="space-y-3">
                         <Label>Upload Unmarked Drawings</Label>
                         <Input type="file" multiple onChange={(e) => handleUpload(e.target.files, false)} disabled={isUploadingUnmarked} />
-                        {isUploadingUnmarked && <p className="text-sm text-gray-500">Uploading...</p>}
+                        {isUploadingUnmarked && <p className="text-sm text-muted-foreground">Uploading...</p>}
                       </div>
                       <div className="space-y-3">
                         <Label>Upload Marked Drawings</Label>
                         <Input type="file" multiple onChange={(e) => handleUpload(e.target.files, true)} disabled={isUploadingMarked} />
-                        {isUploadingMarked && <p className="text-sm text-gray-500">Uploading...</p>}
+                        {isUploadingMarked && <p className="text-sm text-muted-foreground">Uploading...</p>}
                       </div>
                     </div>
 
@@ -915,16 +915,16 @@ const ProjectForm: React.FC = () => {
                       <div>
                         <h4 className="font-medium mb-3">Unmarked</h4>
                         {isLoadingDrawings ? (
-                          <p className="text-sm text-gray-500">Loading...</p>
+                          <p className="text-sm text-muted-foreground">Loading...</p>
                         ) : unmarkedDrawings.length === 0 ? (
-                          <p className="text-sm text-gray-500">No unmarked drawings</p>
+                          <p className="text-sm text-muted-foreground">No unmarked drawings</p>
                         ) : (
                           <ul className="divide-y">
                             {unmarkedDrawings.map((d) => (
                               <li key={d.id} className="py-2 flex items-center justify-between gap-3">
                                 <div className="min-w-0">
                                   <p className="truncate text-sm">{d.file_name}</p>
-                                  <p className="text-xs text-gray-500">{new Date(d.created_at).toLocaleString()}</p>
+                                  <p className="text-xs text-muted-foreground">{new Date(d.created_at).toLocaleString()}</p>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
                                   <Button variant="ghost" size="icon" onClick={() => window.open(d.file_url, '_blank')} title="Download">
@@ -958,16 +958,16 @@ const ProjectForm: React.FC = () => {
                       <div>
                         <h4 className="font-medium mb-3">Marked</h4>
                         {isLoadingDrawings ? (
-                          <p className="text-sm text-gray-500">Loading...</p>
+                          <p className="text-sm text-muted-foreground">Loading...</p>
                         ) : markedDrawings.length === 0 ? (
-                          <p className="text-sm text-gray-500">No marked drawings</p>
+                          <p className="text-sm text-muted-foreground">No marked drawings</p>
                         ) : (
                           <ul className="divide-y">
                             {markedDrawings.map((d) => (
                               <li key={d.id} className="py-2 flex items-center justify-between gap-3">
                                 <div className="min-w-0">
                                   <p className="truncate text-sm">{d.file_name}</p>
-                                  <p className="text-xs text-gray-500">{new Date(d.created_at).toLocaleString()}</p>
+                                  <p className="text-xs text-muted-foreground">{new Date(d.created_at).toLocaleString()}</p>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
                                   <Button variant="ghost" size="icon" onClick={() => window.open(d.file_url, '_blank')} title="Download">
@@ -1012,7 +1012,7 @@ const ProjectForm: React.FC = () => {
                 </Button>
                 <Button 
                   type="button"
-                  className="bg-sf-secondary text-black w-[150px] h-[48px]"
+                  className="bg-sf-secondary text-foreground w-[150px] h-[48px]"
                   onClick={handleCancel}
                   disabled={isSubmitting || isLoading}
                 >

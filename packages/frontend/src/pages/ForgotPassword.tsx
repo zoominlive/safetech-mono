@@ -41,7 +41,7 @@ export default function ForgotPassword() {
   return (
     <>
       <h2 className="text-2xl font-bold mb-2">Forgot Password?</h2>
-      <h4 className="text-gray-500">
+      <h4 className="text-muted-foreground">
         Enter your email below to receive instructions
       </h4>
       
@@ -81,7 +81,7 @@ export default function ForgotPassword() {
                     name="email"
                     type="email"
                     placeholder="Email"
-                    className="w-full px-2 py-2 pl-10 border-2 rounded-md border-gray-500"
+                    className="w-full px-2 py-2 pl-10 border-2 rounded-md border-border"
                   />
                 </div>
                 <ErrorMessage
@@ -92,7 +92,7 @@ export default function ForgotPassword() {
               </div>
               <button 
                 type="submit" 
-                className="w-full text-center bg-gray-950 text-white rounded-xl p-4 font-bold"
+                className="w-full text-center bg-primary text-primary-foreground rounded-xl p-4 font-bold"
                 disabled={loading}
               >
                 {loading ? "Submitting..." : "Submit"}

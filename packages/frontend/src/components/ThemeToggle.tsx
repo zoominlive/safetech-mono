@@ -10,13 +10,13 @@ export function ThemeToggle() {
       variant="outline"
       size="icon"
       onClick={toggleTheme}
-      className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+      className="bg-background border-border"
       aria-label="Toggle theme"
     >
       {theme === "light" ? (
-        <Moon className="h-[1.2rem] w-[1.2rem] text-gray-700 dark:text-gray-300" />
+        <Moon className="h-[1.2rem] w-[1.2rem] text-foreground" />
       ) : (
-        <Sun className="h-[1.2rem] w-[1.2rem] text-gray-700 dark:text-gray-300" />
+        <Sun className="h-[1.2rem] w-[1.2rem] text-foreground" />
       )}
     </Button>
   );

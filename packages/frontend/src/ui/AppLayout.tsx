@@ -11,7 +11,7 @@ export default function AppLayout() {
   const [expanded, setExpanded] = useState<boolean>(true);
 
   return (
-    <div className="h-screen flex bg-slate-100 overflow-hidden">
+    <div className="h-screen flex bg-background overflow-hidden">
       {/* Mobile menu toggle */}
       <Button
         variant="ghost"

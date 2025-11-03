@@ -412,7 +412,7 @@ function CreateCustomerForm({ customerId, onCancel, status, onStatusChange }: Cr
                       <div className="font-semibold">{loc.name}</div>
                       <div className="text-xs text-sf-gray-500">{loc.address_line_1}, {loc.address_line_2} {loc.city}, {loc.province}, {loc.postal_code}</div>
                     </div>
-                    <Button type="button" size="sm" className="bg-sf-secondary text-black" onClick={() => { setEditLocationIndex(idx); setEditLocation(loc); setShowLocationModal(true); }}>Edit</Button>
+                    <Button type="button" size="sm" className="bg-sf-secondary text-foreground" onClick={() => { setEditLocationIndex(idx); setEditLocation(loc); setShowLocationModal(true); }}>Edit</Button>
                     <Button type="button" size="sm" variant="destructive" onClick={() => handleRemoveLocation(idx)}>Remove</Button>
                   </div>
                 ))}
@@ -428,7 +428,7 @@ function CreateCustomerForm({ customerId, onCancel, status, onStatusChange }: Cr
               </Button>
               <Button 
                 type="button"
-                className="w-[150px] h-[48px] bg-sf-secondary text-black"
+                className="w-[150px] h-[48px] bg-sf-secondary text-foreground"
                 onClick={handleCancel}
                 disabled={isSubmitting || isLoading}
               >

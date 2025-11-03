@@ -49,9 +49,9 @@ const ActivateAccount = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
+    <div className="max-w-md mx-auto mt-8 p-6 bg-card rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-2">Activate Your Account</h2>
-      <h4 className="text-gray-500 mb-6">
+      <h4 className="text-muted-foreground mb-6">
         Set your password to complete the activation process
       </h4>
       
@@ -81,7 +81,7 @@ const ActivateAccount = () => {
                     name="password"
                     type="password"
                     placeholder="Enter your password"
-                    className="w-full px-3 py-2 pl-10 border-2 rounded-md border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    className="w-full px-3 py-2 pl-10 border-2 rounded-md border-border focus:outline-none focus:ring-2 focus:ring-muted"
                   />
                 </div>
                 <ErrorMessage
@@ -102,7 +102,7 @@ const ActivateAccount = () => {
                     name="confirmPassword"
                     type="password"
                     placeholder="Confirm your password"
-                    className="w-full px-3 py-2 pl-10 border-2 rounded-md border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    className="w-full px-3 py-2 pl-10 border-2 rounded-md border-border focus:outline-none focus:ring-2 focus:ring-muted"
                   />
                 </div>
                 <ErrorMessage
@@ -114,7 +114,7 @@ const ActivateAccount = () => {
               
               <button 
                 type="submit" 
-                className="w-full text-center bg-gray-950 text-white rounded-xl p-4 font-bold hover:bg-gray-800 transition-colors disabled:bg-gray-400"
+                className="w-full text-center bg-primary text-primary-foreground rounded-xl p-4 font-bold hover:bg-primary/90 transition-colors disabled:bg-muted"
                 disabled={loading}
               >
                 {loading ? "Activating..." : "Activate Account"}

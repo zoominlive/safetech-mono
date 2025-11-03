@@ -741,7 +741,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                                 Is this tile?
                               </Label>
                             </div>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-muted-foreground">
                               Checking this will automatically add Grout and Thinset materials to your list.
                             </p>
                           </div>
@@ -853,7 +853,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
                                 </Button>
                               )}
                             </div>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                               Click "Add to Options" to make this material available for future use across all areas.
                             </p>
                           </div>

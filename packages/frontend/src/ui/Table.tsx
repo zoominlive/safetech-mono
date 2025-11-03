@@ -74,7 +74,7 @@ export const StatusBadge = ({ status }: { status: string }) => {
       case "complete":
         return "bg-blue-100 text-blue-800";
       case "on hold":
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-muted-foreground";
       case "active":
         return "bg-sf-customer-active text-sf-black-300";
       case "inactive":
@@ -82,7 +82,7 @@ export const StatusBadge = ({ status }: { status: string }) => {
       case "invited":
         return "bg-yellow-100 text-yellow-800";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-muted-foreground";
     }
   };
 
@@ -514,7 +514,7 @@ function Table<T>({
               displayData.map((row, rowIndex) => (
                 <TableRow 
                   key={rowIndex} 
-                  className={cn("bg-white", onDetails && !isReportsTemplateTable && "cursor-pointer hover:bg-gray-100")}
+                  className={cn("bg-card", onDetails && !isReportsTemplateTable && "cursor-pointer hover:bg-muted")}
                   onClick={onDetails && !isReportsTemplateTable ? (e => {
                     // Prevent row click if a button or its child is clicked
                     if ((e.target as HTMLElement).closest('button')) return;
@@ -618,11 +618,11 @@ function Table<T>({
           )}
         </ShadcnTable>
         {shouldShowCollapse && (
-          <div className="flex justify-center py-4 border-t bg-gray-50">
+          <div className="flex justify-center py-4 border-t bg-muted/30">
             <Button
               variant="ghost"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-sm text-gray-600 hover:text-gray-800"
+              className="text-sm text-muted-foreground hover:text-foreground"
             >
               {isExpanded ? (
                 <>
