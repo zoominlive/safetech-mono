@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
-const { User } = require('../models');
-const { sequelize } = require('../config/config');
+const db = require('../models');
+const { User } = db;
+const { sequelize } = db;
 
 async function updateAllPasswords() {
   try {
