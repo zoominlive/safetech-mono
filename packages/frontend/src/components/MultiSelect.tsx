@@ -113,6 +113,10 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                 onChange={(e) => setFilterText(e.target.value)}
                 disabled={disabled}
                 className="h-8"
+                onKeyDown={(e) => e.stopPropagation()}
+                onKeyUp={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
               />
             </div>
           )}
