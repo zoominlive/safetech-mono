@@ -114,7 +114,16 @@ Migration files exist in `packages/backend/src/migrations/` but the initial sche
 - PDF report generation
 - File upload handling
 
-## Recent Changes (Sept 30, 2025)
+## Recent Changes 
+
+### November 3, 2025
+- Created MySQL to PostgreSQL import script (packages/backend/src/scripts/import-mysql-nov3.js)
+- Fixed platform authentication security vulnerability in auth.js (now properly validates platform parameter)
+- Handles self-referential foreign keys with two-pass approach
+- Validates and fixes data issues (empty enums, invalid JSON, missing foreign keys)
+- Production dump (Nov 2, 2025) ready for import in attached_assets/
+
+### Sept 30, 2025
 - Migrated from MySQL to PostgreSQL for Replit compatibility
 - Updated database configuration to use Neon PostgreSQL
 - Configured Vite for Replit environment (port 5000, host 0.0.0.0)
