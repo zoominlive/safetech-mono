@@ -533,7 +533,7 @@ const ProjectForm: React.FC = () => {
         </div>
         {id && initialValues.report_id && (
           <Button
-            className="bg-safetech-gray text-foreground"
+            className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600"
             onClick={() => navigate(`/project-reports/${initialValues?.report_id}/edit`)}
           >
             Edit Report <SquarePen className="ml-2 h-4 w-4" />
