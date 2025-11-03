@@ -627,7 +627,7 @@ export const AsbestosAssessmentForm: React.FC<AsbestosAssessmentFormProps> = ({
         <div className="flex items-center justify-between">
             {/* <Label className="text-lg font-semibold">Asbestos-Containing Materials</Label> */}
             {!disabled && (
-              <Button onClick={handleAddMaterial} size="sm">
+              <Button onClick={handleAddMaterial} size="sm" className="bg-gray-700 dark:bg-gray-600 text-white hover:bg-gray-600 dark:hover:bg-gray-500">
                 <CirclePlus className="h-4 w-4 mr-2" />
                 Add Material
               </Button>
