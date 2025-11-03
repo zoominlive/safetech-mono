@@ -117,6 +117,16 @@ Migration files exist in `packages/backend/src/migrations/` but the initial sche
 ## Recent Changes 
 
 ### November 3, 2025
+
+#### Lab Data Import (Latest)
+- **Imported missing lab reports and results from SQL dump**
+  - Added 2 lab reports with work order #2518431 for Safetech Environmental Limited (Mississauga)
+  - Imported 94 lab report results (47 results per lab report)
+  - Lab reports linked to existing projects: St. Matthias Catholic School Demolition & Demolition Project
+  - Script: `packages/backend/src/scripts/import-lab-data.js`
+  - Lab reports include environmental testing parameters (PHCs, metals, VOCs, pH, conductivity, etc.)
+
+#### Production Data Import (Earlier)
 - **Successfully imported production data from MySQL dump (Nov 2, 2025)**
   - Fixed parser bug that was only extracting first record from multi-record INSERT statements
   - Created robust import script (packages/backend/src/scripts/import-mysql-fixed.js)
