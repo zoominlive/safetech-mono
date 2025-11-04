@@ -29,6 +29,21 @@ module.exports = (sequelize, DataTypes) => {
         'Project Manager'
       ),
       allowNull: false,
+      set(value) {
+        if (value == null) {
+          this.setDataValue('role', value);
+          return;
+        }
+        const valueString = String(value).trim();
+        const lower = valueString.toLowerCase();
+        const canonicalMap = {
+          admin: 'Admin',
+          technician: 'Technician',
+          'project manager': 'Project Manager'
+        };
+        const mapped = canonicalMap[lower];
+        this.setDataValue('role', mapped || valueString);
+      }
     },
     email: {
       type: DataTypes.STRING,

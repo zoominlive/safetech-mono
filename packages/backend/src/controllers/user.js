@@ -147,9 +147,16 @@ exports.getAllUsers = async (req, res, next) => {
     } else {
       orderClause = [['created_at', 'DESC']]; // Default sort when no sortBy parameter
     }
-    // Add role filtering if role parameter is provided
+    // Add role filtering if role parameter is provided (case-insensitive mapping)
     if (req.query.role) {
-      whereCondition.role = req.query.role;
+      const roleInput = String(req.query.role).trim();
+      const lower = roleInput.toLowerCase();
+      const canonicalMap = {
+        admin: 'Admin',
+        technician: 'Technician',
+        'project manager': 'Project Manager'
+      };
+      whereCondition.role = canonicalMap[lower] || roleInput;
     }
     
     const options = {
