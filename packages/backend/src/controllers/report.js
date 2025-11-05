@@ -423,7 +423,7 @@ exports.generatePDFReport = async (req, res, next) => {
         '--disable-dev-shm-usage',
         '--disable-gpu'
       ],
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
+      executablePath: '/nix/store/*-chromium-*/bin/chromium' || process.env.PUPPETEER_EXECUTABLE_PATH || undefined
     });
     const page = await browser.newPage();
     // Increase timeouts for large reports/assets
@@ -737,7 +737,7 @@ exports.sendReportToCustomer = async (req, res, next) => {
         '--disable-dev-shm-usage',
         '--disable-gpu'
       ],
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
+      executablePath: '/nix/store/*-chromium-*/bin/chromium' || process.env.PUPPETEER_EXECUTABLE_PATH || undefined
     });
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
