@@ -46,6 +46,15 @@ task = "shell.exec"
 args = "cd packages/backend && PORT=8000 pnpm start"
 waitForPort = 8000
 
+[[workflows.workflow]]
+name = "Install Puppeteer Chrome"
+author = 42067624
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd packages/backend && npx puppeteer browsers install chrome"
+
 [[ports]]
 localPort = 5000
 externalPort = 80

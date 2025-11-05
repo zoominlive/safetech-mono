@@ -44,7 +44,7 @@ const uploadToS3 = (file, reportId) => {
   if (!s3) {
     throw new Error('AWS S3 configuration is missing');
   }
-  
+
   return new Promise((resolve, reject) => {
     const params = {
       Bucket: AWS_BUCKET,
@@ -53,7 +53,7 @@ const uploadToS3 = (file, reportId) => {
       ContentType: file.mimetype,
       ACL: 'public-read'
     };
-    
+
     s3.upload(params, (err, data) => {
       if (err) {
         console.error('S3 Upload Error:', err);
@@ -274,7 +274,7 @@ exports.updateReport = async (req, res, next) => {
       }
     );
     console.log("updated=>", updated);
- 
+
     // Update Project status to 'In Progress' only if answers is not empty/null/undefined/empty string
     const isAnswersFilled = (
       answers !== null &&
@@ -282,7 +282,7 @@ exports.updateReport = async (req, res, next) => {
       !(typeof answers === 'string' && answers.trim() === '') &&
       !(typeof answers === 'object' && Object.keys(answers).length === 0 && answers.constructor === Object)
     );
-    
+
     if (isAnswersFilled && project_id) {
       await Project.update(
         { status: 'In Progress' },
@@ -417,7 +417,13 @@ exports.generatePDFReport = async (req, res, next) => {
 
     const browser = await puppeteer.launch({ 
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: [
+        '--no-sandbox', 
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu'
+      ],
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
     });
     const page = await browser.newPage();
     // Increase timeouts for large reports/assets
@@ -428,7 +434,7 @@ exports.generatePDFReport = async (req, res, next) => {
     // Set content and allow more time for resources
     await page.setContent(htmlContent, { waitUntil: 'domcontentloaded' });
     console.log('Page content set, allowing time for resources to load...');
-    
+
     // Extra wait for remote images and fonts
     await new Promise(resolve => setTimeout(resolve, 5000));
 
@@ -488,7 +494,7 @@ exports.uploadFiles = async (req, res, next) => {
     // Update report with new photo URLs
     const currentPhotos = report.photos || [];
     const updatedPhotos = [...currentPhotos, ...urls];
-    
+
     await Report.update(
       { photos: updatedPhotos },
       { where: { id } }
@@ -523,7 +529,7 @@ exports.importLabReport = [
 
       const results = [];
       const filePath = path.resolve(req.file.path);
-      
+
       fs.createReadStream(filePath)
       .pipe(csv({ headers: false }))
       .on('data', (data) => results.push(data))
@@ -583,7 +589,7 @@ exports.importLabReport = [
             console.error('Failed to delete uploaded CSV:', err);
           }
         });
-        
+
       });
     } catch (err) {
       next(err);
@@ -710,7 +716,7 @@ exports.sendReportToCustomer = async (req, res, next) => {
     if (!customer || !customer.email) {
       return res.status(BAD_REQUEST).json({ code: BAD_REQUEST, message: 'Customer email not found', success: false });
     }
-    
+
     // Prepare data for template
     const templateData = prepareReportData(
       report, 
@@ -721,20 +727,26 @@ exports.sendReportToCustomer = async (req, res, next) => {
 
     // Render HTML using template
     const htmlContent = renderTemplate('report-pdf', templateData);
-    
+
     // Generate PDF using the same template
     const browser = await puppeteer.launch({ 
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: [
+        '--no-sandbox', 
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu'
+      ],
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
     });
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
+
     console.log('Generating header template for email PDF...');
     const headerTemplate = getHeaderTemplate('coloredsafetech.png');
     console.log('Email header template generated, length:', headerTemplate.length);
-    
+
     const pdfBuffer = await page.pdf({ 
       format: "A4", 
       printBackground: true,
@@ -743,14 +755,14 @@ exports.sendReportToCustomer = async (req, res, next) => {
       headerTemplate: headerTemplate,
       footerTemplate: getFooterTemplate(templateData)
     });
-    
+
     console.log('Email PDF generated, buffer size:', pdfBuffer.length);
     await browser.close();
-    
+
     // Upload PDF to S3
     const pdfFilename = `report-${report.id}.pdf`;
     const pdfUrl = await uploadFileToS3(pdfBuffer, pdfFilename, 'application/pdf', 'reports', report.id.toString());
-    
+
     // Send email with the S3 URL instead of attachment
     await sendEmail({
       to: customer.email,
