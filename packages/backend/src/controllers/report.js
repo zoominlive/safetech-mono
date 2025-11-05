@@ -25,12 +25,30 @@ const multer = require('multer');
 const csv = require('csv-parser');
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 const upload = multer({ dest: 'uploads/' });
 const dayjs = require('dayjs');
 const customParseFormat = require('dayjs/plugin/customParseFormat');
 const { sendEmail, uploadFileToS3 } = require("../utils/email");
 const { renderTemplate, prepareReportData, getHeaderTemplate, getFooterTemplate } = require("../utils/templateRenderer");
 dayjs.extend(customParseFormat);
+
+// Helper function to get Chromium executable path
+const getChromiumPath = () => {
+  try {
+    // Try to find chromium in PATH
+    const chromiumPath = execSync('which chromium', { encoding: 'utf-8' }).trim();
+    if (chromiumPath) {
+      console.log('Found Chromium at:', chromiumPath);
+      return chromiumPath;
+    }
+  } catch (error) {
+    console.log('Chromium not found in PATH, trying puppeteer bundled version');
+  }
+  
+  // Fall back to environment variable or let puppeteer use its bundled version
+  return process.env.PUPPETEER_EXECUTABLE_PATH || undefined;
+};
 
 // AWS S3 configuration
 const s3 = new AWS.S3({
@@ -423,7 +441,7 @@ exports.generatePDFReport = async (req, res, next) => {
         '--disable-dev-shm-usage',
         '--disable-gpu'
       ],
-      executablePath: '/nix/store/*-chromium-*/bin/chromium' || process.env.PUPPETEER_EXECUTABLE_PATH || undefined
+      executablePath: getChromiumPath()
     });
     const page = await browser.newPage();
     // Increase timeouts for large reports/assets
@@ -737,7 +755,7 @@ exports.sendReportToCustomer = async (req, res, next) => {
         '--disable-dev-shm-usage',
         '--disable-gpu'
       ],
-      executablePath: '/nix/store/*-chromium-*/bin/chromium' || process.env.PUPPETEER_EXECUTABLE_PATH || undefined
+      executablePath: getChromiumPath()
     });
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
