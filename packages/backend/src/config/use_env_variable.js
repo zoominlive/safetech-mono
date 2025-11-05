@@ -28,9 +28,9 @@ module.exports = {
   SMTP_PASSWORD: process.env.SMTP_PASSWORD,
 
   AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,  // From Replit secrets
-  AWS_S3_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,  // Use same as above
+  AWS_S3_ACCESS_KEY_ID: process.env.AWS_S3_ACCESS_KEY_ID,  // Use same as above
   AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,  // From Replit secrets
-  AWS_S3_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,  // Use same as above
+  AWS_S3_SECRET_ACCESS_KEY: process.env.AWS_S3_SECRET_ACCESS_KEY,  // Use same as above
   AWS_REGION: process.env.AWS_REGION || 'ca-central-1',
   AWS_BUCKET: process.env.AWS_S3_BUCKET || 'safetech-dev-images',
 
