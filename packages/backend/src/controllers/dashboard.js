@@ -1,5 +1,6 @@
-const { Project, Customer, User, Report } = require('../models');
+const { Project, Customer, User, Report, sequelize } = require('../models');
 const { Op } = require('sequelize');
+const Sequelize = require('sequelize');
 const { msToTime } = require('../utils/msToTime');
 const { OK, USER_ROLE } = require('../helpers/constants');
 
@@ -9,32 +10,66 @@ exports.getDashboardSummary = async (req, res, next) => {
     const thirtyDaysAgo = new Date(now);
     thirtyDaysAgo.setDate(now.getDate() - 30);
     
-    // Add technician filter if user is a technician
-    let technicianInclude = null;
-    if (req.user && req.user.role === USER_ROLE.TECHNICIAN) {
-      technicianInclude = { model: User, as: 'technicians', where: { id: req.user.id }, attributes: [], through: { attributes: [] }, required: true };
+    // Build role-based filtering
+    let roleWhereCondition = {};
+    let roleInclude = [];
+    
+    if (req.user) {
+      // Filter for Technician role: projects assigned via technician_id OR many-to-many relationship
+      if (req.user.role === USER_ROLE.TECHNICIAN) {
+        // Use OR condition to check both technician_id and many-to-many relationship
+        // Use Sequelize.literal with escaped value - use Sequelize.col to reference the outer table's id
+        const escapedUserId = sequelize.escape(req.user.id);
+        roleWhereCondition = {
+          [Op.or]: [
+            { technician_id: req.user.id },
+            sequelize.where(
+              Sequelize.col('Project.id'),
+              {
+                [Op.in]: sequelize.literal(`(
+                  SELECT pt.project_id 
+                  FROM project_technicians pt 
+                  WHERE pt.user_id = ${escapedUserId}
+                )`)
+              }
+            )
+          ]
+        };
+      }
+      
+      // Filter for Project Manager role: projects where pm_id matches logged-in user
+      if (req.user.role === USER_ROLE.PROJECT_MANAGER) {
+        roleWhereCondition = { pm_id: req.user.id };
+      }
     }
 
     // Total Open Projects (not Complete)
     const totalOpenProjects = await Project.count({
-      where: { status: { [Op.ne]: 'Complete' } },
-      include: technicianInclude ? [technicianInclude] : []
+      where: {
+        ...roleWhereCondition,
+        status: { [Op.ne]: 'Complete' }
+      },
+      include: roleInclude
     });
 
     // Projects completed in last 30 days (status Complete)
     const projectsCompletedLast30 = await Project.count({
       where: {
+        ...roleWhereCondition,
         status: 'Complete',
         updated_at: { [Op.gte]: thirtyDaysAgo }
       },
-      include: technicianInclude ? [technicianInclude] : []
+      include: roleInclude
     });
 
     // Average time to complete (status Complete)
     const completedProjects = await Project.findAll({
-      where: { status: 'Complete' },
+      where: {
+        ...roleWhereCondition,
+        status: 'Complete'
+      },
       attributes: ['start_date', 'updated_at'],
-      include: technicianInclude ? [technicianInclude] : []
+      include: roleInclude
     });
 
     let totalDuration = 0;
@@ -50,19 +85,21 @@ exports.getDashboardSummary = async (req, res, next) => {
     // Projects older than 48 hours (not Complete)
     const projectsOlderThan48Hrs = await Project.count({
       where: {
+        ...roleWhereCondition,
         start_date: { [Op.lte]: new Date(Date.now() - 48 * 60 * 60 * 1000) },
         status: { [Op.ne]: 'Complete' }
       },
-      include: technicianInclude ? [technicianInclude] : []
+      include: roleInclude
     });
 
     // New Projects (New)
     const newProjects = await Project.findAll({
       where: {
+        ...roleWhereCondition,
         status: { [Op.in]: ['New'] }
       },
       include: [
-        ...(technicianInclude ? [technicianInclude] : []),
+        ...roleInclude,
         { model: Customer, as: 'company', attributes: ['company_name', 'first_name', 'last_name'], required: false },
         { model: User, as: 'technician', attributes: ['first_name', 'last_name'], required: false },
         { model: User, as: 'technicians', attributes: ['id', 'first_name', 'last_name'], through: { attributes: [] }, required: false },
@@ -74,10 +111,11 @@ exports.getDashboardSummary = async (req, res, next) => {
     // In Progress Projects (New or In Progress)
     const inProgress = await Project.findAll({
       where: {
+        ...roleWhereCondition,
         status: { [Op.in]: ['In Progress'] }
       },
       include: [
-        ...(technicianInclude ? [technicianInclude] : []),
+        ...roleInclude,
         { model: Customer, as: 'company', attributes: ['company_name', 'first_name', 'last_name'], required: false },
         { model: User, as: 'technician', attributes: ['first_name', 'last_name'], required: false },
         { model: User, as: 'technicians', attributes: ['id', 'first_name', 'last_name'], through: { attributes: [] }, required: false },
@@ -89,10 +127,11 @@ exports.getDashboardSummary = async (req, res, next) => {
     // Awaiting Review (PM Review)
     const awaitingReview = await Project.findAll({
       where: {
+        ...roleWhereCondition,
         status: 'PM Review'
       },
       include: [
-        ...(technicianInclude ? [technicianInclude] : []),
+        ...roleInclude,
         { model: Customer, as: 'company', attributes: ['company_name', 'first_name', 'last_name'], required: false },
         { model: User, as: 'technician', attributes: ['first_name', 'last_name'], required: false },
         { model: User, as: 'technicians', attributes: ['id', 'first_name', 'last_name'], through: { attributes: [] }, required: false },
@@ -111,45 +150,50 @@ exports.getDashboardSummary = async (req, res, next) => {
     // 1. Total Open Projects (not Complete)
     const totalOpenProjectsMTD = await Project.count({
       where: {
+        ...roleWhereCondition,
         status: { [Op.ne]: 'Complete' },
         created_at: { [Op.between]: [startOfThisMonth, now] }
       },
-      include: technicianInclude ? [technicianInclude] : []
+      include: roleInclude
     });
     const totalOpenProjectsPrevMTD = await Project.count({
       where: {
+        ...roleWhereCondition,
         status: { [Op.ne]: 'Complete' },
         created_at: { [Op.between]: [startOfLastMonth, endOfLastMonthMTD] }
       },
-      include: technicianInclude ? [technicianInclude] : []
+      include: roleInclude
     });
     const totalOpenProjectsChange = totalOpenProjectsPrevMTD === 0 ? null : ((totalOpenProjectsMTD - totalOpenProjectsPrevMTD) / totalOpenProjectsPrevMTD * 100).toFixed(1);
 
     // 2. Projects Completed (status Complete)
     const projectsCompletedMTD = await Project.count({
       where: {
+        ...roleWhereCondition,
         status: 'Complete',
         updated_at: { [Op.between]: [startOfThisMonth, now] }
       },
-      include: technicianInclude ? [technicianInclude] : []
+      include: roleInclude
     });
     const projectsCompletedPrevMTD = await Project.count({
       where: {
+        ...roleWhereCondition,
         status: 'Complete',
         updated_at: { [Op.between]: [startOfLastMonth, endOfLastMonthMTD] }
       },
-      include: technicianInclude ? [technicianInclude] : []
+      include: roleInclude
     });
     const projectsCompletedChange = projectsCompletedPrevMTD === 0 ? null : ((projectsCompletedMTD - projectsCompletedPrevMTD) / projectsCompletedPrevMTD * 100).toFixed(1);
 
     // 3. Avg. Time To Complete (status Complete)
     const completedProjectsMTD = await Project.findAll({
       where: {
+        ...roleWhereCondition,
         status: 'Complete',
         updated_at: { [Op.between]: [startOfThisMonth, now] }
       },
       attributes: ['start_date', 'updated_at'],
-      include: technicianInclude ? [technicianInclude] : []
+      include: roleInclude
     });
     let totalDurationMTD = 0;
     completedProjectsMTD.forEach(p => {
@@ -161,11 +205,12 @@ exports.getDashboardSummary = async (req, res, next) => {
 
     const completedProjectsPrevMTD = await Project.findAll({
       where: {
+        ...roleWhereCondition,
         status: 'Complete',
         updated_at: { [Op.between]: [startOfLastMonth, endOfLastMonthMTD] }
       },
       attributes: ['start_date', 'updated_at'],
-      include: technicianInclude ? [technicianInclude] : []
+      include: roleInclude
     });
     let totalDurationPrevMTD = 0;
     completedProjectsPrevMTD.forEach(p => {
@@ -179,19 +224,21 @@ exports.getDashboardSummary = async (req, res, next) => {
     // 4. Projects Older Than 48hrs (not Complete)
     const projectsOlderThan48HrsMTD = await Project.count({
       where: {
+        ...roleWhereCondition,
         start_date: { [Op.lte]: new Date(Date.now() - 48 * 60 * 60 * 1000) },
         status: { [Op.ne]: 'Complete' },
         created_at: { [Op.between]: [startOfThisMonth, now] }
       },
-      include: technicianInclude ? [technicianInclude] : []
+      include: roleInclude
     });
     const projectsOlderThan48HrsPrevMTD = await Project.count({
       where: {
+        ...roleWhereCondition,
         start_date: { [Op.lte]: new Date(endOfLastMonthMTD.getTime() - 48 * 60 * 60 * 1000) },
         status: { [Op.ne]: 'Complete' },
         created_at: { [Op.between]: [startOfLastMonth, endOfLastMonthMTD] }
       },
-      include: technicianInclude ? [technicianInclude] : []
+      include: roleInclude
     });
     const projectsOlderThan48HrsChange = projectsOlderThan48HrsPrevMTD === 0 ? null : ((projectsOlderThan48HrsMTD - projectsOlderThan48HrsPrevMTD) / projectsOlderThan48HrsPrevMTD * 100).toFixed(1);
 
