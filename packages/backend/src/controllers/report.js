@@ -200,6 +200,7 @@ exports.getReportById = async (req, res, next) => {
 
 exports.updateReport = async (req, res, next) => {
   try {
+    const { user } = req;
     const { id } = req.params;
     const {       
       name,
@@ -213,7 +214,15 @@ exports.updateReport = async (req, res, next) => {
       status
     } = req.body;
 
-    const fetchReport = await Report.findOne({ where: { id: id } });
+    const fetchReport = await Report.findByPk(id, {
+      include: [
+        {
+          model: Project,
+          as: 'project',
+          include: [{ model: User, as: 'technicians', attributes: ['id'], through: { attributes: [] } }]
+        }
+      ]
+    });
     if (!fetchReport) {
       return res
       .status(NOT_FOUND)
@@ -223,6 +232,22 @@ exports.updateReport = async (req, res, next) => {
         data: [],
         success: false,
       });
+    }
+
+    // Authorization: Only assigned PM or assigned Technician can update (save) the report
+    if (user.role === USER_ROLE.PROJECT_MANAGER) {
+      if (fetchReport.project?.pm_id !== user.id) {
+        const ApiError = new APIError(NOT_ACCESS, "You can only save reports for your assigned projects", FORBIDDEN);
+        return ErrorHandler(ApiError, req, res, next);
+      }
+    }
+
+    if (user.role === USER_ROLE.TECHNICIAN) {
+      const isAssignedTech = ((fetchReport.project?.technicians) || []).some(t => t.id === user.id) || fetchReport.project?.technician_id === user.id;
+      if (!isAssignedTech) {
+        const ApiError = new APIError(NOT_ACCESS, "You can only save reports for your assigned projects", FORBIDDEN);
+        return ErrorHandler(ApiError, req, res, next);
+      }
     }
 
     const updateData = {

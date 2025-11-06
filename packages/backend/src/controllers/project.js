@@ -163,6 +163,10 @@ exports.getAllProjects = async (req, res, next) => {
       // Support comma-separated string
       whereCondition.pm_id = { [Op.in]: req.query.pm_ids.split(',').map(s => s.trim()) };
     }
+    // If user is a Project Manager, only show their projects
+    if (req.user && req.user.role === USER_ROLE.PROJECT_MANAGER) {
+      whereCondition.pm_id = req.user.id;
+    }
     // Filter by Technicians (technician_ids as array) using M2M
     if (req.query.technician_ids && Array.isArray(req.query.technician_ids)) {
       technicianWhere = { id: { [Op.in]: req.query.technician_ids } };
@@ -282,6 +286,11 @@ exports.updateProject = async (req, res, next) => {
         success: false,
       });
     } else {
+      // If user is a Project Manager, only allow updating if they own the project
+      if (user.role === USER_ROLE.PROJECT_MANAGER && fetchProject.pm_id !== user.id) {
+        const ApiError = new APIError(NOT_ACCESS, "You can only edit projects assigned to you", FORBIDDEN);
+        return ErrorHandler(ApiError, req, res, next);
+      }
       // Only allow status change through controlled flows (not direct update)
       const updated = await Project.update(
         {
@@ -358,6 +367,12 @@ exports.deleteProject = async (req, res, next) => {
       return res
         .status(NOT_FOUND)
         .json({ code: NOT_FOUND, message: NO_RECORD_FOUND, success: false });
+    }
+
+    // If user is a Project Manager, only allow deleting if they own the project
+    if (user.role === USER_ROLE.PROJECT_MANAGER && fetchedProject.pm_id !== user.id) {
+      const ApiError = new APIError(NOT_ACCESS, "You can only delete projects assigned to you", FORBIDDEN);
+      return ErrorHandler(ApiError, req, res, next);
     }
 
     await fetchedProject.destroy();
