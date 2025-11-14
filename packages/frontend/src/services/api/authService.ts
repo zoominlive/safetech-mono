@@ -52,7 +52,6 @@ interface ChangePasswordResponse {
 export const authService = {
   
   login: async (data: LoginRequest): Promise<LoginResponse> => {
-    console.log('calling authService');
     const response: AxiosResponse<LoginResponse> = await BaseClient.post('/auth/login', {
       ...data,
       client: 'web',
