@@ -138,6 +138,13 @@ Migration files exist in `packages/backend/src/migrations/` but the initial sche
   - Script: `packages/backend/src/scripts/update-all-passwords.js`
   - Passwords properly hashed with bcrypt before storage
 
+- **Fixed PostgreSQL ENUM search error**
+  - Issue: User search endpoint returned "operator does not exist: enum_users_role ~~ unknown"
+  - Root cause: PostgreSQL doesn't support LIKE operator on ENUM types without casting
+  - Solution: Updated `packages/backend/src/helpers/pagination.js` to cast ENUM fields to TEXT before applying ILIKE
+  - Impact: Fixed search across all endpoints (users, projects, customers, reports, templates)
+  - ENUM fields now searchable: `role` (Admin/Technician/Project Manager), `status` (invited/activated)
+
 ### November 3, 2025
 
 #### Complete Database Import (Latest - 09:23 UTC)

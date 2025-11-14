@@ -1,4 +1,4 @@
-const { Op } = require('sequelize');
+const { Op, where, cast, col } = require('sequelize');
 
 /**
  * Transforms the query parameters into Sequelize filter options.
@@ -114,6 +114,9 @@ module.exports.useFilter = (filter, model, associations = []) => {
         if (isUuid(value)) {
           filterObj[key] = { [Op.eq]: String(value).trim() };
         }
+      } else if (fieldType === 'ENUM') {
+        // Cast ENUM to text before applying LIKE to avoid PostgreSQL operator error
+        filterObj[key] = where(cast(col(key), 'TEXT'), { [Op.iLike]: `%${value}%` });
       } else {
         // Default to LIKE for other fields
         filterObj[key] = {
@@ -178,6 +181,9 @@ module.exports.useFilter = (filter, model, associations = []) => {
               return { [field]: { [Op.eq]: String(filter.search).trim() } };
             }
             return null;
+          } else if (fieldType === 'ENUM') {
+            // Cast ENUM to text before applying LIKE to avoid PostgreSQL operator error
+            return where(cast(col(field), 'TEXT'), { [Op.iLike]: `%${filter.search}%` });
           } else {
             return { [field]: { [Op.like]: `%${filter.search}%` } };
           }
