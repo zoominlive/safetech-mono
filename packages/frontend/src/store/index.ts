@@ -17,6 +17,13 @@ export interface User {
   token: string;
 }
 
+interface LoginResponse {
+  data: {
+    user: User;
+    token: string;
+  };
+}
+
 interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
@@ -51,7 +58,10 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string, rememberMe: boolean) => {
         set({ loading: true, error: null });
         try {
-          const response = await BaseClient.post('/auth/login', { 
+          const response = await BaseClient.post<
+            { email: string; password: string; rememberMe: boolean; client: string },
+            LoginResponse
+          >('/auth/login', { 
             email, 
             password,
             rememberMe,
@@ -178,7 +188,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage', // unique name for localStorage
-      partialize: (state) => {
+      partialize: (state: AuthState) => {
         // if (state.rememberMe) {
           return { 
             isAuthenticated: state.isAuthenticated, 
