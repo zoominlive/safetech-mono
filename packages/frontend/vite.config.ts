@@ -22,7 +22,7 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:4000',
+        target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false
       }
@@ -33,7 +33,7 @@ export default defineConfig({
     host: '0.0.0.0',
     proxy: {
       '/api': {
-        target: 'http://localhost:4000',
+        target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false
       }

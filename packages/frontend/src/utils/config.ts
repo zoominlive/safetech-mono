@@ -11,7 +11,7 @@ const getBaseURL = (): string => {
     return envBaseURL;
   }
   
-  return 'http://localhost:4000/api/v1';
+  return 'http://localhost:8080/api/v1';
 }
 
 export const config: IConfig = {
