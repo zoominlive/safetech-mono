@@ -1,12 +1,12 @@
 const net = require('net');
 
 const port = process.argv[2] || 4000;
-const timeout = parseInt(process.argv[3]) || 60;
+const timeout = parseInt(process.argv[3]) || 120;
 const interval = 2;
 
 let elapsed = 0;
 
-console.log(`⏳ Waiting for port ${port} to be ready...`);
+console.log(`⏳ Waiting for port ${port} to be ready (timeout: ${timeout}s)...`);
 
 const checkPort = () => {
   const client = new net.Socket();

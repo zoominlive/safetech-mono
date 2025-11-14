@@ -3,12 +3,21 @@
 echo "🚀 Starting SafeTech deployment..."
 
 echo "📦 Starting backend server..."
-pnpm --filter ./packages/backend start &
+pnpm --filter ./packages/backend start 2>&1 &
 BACKEND_PID=$!
 
-node wait-for-port.js 4000 60
+echo "Backend PID: $BACKEND_PID"
+sleep 2
+
+node wait-for-port.js 4000 120
 if [ $? -ne 0 ]; then
-  echo "❌ Backend failed to start"
+  echo "❌ Backend failed to start within timeout"
+  echo "Checking if backend process is still running..."
+  if kill -0 $BACKEND_PID 2>/dev/null; then
+    echo "⚠️  Backend process is still running but port not accessible"
+  else
+    echo "❌ Backend process has exited"
+  fi
   exit 1
 fi
 

@@ -122,12 +122,15 @@ Migration files exist in `packages/backend/src/migrations/` but the initial sche
 - **Fixed ECONNREFUSED errors in production deployment**
   - Issue: Backend and frontend were starting simultaneously, causing race condition where frontend tried to connect before backend was ready
   - Solution: Created staged deployment startup process:
-    * `deploy-start.sh` - Custom deployment script that orchestrates startup sequence
-    * `wait-for-port.js` - Node.js utility that waits for backend port 4000 to be accessible before continuing
+    * `deploy-start.sh` - Custom deployment script that orchestrates startup sequence (120s timeout)
+    * `wait-for-port.js` - Node.js utility that polls port 4000 every 2 seconds
+    * `packages/backend/start-production.js` - Production startup wrapper with environment variable validation
     * Backend starts first, script waits for it to be ready, then frontend starts
   - Updated deployment configuration to use `bash ./deploy-start.sh` instead of parallel startup
   - Fixed API connection configuration to use relative URLs (`/api/v1`) in both dev and production
   - Vite preview server proxy configuration ensures production API requests route correctly
+  - Backend config now gracefully handles missing .env file in production (uses system environment variables)
+  - Increased startup timeout to 120 seconds to accommodate Chromium initialization and database connection
 
 #### Complete Data Import from Production SQL Dump
 - **Successfully imported all 337 records from safetech_14-11.sql**
