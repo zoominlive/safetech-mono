@@ -40,7 +40,8 @@ safetech-mono/
 - **Database ORM**: Sequelize 6
 - **Database**: PostgreSQL (Neon)
 - **Authentication**: JWT
-- **Port**: 4000 (localhost only)
+- **Port**: 8080 (publicly accessible)
+- **Public URL**: https://9ddf8f58-2768-4062-96b6-6f709c8dbac2-00-1omg4hp6qmbo2.picard.replit.dev:8080
 
 ### Package Manager
 - **pnpm** v10.16.1 with workspaces
@@ -61,7 +62,7 @@ Located in `packages/frontend/.env`:
 ### Backend Environment Variables
 Located in `packages/backend/.env`:
 - `NODE_ENV`: Environment (development/production)
-- `PORT`: Server port (4000)
+- `PORT`: Server port (8080)
 - Database credentials (PostgreSQL)
 - JWT secret and expiration
 - Email/SMTP configuration
@@ -116,6 +117,27 @@ Migration files exist in `packages/backend/src/migrations/` but the initial sche
 
 ## Recent Changes 
 
+### November 14, 2025
+
+#### Backend Publicly Exposed & Frontend Production Configuration Updated
+- **Backend moved to port 8080 and made publicly accessible**
+  - Changed backend from localhost-only (port 4000) to publicly accessible (port 8080)
+  - Created separate Backend and Frontend workflows for independent operation
+  - Backend now accessible at: `https://9ddf8f58-2768-4062-96b6-6f709c8dbac2-00-1omg4hp6qmbo2.picard.replit.dev:8080`
+  - Enables direct API testing with Postman and other external tools
+  
+- **Frontend production configuration updated**
+  - Development mode: Uses `/api/v1` (Vite proxy to localhost:8080) - unchanged
+  - Production mode: Uses public backend URL `https://...replit.dev:8080/api/v1`
+  - Updated `packages/frontend/src/utils/config.ts` with environment-aware configuration
+  - Updated `packages/frontend/vite.config.ts` proxy settings to point to port 8080
+  - Rebuilt frontend with new production settings
+
+- **All user passwords reset to `1tempPass!` for testing/development**
+  - 5 Admins, 3 Project Managers, 7 Technicians
+  - Script: `packages/backend/src/scripts/update-all-passwords.js`
+  - Passwords properly hashed with bcrypt before storage
+
 ### November 3, 2025
 
 #### Complete Database Import (Latest - 09:23 UTC)
@@ -169,7 +191,7 @@ Migration files exist in `packages/backend/src/migrations/` but the initial sche
 - Set up HMR for WebSocket proxy compatibility
 - Created monorepo workspace with pnpm
 - Added deployment configuration for VM target
-- Backend runs on localhost:4000, frontend on 0.0.0.0:5000
+- Backend runs on 0.0.0.0:8080 (publicly accessible), frontend on 0.0.0.0:5000
 
 ## Deployment
 The application is configured for Replit VM deployment:

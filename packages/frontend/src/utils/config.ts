@@ -11,7 +11,7 @@ const getBaseURL = (): string => {
     return envBaseURL;
   }
   
-  return 'http://localhost:8080/api/v1';
+  return 'https://9ddf8f58-2768-4062-96b6-6f709c8dbac2-00-1omg4hp6qmbo2.picard.replit.dev:8080/api/v1';
 }
 
 export const config: IConfig = {
