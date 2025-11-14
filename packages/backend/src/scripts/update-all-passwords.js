@@ -7,7 +7,7 @@ async function updateAllPasswords() {
   try {
     console.log('🔐 Starting password update for all users...\n');
 
-    const newPassword = 'passwordSafe';
+    const newPassword = '1tempPass!';
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     
     console.log(`Password hash generated: ${hashedPassword.substring(0, 20)}...\n`);
