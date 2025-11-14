@@ -11,8 +11,7 @@ const getBaseURL = (): string => {
     return envBaseURL;
   }
   
-  // In production, use relative path - Vite proxy forwards /api to backend
-  return '/api/v1';
+  return 'http://localhost:4000/api/v1';
 }
 
 export const config: IConfig = {
