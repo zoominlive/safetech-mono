@@ -3,7 +3,7 @@ const { sequelize } = require('./models/index');
 const logger = require('./config/logger');
 
 const PORT = process.env.PORT || 4000;
-const HOST = 'localhost';
+const HOST = '0.0.0.0';
 
 (async () => {
   try {
