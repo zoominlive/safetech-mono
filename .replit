@@ -44,5 +44,5 @@ externalPort = 3000
 
 [deployment]
 deploymentTarget = "vm"
-run = ["bash", "-c", "pnpm --filter ./packages/backend start & pnpm --filter ./packages/frontend preview --host 0.0.0.0 --port 5000"]
+run = ["bash", "./deploy-start.sh"]
 build = ["pnpm", "build:fe"]
