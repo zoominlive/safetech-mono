@@ -624,14 +624,156 @@ async function importData() {
         }
       }
       
-      // Import remaining tables...
-      // [Similar pattern for other tables]
+      // Import project_technicians (junction table)
+      if (tableData.project_technicians.length > 0) {
+        logger.info(`Importing ${tableData.project_technicians.length} project_technicians...`);
+        for (const pt of tableData.project_technicians) {
+          // Validate project exists
+          const [projectExists] = await sequelize.query(
+            `SELECT 1 FROM "projects" WHERE id = :id`,
+            { replacements: { id: pt.project_id }, transaction }
+          );
+          if (!projectExists.length) {
+            logger.warn(`Project ${pt.project_id} not found, skipping project_technician`);
+            continue;
+          }
+          
+          // Validate user exists
+          const [userExists] = await sequelize.query(
+            `SELECT 1 FROM "users" WHERE id = :id`,
+            { replacements: { id: pt.user_id }, transaction }
+          );
+          if (!userExists.length) {
+            logger.warn(`User ${pt.user_id} not found, skipping project_technician`);
+            continue;
+          }
+          
+          await sequelize.query(`INSERT INTO "project_technicians" (
+              "project_id", "user_id", "created_at", "updated_at"
+            ) VALUES (
+              :project_id, :user_id, :created_at, :updated_at
+            )`, {
+            replacements: pt,
+            transaction
+          });
+        }
+      }
+      
+      // Import project_drawings
+      if (tableData.project_drawings.length > 0) {
+        logger.info(`Importing ${tableData.project_drawings.length} project_drawings...`);
+        for (const drawing of tableData.project_drawings) {
+          // Validate project exists
+          const [projectExists] = await sequelize.query(
+            `SELECT 1 FROM "projects" WHERE id = :id`,
+            { replacements: { id: drawing.project_id }, transaction }
+          );
+          if (!projectExists.length) {
+            logger.warn(`Project ${drawing.project_id} not found, skipping drawing`);
+            continue;
+          }
+          
+          // Validate created_by user exists if present
+          if (drawing.created_by) {
+            const [userExists] = await sequelize.query(
+              `SELECT 1 FROM "users" WHERE id = :id`,
+              { replacements: { id: drawing.created_by }, transaction }
+            );
+            if (!userExists.length) {
+              logger.warn(`User ${drawing.created_by} not found, setting created_by to NULL`);
+              drawing.created_by = null;
+            }
+          }
+          
+          await sequelize.query(`INSERT INTO "project_drawings" (
+              "id", "project_id", "file_name", "file_url", "is_marked",
+              "created_by", "created_at", "updated_at", "deleted_at"
+            ) VALUES (
+              :id, :project_id, :file_name, :file_url, :is_marked,
+              :created_by, :created_at, :updated_at, :deleted_at
+            )`, {
+            replacements: drawing,
+            transaction
+          });
+        }
+      }
+      
+      // Import reports
+      if (tableData.reports.length > 0) {
+        logger.info(`Importing ${tableData.reports.length} reports...`);
+        for (const report of tableData.reports) {
+          // Validate project exists
+          const [projectExists] = await sequelize.query(
+            `SELECT 1 FROM "projects" WHERE id = :id`,
+            { replacements: { id: report.project_id }, transaction }
+          );
+          if (!projectExists.length) {
+            logger.warn(`Project ${report.project_id} not found, skipping report ${report.id}`);
+            continue;
+          }
+          
+          // Validate report_template exists
+          const [templateExists] = await sequelize.query(
+            `SELECT 1 FROM "report_templates" WHERE id = :id`,
+            { replacements: { id: report.report_template_id }, transaction }
+          );
+          if (!templateExists.length) {
+            logger.warn(`Report template ${report.report_template_id} not found, skipping report ${report.id}`);
+            continue;
+          }
+          
+          // Ensure JSON fields are properly formatted
+          let answers = report.answers;
+          let photos = report.photos;
+          
+          if (typeof answers === 'string') {
+            try {
+              JSON.parse(answers);
+            } catch (e) {
+              logger.warn(`Invalid JSON in report ${report.id} answers, using empty object`);
+              answers = '{}';
+            }
+          } else if (answers) {
+            answers = JSON.stringify(answers);
+          }
+          
+          if (typeof photos === 'string') {
+            try {
+              JSON.parse(photos);
+            } catch (e) {
+              logger.warn(`Invalid JSON in report ${report.id} photos, using empty array`);
+              photos = '[]';
+            }
+          } else if (photos) {
+            photos = JSON.stringify(photos);
+          }
+          
+          await sequelize.query(`INSERT INTO "reports" (
+              "id", "name", "project_id", "report_template_id",
+              "assessment_due_to", "date_of_loss", "date_of_assessment",
+              "answers", "photos", "status", "pm_feedback",
+              "created_at", "updated_at", "deleted_at"
+            ) VALUES (
+              :id, :name, :project_id, :report_template_id,
+              :assessment_due_to, :date_of_loss, :date_of_assessment,
+              :answers, :photos, :status, :pm_feedback,
+              :created_at, :updated_at, :deleted_at
+            )`, {
+            replacements: {
+              ...report,
+              answers,
+              photos
+            },
+            transaction
+          });
+        }
+      }
       
       await transaction.commit();
       logger.info('✅ Import completed successfully!');
       
       // Show final counts
-      const tables = ['customers', 'users', 'locations', 'materials', 'projects'];
+      const tables = ['customers', 'users', 'locations', 'materials', 'projects', 'project_technicians', 'project_drawings', 'reports'];
       for (const table of tables) {
         const [result] = await sequelize.query(`SELECT COUNT(*) as count FROM "${table}"`);
         logger.info(`  ${table}: ${result[0].count} records`);
