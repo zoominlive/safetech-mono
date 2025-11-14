@@ -284,7 +284,7 @@ async function importData() {
     logger.info('Starting MySQL to PostgreSQL import (Fixed Parser)...');
     
     // Read the SQL dump file
-    const sqlPath = path.join(__dirname, '../../../../attached_assets/safetech_2025-11-02_1762135932425.sql');
+    const sqlPath = path.join(__dirname, '../../../../attached_assets/safetech_14-11.sql');
     
     if (!fs.existsSync(sqlPath)) {
       throw new Error(`SQL dump file not found at ${sqlPath}`);
