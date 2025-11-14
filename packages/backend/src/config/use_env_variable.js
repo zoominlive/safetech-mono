@@ -1,13 +1,5 @@
 const path = require('path');
-
-const envPath = path.join(__dirname, '../../.env');
-const fs = require('fs');
-
-if (fs.existsSync(envPath)) {
-  require('dotenv').config({ path: envPath });
-} else {
-  console.log('ℹ️  No .env file found, using system environment variables');
-}
+require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
 const MorganProd = {
   skip: function (req, res) {

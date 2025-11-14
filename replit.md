@@ -116,42 +116,6 @@ Migration files exist in `packages/backend/src/migrations/` but the initial sche
 
 ## Recent Changes 
 
-### November 14, 2025
-
-#### Production Deployment Fix
-- **Fixed 120-second database connection timeout in production deployment**
-  - Root Cause: Production Sequelize config was using individual connection parameters (username, password, host, database) instead of the optimized `DATABASE_URL` connection string, causing slower connection negotiation
-  - Solution: Updated `packages/backend/src/config/config.js` to use `use_env_variable: 'DATABASE_URL'` for production
-  - Added connection pooling settings for production (max: 5, min: 0, acquire: 30s, idle: 10s)
-  - Backend now connects to database in under 5 seconds (was timing out at 120s)
-  - Created staged deployment startup process:
-    * `deploy-start.sh` - Custom deployment script that orchestrates startup sequence (120s timeout)
-    * `wait-for-port.js` - Node.js utility that polls port 4000 every 2 seconds
-    * `packages/backend/start-production.js` - Production startup wrapper with environment variable validation and verbose logging
-    * Backend starts first, script waits for it to be ready, then frontend starts
-  - Updated deployment configuration to use `bash ./deploy-start.sh` instead of parallel startup
-  - Fixed API connection configuration to use relative URLs (`/api/v1`) in both dev and production
-  - Vite preview server proxy configuration ensures production API requests route correctly
-  - Backend config now gracefully handles missing .env file in production (uses system environment variables)
-  - Added detailed startup logging to diagnose connection issues
-
-#### Complete Data Import from Production SQL Dump
-- **Successfully imported all 337 records from safetech_14-11.sql**
-  - Extended import script to handle previously missing tables:
-    * 39 project_technicians records (junction table)
-    * 20 project_drawings records
-    * 29 reports records with JSON answers and photos fields
-  - Added foreign key validation for project_technicians, project_drawings, and reports
-  - Added JSON field handling for reports table (answers, photos)
-  - Import script now handles composite primary keys (project_technicians uses project_id + user_id)
-  - 100% data import success rate (337/337 records)
-
-#### Password Reset for Development
-- **Reset all user passwords to `1tempPass!`**
-  - Updated 15 active users across all roles (5 Admins, 3 Project Managers, 7 Technicians)
-  - Passwords properly hashed with bcrypt before storage
-  - Development/testing convenience feature only
-
 ### November 3, 2025
 
 #### Complete Database Import (Latest - 09:23 UTC)
@@ -210,22 +174,8 @@ Migration files exist in `packages/backend/src/migrations/` but the initial sche
 ## Deployment
 The application is configured for Replit VM deployment:
 - **Build**: Frontend only (`pnpm build:fe`)
-- **Run**: Custom startup script (`deploy-start.sh`) that ensures backend is ready before starting frontend
+- **Run**: Both backend and frontend services in parallel
 - **Type**: VM (stateful, always-on)
-
-### Deployment Architecture
-The deployment uses a staged startup process to avoid race conditions:
-1. Backend starts first (`pnpm --filter ./packages/backend start`)
-2. Wait for backend port 4000 to be accessible (`wait-for-port.js`)
-3. Frontend preview server starts (`pnpm --filter ./packages/frontend preview`)
-
-This ensures the backend API is fully initialized before the frontend tries to connect, preventing `ECONNREFUSED` errors in production.
-
-### API Connection Configuration
-Both development and production use **relative URLs** (`/api/v1`) for API requests:
-- **Development**: Vite dev server proxies `/api/*` to `localhost:4000`
-- **Production**: Vite preview server proxies `/api/*` to `localhost:4000`
-- This approach works because both servers run in the same Replit container
 
 ## Notes
 - The backend serves static files from `src/public/` and `uploads/`

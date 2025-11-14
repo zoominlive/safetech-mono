@@ -39,7 +39,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 41609
+localPort = 34191
 externalPort = 3002
 
 [[ports]]
@@ -48,5 +48,5 @@ externalPort = 3000
 
 [deployment]
 deploymentTarget = "vm"
-run = ["bash", "./deploy-start.sh"]
+run = ["bash", "-c", "pnpm --filter ./packages/backend start & pnpm --filter ./packages/frontend preview --host 0.0.0.0 --port 5000"]
 build = ["pnpm", "build:fe"]
