@@ -12,7 +12,8 @@ module.exports = {
         require: true,
         rejectUnauthorized: false
       }
-    }
+    },
+    logging: console.log
   },
   test: {
     username: USER || 'root',
@@ -25,19 +26,24 @@ module.exports = {
         require: true,
         rejectUnauthorized: false
       }
-    }
+    },
+    logging: false
   },
   production: {
-    username: USER || 'root',
-    password: PASSWORD || null,
-    database: DB || 'safetech',
-    host: HOST,
-    dialect: DIALECT || 'postgres',
+    use_env_variable: 'DATABASE_URL',
+    dialect: 'postgres',
     dialectOptions: {
       ssl: {
         require: true,
         rejectUnauthorized: false
       }
+    },
+    logging: false,
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
     }
   },
 };

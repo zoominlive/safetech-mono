@@ -1,28 +1,35 @@
 #!/usr/bin/env node
 
-console.log('🚀 Starting SafeTech Backend in production mode...\n');
+// Force immediate console output
+process.stdout.write('🚀 Starting SafeTech Backend in production mode...\n\n');
 
-console.log('Environment check:');
-console.log('  NODE_ENV:', process.env.NODE_ENV || 'not set');
-console.log('  PORT:', process.env.PORT || 'not set');
-console.log('  PGHOST:', process.env.PGHOST ? '✓ set' : '✗ not set');
-console.log('  PGDATABASE:', process.env.PGDATABASE ? '✓ set' : '✗ not set');
-console.log('  PGUSER:', process.env.PGUSER ? '✓ set' : '✗ not set');
-console.log('  DATABASE_URL:', process.env.DATABASE_URL ? '✓ set' : '✗ not set');
-console.log('');
+process.stdout.write('Environment check:\n');
+process.stdout.write(`  NODE_ENV: ${process.env.NODE_ENV || 'not set'}\n`);
+process.stdout.write(`  PORT: ${process.env.PORT || 'not set (will use 4000)'}\n`);
+process.stdout.write(`  PGHOST: ${process.env.PGHOST ? '✓ set' : '✗ not set'}\n`);
+process.stdout.write(`  PGDATABASE: ${process.env.PGDATABASE ? '✓ set' : '✗ not set'}\n`);
+process.stdout.write(`  PGUSER: ${process.env.PGUSER ? '✓ set' : '✗ not set'}\n`);
+process.stdout.write(`  DATABASE_URL: ${process.env.DATABASE_URL ? '✓ set' : '✗ not set'}\n`);
+process.stdout.write('\n');
 
 const requiredEnvVars = ['PGHOST', 'PGDATABASE', 'PGUSER', 'PGPASSWORD'];
 const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
 if (missingVars.length > 0) {
-  console.error('❌ Missing required environment variables:', missingVars.join(', '));
-  console.error('   These should be set by Replit automatically');
+  process.stderr.write(`❌ Missing required environment variables: ${missingVars.join(', ')}\n`);
+  process.stderr.write('   These should be set by Replit automatically\n');
   process.exit(1);
+}
+
+// Ensure PORT is set explicitly
+if (!process.env.PORT) {
+  process.env.PORT = '4000';
+  process.stdout.write('⚙️  Setting PORT=4000 (default)\n');
 }
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 
-console.log('✅ All required environment variables are set');
-console.log('📦 Loading server...\n');
+process.stdout.write('✅ All required environment variables are set\n');
+process.stdout.write(`📦 Loading server on port ${process.env.PORT}...\n\n`);
 
 require('./src/server.js');

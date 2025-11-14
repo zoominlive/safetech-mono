@@ -119,18 +119,21 @@ Migration files exist in `packages/backend/src/migrations/` but the initial sche
 ### November 14, 2025
 
 #### Production Deployment Fix
-- **Fixed ECONNREFUSED errors in production deployment**
-  - Issue: Backend and frontend were starting simultaneously, causing race condition where frontend tried to connect before backend was ready
-  - Solution: Created staged deployment startup process:
+- **Fixed 120-second database connection timeout in production deployment**
+  - Root Cause: Production Sequelize config was using individual connection parameters (username, password, host, database) instead of the optimized `DATABASE_URL` connection string, causing slower connection negotiation
+  - Solution: Updated `packages/backend/src/config/config.js` to use `use_env_variable: 'DATABASE_URL'` for production
+  - Added connection pooling settings for production (max: 5, min: 0, acquire: 30s, idle: 10s)
+  - Backend now connects to database in under 5 seconds (was timing out at 120s)
+  - Created staged deployment startup process:
     * `deploy-start.sh` - Custom deployment script that orchestrates startup sequence (120s timeout)
     * `wait-for-port.js` - Node.js utility that polls port 4000 every 2 seconds
-    * `packages/backend/start-production.js` - Production startup wrapper with environment variable validation
+    * `packages/backend/start-production.js` - Production startup wrapper with environment variable validation and verbose logging
     * Backend starts first, script waits for it to be ready, then frontend starts
   - Updated deployment configuration to use `bash ./deploy-start.sh` instead of parallel startup
   - Fixed API connection configuration to use relative URLs (`/api/v1`) in both dev and production
   - Vite preview server proxy configuration ensures production API requests route correctly
   - Backend config now gracefully handles missing .env file in production (uses system environment variables)
-  - Increased startup timeout to 120 seconds to accommodate Chromium initialization and database connection
+  - Added detailed startup logging to diagnose connection issues
 
 #### Complete Data Import from Production SQL Dump
 - **Successfully imported all 337 records from safetech_14-11.sql**
