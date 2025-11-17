@@ -120,6 +120,21 @@ Migration files exist in `packages/backend/src/migrations/` but the initial sche
 
 ### November 17, 2025
 
+#### Production Deployment Fixed - Express 5 Compatibility & Health Check
+- **RESOLVED: Production deployment now fully operational**
+  - **Root Cause**: Express 5 breaking change - `*` wildcard pattern no longer supported
+  - **Error**: `PathError [TypeError]: Missing parameter name at index 1: *`
+  - **Solution**: Changed catch-all route from `app.get('*', ...)` to regex pattern `app.get(/^\/(?!api\/).*/, ...)`
+  - **File**: `packages/backend/src/config/app.js` line 68
+  - **Status**: ✅ Both production URLs working (safe-report-app.replit.app and app.safetechenv.com)
+
+- **Added production health check endpoint**
+  - **Endpoint**: `/api/v1/health/healthz`
+  - **Purpose**: Diagnose production deployment issues (database, env vars, frontend build)
+  - **Returns**: JSON with database status, environment variables, frontend build verification
+  - **File**: `packages/backend/src/routes/health.js`
+  - **Production Health Check**: https://safe-report-app.replit.app/api/v1/health/healthz
+
 #### Production Deployment Architecture - Backend Serves Both API and Frontend
 - **Fixed production deployment to properly serve both backend and frontend**
   - **Root Cause**: Production was running Vite preview server instead of serving built static files
