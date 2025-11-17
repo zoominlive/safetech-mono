@@ -60,14 +60,9 @@ if (process.env.NODE_ENV === 'production') {
 app.use('/api/v1', routes);
 
 // Serve frontend index.html for all non-API routes (client-side routing)
+// Express 5 requires regex pattern instead of '*' wildcard
 if (process.env.NODE_ENV === 'production') {
-  app.get('*', (req, res, next) => {
-    // Skip all API routes - let them return proper JSON errors
-    // Check both path and originalUrl to handle all edge cases
-    if (req.path.startsWith('/api') || req.originalUrl.startsWith('/api')) {
-      return next();
-    }
-    
+  app.get(/^\/(?!api\/).*/, (req, res) => {
     const fs = require('fs');
     const frontendDistPath = path.join(__dirname, '../../../frontend/dist');
     const indexPath = path.join(frontendDistPath, 'index.html');

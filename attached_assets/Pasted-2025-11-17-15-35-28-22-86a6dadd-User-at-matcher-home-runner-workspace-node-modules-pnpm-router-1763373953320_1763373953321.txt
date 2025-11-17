@@ -1,0 +1,77 @@
+2025-11-17 15:35:28.22
+86a6dadd
+User
+at matcher (/home/runner/workspace/node_modules/.pnpm/router@2.2.0/node_modules/router/lib/layer.js:86:23)
+2025-11-17 15:35:28.22
+86a6dadd
+User
+at pathToRegexp (/home/runner/workspace/node_modules/.pnpm/path-to-regexp@8.3.0/node_modules/path-to-regexp/dist/index.js:267:58)
+2025-11-17 15:35:28.22
+86a6dadd
+User
+/home/runner/workspace/node_modules/.pnpm/path-to-regexp@8.3.0/node_modules/path-to-regexp/dist/index.js:96
+2025-11-17 15:35:28.22
+86a6dadd
+User
+^
+2025-11-17 15:35:28.22
+86a6dadd
+User
+at Object. (/home/runner/workspace/packages/backend/src/config/app.js:64:7) {
+2025-11-17 15:35:28.22
+86a6dadd
+User
+at parse (/home/runner/workspace/node_modules/.pnpm/path-to-regexp@8.3.0/node_modules/path-to-regexp/dist/index.js:113:68)
+2025-11-17 15:35:28.22
+86a6dadd
+User
+}
+2025-11-17 15:35:28.22
+86a6dadd
+User
+at Function.route (/home/runner/workspace/node_modules/.pnpm/express@5.1.0/node_modules/express/lib/application.js:257:22)
+2025-11-17 15:35:28.22
+86a6dadd
+User
+at new Layer (/home/runner/workspace/node_modules/.pnpm/router@2.2.0/node_modules/router/lib/layer.js:93:62)
+2025-11-17 15:35:28.22
+86a6dadd
+User
+at Object.match (/home/runner/workspace/node_modules/.pnpm/path-to-regexp@8.3.0/node_modules/path-to-regexp/dist/index.js:237:30)
+2025-11-17 15:35:28.22
+86a6dadd
+User
+at Function.route (/home/runner/workspace/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:428:17)
+2025-11-17 15:35:28.22
+86a6dadd
+User
+PathError [TypeError]: Missing parameter name at index 1: *; visit https://git.new/pathToRegexpError for info
+2025-11-17 15:35:28.22
+86a6dadd
+User
+Node.js v20.19.3
+2025-11-17 15:35:28.22
+86a6dadd
+User
+at app. [as get] (/home/runner/workspace/node_modules/.pnpm/express@5.1.0/node_modules/express/lib/application.js:478:22)
+2025-11-17 15:35:28.22
+86a6dadd
+User
+throw new PathError(`Missing parameter name at index ${index}`, str);
+2025-11-17 15:35:28.22
+86a6dadd
+User
+originalPath: '*'
+2025-11-17 15:35:28.22
+86a6dadd
+User
+at name (/home/runner/workspace/node_modules/.pnpm/path-to-regexp@8.3.0/node_modules/path-to-regexp/dist/index.js:96:19)
+2025-11-17 15:35:28.24
+86a6dadd
+System
+command finished with error [bash -c cd packages/backend && NODE_ENV=production PORT=5000 npm start]: exit status 1
+
+2025-11-17 15:35:31.21
+86a6dadd
+System
+a port configuration was specified but the required port was never opened
