@@ -25,6 +25,7 @@ args = "Frontend"
 [[workflows.workflow]]
 name = "Backend"
 author = "agent"
+mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
