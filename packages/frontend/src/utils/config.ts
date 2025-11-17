@@ -11,7 +11,8 @@ const getBaseURL = (): string => {
     return envBaseURL;
   }
   
-  return 'https://safe-report-app.replit.app/api/v1';
+  // Production: Use relative path since frontend and backend are on same domain
+  return '/api/v1';
 }
 
 export const config: IConfig = {

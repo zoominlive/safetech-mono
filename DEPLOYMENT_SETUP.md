@@ -1,7 +1,10 @@
 # Production Deployment Setup Guide
 
-## Backend Production URL
-**Production Backend:** `https://safe-report-app.replit.app`
+## Production URLs
+**Primary URL:** `https://safe-report-app.replit.app`  
+**Custom Domain:** `https://app.safetechenv.com`
+
+Both domains point to the same production deployment running both backend and frontend.
 
 ## Required Environment Variables for Production Deployment
 
@@ -50,31 +53,36 @@ All sensitive values are currently stored in your **Replit Workspace Secrets**. 
 ## After Configuration
 
 Once all secrets are configured:
-1. **Redeploy** your backend
-2. **Test** with Postman: `https://safe-report-app.replit.app/api/v1/dashboard`
-3. **Should return data** instead of 500 error
-4. **Rebuild frontend** with new backend URL
-5. **Redeploy frontend** to `https://app.safetechenv.com`
+1. **Build frontend**: `pnpm build:fe`
+2. **Redeploy** your application
+3. **Test backend** with Postman: `https://safe-report-app.replit.app/api/v1/dashboard`
+4. **Test frontend** in browser: `https://app.safetechenv.com` or `https://safe-report-app.replit.app`
+5. Both URLs should work and show the full application
 
 ## Architecture Overview
 
 ```
-Production Setup:
-├── Backend:  https://safe-report-app.replit.app
-│   ├── Port: 8080 (internal)
-│   ├── Exposed as: https://safe-report-app.replit.app (no port in URL)
+Production Deployment (Single VM):
+├── Deployment: safe-report-app
+│   ├── URL 1: https://safe-report-app.replit.app
+│   ├── URL 2: https://app.safetechenv.com (custom domain)
+│   ├── Backend: Port 8080 → serves /api/v1 endpoints
+│   ├── Frontend: Port 5000 → serves static files (default route)
 │   └── Environment: Production secrets configured in deployment
 │
-└── Frontend: https://app.safetechenv.com
-    ├── Custom domain pointing to frontend deployment
-    └── Connects to: https://safe-report-app.replit.app/api/v1
+└── How it works:
+    ├── Both URLs point to the same deployment
+    ├── Frontend served on port 5000 (main port)
+    ├── Backend API accessible at /api/v1 on same domain
+    └── Frontend calls /api/v1 (relative path, same domain)
 
 Development Setup (Unchanged):
-├── Backend:  https://...replit.dev:8080
-│   ├── Port: 8080
+├── Backend Workflow: Port 8080
+│   ├── URL: https://...replit.dev:8080
 │   └── Environment: Workspace secrets
 │
-└── Frontend: http://localhost:5000
+└── Frontend Workflow: Port 5000
+    ├── URL: http://localhost:5000
     ├── Vite dev server with proxy
     └── Connects to: /api/v1 (proxied to localhost:8080)
 ```
@@ -88,7 +96,9 @@ Backend CORS is configured to allow:
 
 ## Notes
 
-- Development environment remains completely unchanged
-- Production deployment runs backend-only (no frontend)
-- Frontend is deployed separately to custom domain
+- Development environment remains completely unchanged (separate Backend and Frontend workflows)
+- Production runs both backend and frontend on the same VM deployment
+- Both `safe-report-app.replit.app` and `app.safetechenv.com` point to the same deployment
+- Frontend uses relative path `/api/v1` in production (same domain)
 - All production secrets must be manually configured in deployment settings
+- Frontend must be built (`pnpm build:fe`) before deployment

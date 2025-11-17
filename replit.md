@@ -120,12 +120,13 @@ Migration files exist in `packages/backend/src/migrations/` but the initial sche
 
 ### November 17, 2025
 
-#### Production Backend Configuration for Backend-Only Deployment
-- **Configured production deployment to run backend-only**
-  - Updated deployment config to run only `cd packages/backend && npm start`
-  - Removed frontend from production deployment (frontend deployed separately to custom domain)
-  - Production backend URL: `https://safe-report-app.replit.app`
-  - Development backend URL remains: `https://9ddf8f58-2768-4062-96b6-6f709c8dbac2-00-1omg4hp6qmbo2.picard.replit.dev:8080`
+#### Production Deployment Configuration - Full Stack on Single VM
+- **Configured production deployment to run both backend and frontend together**
+  - Updated deployment config: Backend on port 8080, Frontend on port 5000
+  - Single VM deployment serves both components
+  - Production URLs: `https://safe-report-app.replit.app` and `https://app.safetechenv.com` (custom domain)
+  - Both URLs point to the same deployment
+  - Development environment remains completely unchanged
 
 - **Updated CORS configuration for production**
   - Changed from `cors('*')` to specific origins
@@ -134,19 +135,21 @@ Migration files exist in `packages/backend/src/migrations/` but the initial sche
   - File: `packages/backend/src/config/app.js`
 
 - **Updated frontend production configuration**
-  - Frontend production build now connects to: `https://safe-report-app.replit.app/api/v1`
+  - Frontend production build now uses relative path `/api/v1` (same domain)
   - Development mode unchanged: Uses `/api/v1` (Vite proxy to localhost:8080)
   - File: `packages/frontend/src/utils/config.ts`
+  - Built frontend: `pnpm build:fe` creates production-optimized bundle
 
 - **Created production deployment documentation**
   - Added `DEPLOYMENT_SETUP.md` with complete configuration instructions
   - Documents all required environment variables for production deployment
   - Lists database credentials, JWT secrets, mobile app keys, AWS credentials
-  - Includes step-by-step guide for configuring production secrets
+  - Includes architecture diagrams showing single VM deployment model
 
 - **Important**: Production deployment requires manual environment variable configuration
   - All secrets must be added to deployment settings before redeploying
-  - See `DEPLOYMENT_SETUP.md` for complete list of required variables
+  - Frontend must be built before deployment (`pnpm build:fe`)
+  - See `DEPLOYMENT_SETUP.md` for complete deployment guide
 
 ### November 14, 2025
 
@@ -242,15 +245,14 @@ Migration files exist in `packages/backend/src/migrations/` but the initial sche
 ### Production Deployment
 The application is configured for Replit VM deployment:
 - **Deployment Type**: VM (stateful, always-on)
-- **Backend Deployment**: Backend-only (no frontend)
-  - **Run Command**: `cd packages/backend && npm start`
-  - **URL**: https://safe-report-app.replit.app
-  - **Port**: 8080 (internal, exposed as main URL without port suffix)
+- **Single Deployment**: Runs both backend and frontend together
+  - **Build Command**: `pnpm build:fe`
+  - **Run Command**: Backend on port 8080, Frontend preview on port 5000
+  - **Primary URL**: https://safe-report-app.replit.app
+  - **Custom Domain**: https://app.safetechenv.com (points to same deployment)
+  - **Backend API**: Both URLs serve backend at `/api/v1`
+  - **Frontend**: Both URLs serve frontend on port 5000 (main port)
   - **Environment Variables**: Must be configured in deployment settings (see DEPLOYMENT_SETUP.md)
-- **Frontend Deployment**: Separate deployment to custom domain
-  - **URL**: https://app.safetechenv.com
-  - **Connects to**: https://safe-report-app.replit.app/api/v1
-  - **Build**: `pnpm build:fe`
 
 ### Production Secrets Required
 All sensitive environment variables must be configured in deployment settings:
