@@ -44,8 +44,17 @@ app.use('/api/v1/uploads', express.static(path.join(__dirname, '../../uploads'))
 
 // Serve frontend static files in production
 if (process.env.NODE_ENV === 'production') {
+  const fs = require('fs');
   const frontendDistPath = path.join(__dirname, '../../../frontend/dist');
-  app.use(express.static(frontendDistPath));
+  
+  // Check if frontend build exists
+  if (fs.existsSync(frontendDistPath)) {
+    console.log('✅ Serving frontend from:', frontendDistPath);
+    app.use(express.static(frontendDistPath));
+  } else {
+    console.warn('⚠️ Frontend dist not found at:', frontendDistPath);
+    console.warn('⚠️ Frontend will not be served. Run: pnpm build:fe');
+  }
 }
 
 app.use('/api/v1', routes);
@@ -58,8 +67,17 @@ if (process.env.NODE_ENV === 'production') {
     if (req.path.startsWith('/api') || req.originalUrl.startsWith('/api')) {
       return next();
     }
+    
+    const fs = require('fs');
     const frontendDistPath = path.join(__dirname, '../../../frontend/dist');
-    res.sendFile(path.join(frontendDistPath, 'index.html'));
+    const indexPath = path.join(frontendDistPath, 'index.html');
+    
+    // Safety check: if index.html doesn't exist, return 503
+    if (!fs.existsSync(indexPath)) {
+      return res.status(503).send('Frontend build not found. Please run: pnpm build:fe');
+    }
+    
+    res.sendFile(indexPath);
   });
 }
 
