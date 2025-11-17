@@ -120,30 +120,43 @@ Migration files exist in `packages/backend/src/migrations/` but the initial sche
 
 ### November 17, 2025
 
-#### Production Deployment Configuration - Full Stack on Single VM
-- **Configured production deployment to run both backend and frontend together**
-  - Updated deployment config: Backend on port 8080, Frontend on port 5000
-  - Single VM deployment serves both components
-  - Production URLs: `https://safe-report-app.replit.app` and `https://app.safetechenv.com` (custom domain)
-  - Both URLs point to the same deployment
+#### Production Deployment Architecture - Backend Serves Both API and Frontend
+- **Fixed production deployment to properly serve both backend and frontend**
+  - **Root Cause**: Production was running Vite preview server instead of serving built static files
+  - **Solution**: Backend now serves frontend static files directly on port 5000
+  - Single Node.js server handles both API and frontend in production
+  - Production URLs: `https://safe-report-app.replit.app` and `https://app.safetechenv.com`
   - Development environment remains completely unchanged
+
+- **Backend Configuration Updates**
+  - Configured to serve frontend static files when `NODE_ENV=production`
+  - Serves built files from `packages/frontend/dist` on port 5000
+  - Handles client-side routing by serving `index.html` for all non-API routes
+  - API endpoints remain at `/api/v1/*`
+  - File: `packages/backend/src/config/app.js`
+
+- **Deployment Configuration Updates**
+  - Build command: `pnpm build:fe` (builds frontend static files)
+  - Run command: `cd packages/backend && NODE_ENV=production PORT=5000 npm start`
+  - Single server on port 5000 serves both API and frontend
+  - No separate Vite preview server in production
 
 - **Updated CORS configuration for production**
   - Changed from `cors('*')` to specific origins
-  - Allows: `http://localhost:5000` (development), `https://app.safetechenv.com` (production), all `.replit.dev` URLs (development testing)
+  - Allows: `http://localhost:5000` (development), `https://app.safetechenv.com` (custom domain), `https://safe-report-app.replit.app` (primary URL), all `.replit.dev` URLs (development testing)
   - Enabled credentials support for cross-origin requests
   - File: `packages/backend/src/config/app.js`
 
 - **Updated frontend production configuration**
-  - Frontend production build now uses relative path `/api/v1` (same domain)
+  - Frontend production build uses relative path `/api/v1` (same domain)
   - Development mode unchanged: Uses `/api/v1` (Vite proxy to localhost:8080)
   - File: `packages/frontend/src/utils/config.ts`
   - Built frontend: `pnpm build:fe` creates production-optimized bundle
 
-- **Created production deployment documentation**
-  - Added `DEPLOYMENT_SETUP.md` with complete configuration instructions
-  - Documents all required environment variables for production deployment
-  - Lists database credentials, JWT secrets, mobile app keys, AWS credentials
+- **Updated production deployment documentation**
+  - Updated `DEPLOYMENT_SETUP.md` with corrected architecture
+  - Documents single server architecture (backend serves both API and frontend)
+  - Lists all required environment variables for production deployment
   - Includes architecture diagrams showing single VM deployment model
 
 - **Important**: Production deployment requires manual environment variable configuration
@@ -245,13 +258,15 @@ Migration files exist in `packages/backend/src/migrations/` but the initial sche
 ### Production Deployment
 The application is configured for Replit VM deployment:
 - **Deployment Type**: VM (stateful, always-on)
-- **Single Deployment**: Runs both backend and frontend together
-  - **Build Command**: `pnpm build:fe`
-  - **Run Command**: Backend on port 8080, Frontend preview on port 5000
+- **Single Server Architecture**: Backend serves both API and frontend
+  - **Build Command**: `pnpm build:fe` (builds frontend static files)
+  - **Run Command**: `cd packages/backend && NODE_ENV=production PORT=5000 npm start`
+  - **Port**: 5000 (single Node.js server)
   - **Primary URL**: https://safe-report-app.replit.app
   - **Custom Domain**: https://app.safetechenv.com (points to same deployment)
-  - **Backend API**: Both URLs serve backend at `/api/v1`
-  - **Frontend**: Both URLs serve frontend on port 5000 (main port)
+  - **API Endpoints**: `/api/v1/*` served by backend
+  - **Frontend**: Static files from `packages/frontend/dist` served at root
+  - **Client-side Routing**: All non-API routes serve `index.html`
   - **Environment Variables**: Must be configured in deployment settings (see DEPLOYMENT_SETUP.md)
 
 ### Production Secrets Required
@@ -264,9 +279,10 @@ See `DEPLOYMENT_SETUP.md` for detailed configuration instructions.
 
 ## Notes
 - The backend serves static files from `src/public/` and `uploads/`
+- In production, backend also serves frontend static files from `packages/frontend/dist`
 - CORS is configured for both development and production:
   - Development: `http://localhost:5000`, all `.replit.dev` URLs
-  - Production: `https://app.safetechenv.com`
+  - Production: `https://app.safetechenv.com`, `https://safe-report-app.replit.app`
 - Helmet is used for security headers
 - Morgan is used for HTTP request logging
 - The application uses paranoid deletes (soft delete) for most models

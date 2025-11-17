@@ -42,7 +42,26 @@ app.use(helmet());
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api/v1/uploads', express.static(path.join(__dirname, '../../uploads')));
 
+// Serve frontend static files in production
+if (process.env.NODE_ENV === 'production') {
+  const frontendDistPath = path.join(__dirname, '../../../frontend/dist');
+  app.use(express.static(frontendDistPath));
+}
+
 app.use('/api/v1', routes);
+
+// Serve frontend index.html for all non-API routes (client-side routing)
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res, next) => {
+    // Skip all API routes - let them return proper JSON errors
+    // Check both path and originalUrl to handle all edge cases
+    if (req.path.startsWith('/api') || req.originalUrl.startsWith('/api')) {
+      return next();
+    }
+    const frontendDistPath = path.join(__dirname, '../../../frontend/dist');
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
+  });
+}
 
 app.use(ErrorHandler);
 

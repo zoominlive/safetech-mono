@@ -66,15 +66,19 @@ Production Deployment (Single VM):
 ├── Deployment: safe-report-app
 │   ├── URL 1: https://safe-report-app.replit.app
 │   ├── URL 2: https://app.safetechenv.com (custom domain)
-│   ├── Backend: Port 8080 → serves /api/v1 endpoints
-│   ├── Frontend: Port 5000 → serves static files (default route)
+│   ├── Backend Server: Port 5000 (serves BOTH API and frontend)
+│   │   ├── API endpoints: /api/v1/*
+│   │   ├── Frontend static files: Built from packages/frontend/dist
+│   │   └── Client-side routing: All non-API routes serve index.html
 │   └── Environment: Production secrets configured in deployment
 │
 └── How it works:
     ├── Both URLs point to the same deployment
-    ├── Frontend served on port 5000 (main port)
-    ├── Backend API accessible at /api/v1 on same domain
-    └── Frontend calls /api/v1 (relative path, same domain)
+    ├── Single Node.js server runs on port 5000
+    ├── Serves API at /api/v1/* endpoints
+    ├── Serves frontend static files at root
+    ├── Frontend calls /api/v1 (relative path, same domain)
+    └── NO separate frontend server in production
 
 Development Setup (Unchanged):
 ├── Backend Workflow: Port 8080
@@ -83,7 +87,7 @@ Development Setup (Unchanged):
 │
 └── Frontend Workflow: Port 5000
     ├── URL: http://localhost:5000
-    ├── Vite dev server with proxy
+    ├── Vite dev server with HMR and proxy
     └── Connects to: /api/v1 (proxied to localhost:8080)
 ```
 
@@ -91,7 +95,8 @@ Development Setup (Unchanged):
 
 Backend CORS is configured to allow:
 - `http://localhost:5000` (development)
-- `https://app.safetechenv.com` (production frontend)
+- `https://app.safetechenv.com` (production custom domain)
+- `https://safe-report-app.replit.app` (production primary URL)
 - All `.replit.dev` URLs (development testing)
 
 ## Notes
