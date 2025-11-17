@@ -30,6 +30,7 @@ const corsOptions = {
   origin: [
     'http://localhost:5000',
     'https://app.safetechenv.com',
+    'https://safe-report-app.replit.app',
     /^https:\/\/.*\.replit\.dev(:\d+)?$/  // Allow all .replit.dev URLs for development
   ],
   credentials: true
