@@ -25,7 +25,16 @@ app.use(express.urlencoded({
 
 app.use(morgan(logType, morganConfig));
 
-app.use(cors('*'));
+// CORS configuration for both development and production
+const corsOptions = {
+  origin: [
+    'http://localhost:5000',
+    'https://app.safetechenv.com',
+    /^https:\/\/.*\.replit\.dev(:\d+)?$/  // Allow all .replit.dev URLs for development
+  ],
+  credentials: true
+};
+app.use(cors(corsOptions));
 
 app.use(helmet());
 
