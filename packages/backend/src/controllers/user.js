@@ -164,6 +164,7 @@ exports.getAllUsers = async (req, res, next) => {
       order: orderClause,
       limit: filters.limit,
       offset: filters.page ? (filters.page - 1) * filters.limit : undefined,
+      distinct: true
     };
     const users = await User.findAndCountAll(options);
     res.status(OK).json({

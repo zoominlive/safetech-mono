@@ -195,6 +195,7 @@ exports.getAllProjects = async (req, res, next) => {
       order: filters.sort,
       limit: filters.limit,
       offset: filters.page ? (filters.page - 1) * filters.limit : undefined,
+      distinct: true
     };
     options.include = [
       { model: Customer, as: "company", attributes: ["id", "company_name", "first_name", "last_name"], required: true },

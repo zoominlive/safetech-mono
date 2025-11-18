@@ -108,6 +108,7 @@ exports.getAllCustomers = async (req, res, next) => {
       order: orderClause,
       limit: filters.limit,
       offset: filters.page ? (filters.page - 1) * filters.limit : undefined,
+      distinct: true
     };
     const customers = await Customer.findAndCountAll(options);
     res.status(OK).json({ 
