@@ -37,7 +37,19 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-app.use(helmet());
+// Configure Helmet with custom CSP to allow S3 bucket images
+// Use Helmet's secure defaults and only extend img-src for S3
+const s3BucketHost = process.env.AWS_S3_BUCKET_HOST || 'safetech-dev-images.s3.ca-central-1.amazonaws.com';
+const defaultDirectives = helmet.contentSecurityPolicy.getDefaultDirectives();
+
+// Extend img-src to include S3 bucket while preserving defaults
+defaultDirectives['img-src'] = ["'self'", 'data:', 'blob:', `https://${s3BucketHost}`];
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: defaultDirectives
+  }
+}));
 
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api/v1/uploads', express.static(path.join(__dirname, '../../uploads')));
