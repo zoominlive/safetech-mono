@@ -92,8 +92,11 @@ const generatePdfBuffer = async (htmlContent, headerTemplate, footerTemplate, op
     page.setDefaultTimeout(120000);
     await page.setViewport({ width: 1280, height: 1690, deviceScaleFactor: 1 });
 
-    // Wait for the network to be reasonably idle so heavy images and fonts load.
-    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+    // For very large reports with many external assets, waiting for full
+    // "networkidle0" can be counter‑productive and exceed upstream timeouts.
+    // "domcontentloaded" ensures the DOM is ready without blocking forever
+    // on slow images/fonts.
+    await page.setContent(htmlContent, { waitUntil: 'domcontentloaded' });
 
     const pdfBuffer = await page.pdf({
       format: "A4",
