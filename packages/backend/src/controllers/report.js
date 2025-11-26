@@ -252,21 +252,20 @@ exports.updateReport = async (req, res, next) => {
       });
     }
 
-    // Authorization: Only assigned PM or assigned Technician can update (save) the report
+    // Authorization: Only assigned PM, assigned Technician, or Admin can update (save) the report
     if (user.role === USER_ROLE.PROJECT_MANAGER) {
       if (fetchReport.project?.pm_id !== user.id) {
         const ApiError = new APIError(NOT_ACCESS, "You can only save reports for your assigned projects", FORBIDDEN);
         return ErrorHandler(ApiError, req, res, next);
       }
-    }
-
-    if (user.role === USER_ROLE.TECHNICIAN) {
+    } else if (user.role === USER_ROLE.TECHNICIAN) {
       const isAssignedTech = ((fetchReport.project?.technicians) || []).some(t => t.id === user.id) || fetchReport.project?.technician_id === user.id;
       if (!isAssignedTech) {
         const ApiError = new APIError(NOT_ACCESS, "You can only save reports for your assigned projects", FORBIDDEN);
         return ErrorHandler(ApiError, req, res, next);
       }
     }
+    // Admin can update any report, no additional checks needed
 
     const updateData = {
       project_id,
@@ -705,7 +704,7 @@ exports.getLabReportsForProject = async (req, res, next) => {
 exports.sendReportToCustomer = async (req, res, next) => {
   try {
     const { user } = req;
-    if (!user || user.role !== USER_ROLE.PROJECT_MANAGER) {
+    if (!user || (user.role !== USER_ROLE.PROJECT_MANAGER && user.role !== USER_ROLE.ADMIN)) {
       const ApiError = new APIError(NOT_ACCESS, null, FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
@@ -808,9 +807,9 @@ exports.submitToPMReview = async (req, res, next) => {
     const { user } = req;
     const { reportId } = req.params;
 
-    // Only technicians can submit reports to PM review
-    if (user.role !== USER_ROLE.TECHNICIAN) {
-      const ApiError = new APIError(NOT_ACCESS, "Only technicians can submit reports to PM review", FORBIDDEN);
+    // Only technicians and admins can submit reports to PM review
+    if (user.role !== USER_ROLE.TECHNICIAN && user.role !== USER_ROLE.ADMIN) {
+      const ApiError = new APIError(NOT_ACCESS, "Only technicians and admins can submit reports to PM review", FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -830,13 +829,16 @@ exports.submitToPMReview = async (req, res, next) => {
     }
 
     // Check assignment using project_technicians join table, fallback to legacy technician_id
-    const assignedCount = await sequelize.models.ProjectTechnician.count({
-      where: { project_id: report.project_id, user_id: user.id }
-    });
-    const isAssignedTech = assignedCount > 0 || report.project?.technician_id === user.id;
-    if (!isAssignedTech) {
-      const ApiError = new APIError(NOT_ACCESS, "You can only submit your own reports", FORBIDDEN);
-      return ErrorHandler(ApiError, req, res, next);
+    // Admins can submit any report, technicians can only submit their assigned reports
+    if (user.role !== USER_ROLE.ADMIN) {
+      const assignedCount = await sequelize.models.ProjectTechnician.count({
+        where: { project_id: report.project_id, user_id: user.id }
+      });
+      const isAssignedTech = assignedCount > 0 || report.project?.technician_id === user.id;
+      if (!isAssignedTech) {
+        const ApiError = new APIError(NOT_ACCESS, "You can only submit your own reports", FORBIDDEN);
+        return ErrorHandler(ApiError, req, res, next);
+      }
     }
 
     // Check if report has content (answers)
@@ -869,9 +871,9 @@ exports.approveAndCompleteReport = async (req, res, next) => {
     const { user } = req;
     const { reportId } = req.params;
 
-    // Only project managers can approve and complete reports
-    if (user.role !== USER_ROLE.PROJECT_MANAGER) {
-      const ApiError = new APIError(NOT_ACCESS, "Only project managers can approve and complete reports", FORBIDDEN);
+    // Only project managers and admins can approve and complete reports
+    if (user.role !== USER_ROLE.PROJECT_MANAGER && user.role !== USER_ROLE.ADMIN) {
+      const ApiError = new APIError(NOT_ACCESS, "Only project managers and admins can approve and complete reports", FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -890,8 +892,8 @@ exports.approveAndCompleteReport = async (req, res, next) => {
       });
     }
 
-    // Check if project is assigned to the PM
-    if (report.project.pm_id !== user.id) {
+    // Check if project is assigned to the PM (admins can approve any project)
+    if (user.role !== USER_ROLE.ADMIN && report.project.pm_id !== user.id) {
       const ApiError = new APIError(NOT_ACCESS, "You can only approve reports for your assigned projects", FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
@@ -927,9 +929,9 @@ exports.requestReportChanges = async (req, res, next) => {
     const { reportId } = req.params;
     const { feedback } = req.body;
 
-    // Only project managers can request changes
-    if (user.role !== USER_ROLE.PROJECT_MANAGER) {
-      const ApiError = new APIError(NOT_ACCESS, "Only project managers can request report changes", FORBIDDEN);
+    // Only project managers and admins can request changes
+    if (user.role !== USER_ROLE.PROJECT_MANAGER && user.role !== USER_ROLE.ADMIN) {
+      const ApiError = new APIError(NOT_ACCESS, "Only project managers and admins can request report changes", FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }
 
@@ -948,8 +950,8 @@ exports.requestReportChanges = async (req, res, next) => {
       });
     }
 
-    // Check if project is assigned to the PM
-    if (report.project.pm_id !== user.id) {
+    // Check if project is assigned to the PM (admins can request changes for any project)
+    if (user.role !== USER_ROLE.ADMIN && report.project.pm_id !== user.id) {
       const ApiError = new APIError(NOT_ACCESS, "You can only request changes for your assigned projects", FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);
     }

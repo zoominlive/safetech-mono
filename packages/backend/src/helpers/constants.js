@@ -58,6 +58,7 @@ module.exports = {
   // User Roles
   USER_ROLE: {
     SUPER_ADMIN: 'Super Admin',
+    ADMIN: 'Admin',
     PROJECT_MANAGER: 'Project Manager',
     TECHNICIAN: 'Technician',
     API: 'API',

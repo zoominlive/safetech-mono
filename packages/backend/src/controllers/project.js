@@ -287,7 +287,7 @@ exports.updateProject = async (req, res, next) => {
         success: false,
       });
     } else {
-      // If user is a Project Manager, only allow updating if they own the project
+      // If user is a Project Manager, only allow updating if they own the project (Admin can update any project)
       if (user.role === USER_ROLE.PROJECT_MANAGER && fetchProject.pm_id !== user.id) {
         const ApiError = new APIError(NOT_ACCESS, "You can only edit projects assigned to you", FORBIDDEN);
         return ErrorHandler(ApiError, req, res, next);
@@ -370,7 +370,7 @@ exports.deleteProject = async (req, res, next) => {
         .json({ code: NOT_FOUND, message: NO_RECORD_FOUND, success: false });
     }
 
-    // If user is a Project Manager, only allow deleting if they own the project
+    // If user is a Project Manager, only allow deleting if they own the project (Admin can delete any project)
     if (user.role === USER_ROLE.PROJECT_MANAGER && fetchedProject.pm_id !== user.id) {
       const ApiError = new APIError(NOT_ACCESS, "You can only delete projects assigned to you", FORBIDDEN);
       return ErrorHandler(ApiError, req, res, next);

@@ -774,6 +774,10 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
     if (readOnly) return false;
     
     if (!userRole) return false;
+    // Admin can always edit
+    if (userRole === "Admin") {
+      return true;
+    }
     if (userRole === "Technician") {
       return projectStatus === "In Progress";
     }
@@ -786,6 +790,10 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   const isEditAllowed = () => {
     // Check if user has permission to edit regardless of readOnly mode
     if (!userRole) return false;
+    // Admin can always edit
+    if (userRole === "Admin") {
+      return true;
+    }
     if (userRole === "Technician") {
       return projectStatus === "In Progress";
     }
@@ -1847,7 +1855,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   };
 
   const handleOpenSubmitToPMDialog = () => {
-    if (userRole === "Technician") {
+    if (userRole === "Technician" || userRole === "Admin") {
       const missing = getMissingDocsAndLimits();
       if (missing.length > 0) {
         // Open the Docs and Limits accordion section instead of the drawer
@@ -2144,7 +2152,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   const handleSubmitToPMReview = async () => {
     if (!id || !projectId) return;
     // Validate common "Docs and Limits" fields for Technician before submitting
-    if (userRole === "Technician") {
+    if (userRole === "Technician" || userRole === "Admin") {
       console.log("Validating Docs and Limits fields for Technician");
       const docsSection = schema.find((s) => s.title === "Docs and Limits");
       console.log("Docs section:", docsSection);
@@ -2723,7 +2731,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
               </Button>
               
               {/* Workflow buttons based on user role and project status */}
-              {userRole === "Technician" && projectStatus === "In Progress" && (
+              {(userRole === "Technician" || userRole === "Admin") && projectStatus === "In Progress" && (
                 <>
                   <Button 
                     onClick={handleOpenSubmitToPMDialog} 
@@ -2768,7 +2776,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                 </>
               )}
               
-              {userRole === "Project Manager" && projectStatus === "PM Review" && (
+              {(userRole === "Project Manager" || userRole === "Admin") && projectStatus === "PM Review" && (
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button 
@@ -2825,7 +2833,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                 </Popover>
               )}
               
-              {userRole === "Project Manager" && projectStatus === "Complete" && (
+              {(userRole === "Project Manager" || userRole === "Admin") && projectStatus === "Complete" && (
                 <Button 
                   onClick={handleSendToCustomer} 
                   disabled={isSaving}

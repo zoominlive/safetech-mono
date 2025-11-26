@@ -303,7 +303,7 @@ function ActionsCell({ row, ...props }: any) {
         </Button>
       )
     } : null,
-    onSendToCustomer && user?.role?.toLowerCase() === 'project manager' && isReportsTable ? {
+    onSendToCustomer && (user?.role?.toLowerCase() === 'project manager' || user?.role?.toLowerCase() === 'admin') && isReportsTable ? {
       key: 'send',
       button: (
         <Button
