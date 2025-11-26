@@ -50,6 +50,72 @@ const getChromiumPath = () => {
   return process.env.PUPPETEER_EXECUTABLE_PATH || undefined;
 };
 
+// Reuse a shared Puppeteer browser instance so that large reports
+// don't pay the cost of launching Chromium on every request.
+let browserPromise = null;
+
+const getBrowserInstance = async () => {
+  if (browserPromise) {
+    try {
+      const existing = await browserPromise;
+      if (!existing.isConnected || existing.isConnected()) {
+        return existing;
+      }
+    } catch (err) {
+      console.error("Existing Puppeteer browser instance is not usable. Recreating...", err);
+      browserPromise = null;
+    }
+  }
+
+  browserPromise = puppeteer.launch({
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu'
+    ],
+    executablePath: getChromiumPath()
+  });
+
+  return browserPromise;
+};
+
+// Helper to generate a PDF buffer from HTML using the shared browser.
+// This is optimized for large reports and ensures pages are always closed.
+const generatePdfBuffer = async (htmlContent, headerTemplate, footerTemplate, options = {}) => {
+  const browser = await getBrowserInstance();
+  const page = await browser.newPage();
+
+  try {
+    page.setDefaultNavigationTimeout(120000);
+    page.setDefaultTimeout(120000);
+    await page.setViewport({ width: 1280, height: 1690, deviceScaleFactor: 1 });
+
+    // Wait for the network to be reasonably idle so heavy images and fonts load.
+    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      displayHeaderFooter: true,
+      margin: { top: "100px", bottom: "80px", left: "50px", right: "50px" },
+      headerTemplate,
+      footerTemplate,
+      preferCSSPageSize: true,
+      ...options,
+    });
+
+    return pdfBuffer;
+  } finally {
+    try {
+      await page.close();
+    } catch (err) {
+      console.error("Failed to close Puppeteer page:", err);
+    }
+  }
+};
+
 // AWS S3 configuration
 const s3 = new AWS.S3({
   accessKeyId: AWS_S3_ACCESS_KEY_ID,
@@ -432,45 +498,18 @@ exports.generatePDFReport = async (req, res, next) => {
     const htmlContent = renderTemplate('report-pdf', templateData);
     console.log('HTML content generated, length:', htmlContent.length);
 
-    const browser = await puppeteer.launch({ 
-      headless: true,
-      args: [
-        '--no-sandbox', 
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu'
-      ],
-      executablePath: getChromiumPath()
-    });
-    const page = await browser.newPage();
-    // Increase timeouts for large reports/assets
-    page.setDefaultNavigationTimeout(120000);
-    page.setDefaultTimeout(120000);
-    await page.setViewport({ width: 1280, height: 1690, deviceScaleFactor: 1 });
-
-    // Set content and allow more time for resources
-    await page.setContent(htmlContent, { waitUntil: 'domcontentloaded' });
-    console.log('Page content set, allowing time for resources to load...');
-
-    // Extra wait for remote images and fonts
-    await new Promise(resolve => setTimeout(resolve, 5000));
-
     console.log('Generating header template...');
     const headerTemplate = getHeaderTemplate('coloredsafetech.png');
     console.log('Header template generated, length:', headerTemplate.length);
-    // console.log("templateData=>", templateData);
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      displayHeaderFooter: true,
-      margin: { top: "100px", bottom: "80px", left: "50px", right: "50px" },
-      headerTemplate: headerTemplate,
-      footerTemplate: getFooterTemplate(templateData),
-      timeout: 120000
-    });
+
+    // Generate PDF using shared Puppeteer instance
+    const pdfBuffer = await generatePdfBuffer(
+      htmlContent,
+      headerTemplate,
+      getFooterTemplate(templateData)
+    );
 
     console.log('PDF generated, buffer size:', pdfBuffer.length);
-    await browser.close();
 
     res.set({
       "Content-Type": "application/pdf",
@@ -745,36 +784,21 @@ exports.sendReportToCustomer = async (req, res, next) => {
     // Render HTML using template
     const htmlContent = renderTemplate('report-pdf', templateData);
 
-    // Generate PDF using the same template
-    const browser = await puppeteer.launch({ 
-      headless: true,
-      args: [
-        '--no-sandbox', 
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu'
-      ],
-      executablePath: getChromiumPath()
-    });
-    const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
     console.log('Generating header template for email PDF...');
     const headerTemplate = getHeaderTemplate('coloredsafetech.png');
     console.log('Email header template generated, length:', headerTemplate.length);
 
-    const pdfBuffer = await page.pdf({ 
-      format: "A4", 
-      printBackground: true,
-      displayHeaderFooter: true,
-      margin: { top: "120px", bottom: "100px", left: "50px", right: "50px" },
-      headerTemplate: headerTemplate,
-      footerTemplate: getFooterTemplate(templateData)
-    });
+    // Generate PDF using shared Puppeteer instance
+    const pdfBuffer = await generatePdfBuffer(
+      htmlContent,
+      headerTemplate,
+      getFooterTemplate(templateData),
+      {
+        margin: { top: "120px", bottom: "100px", left: "50px", right: "50px" }
+      }
+    );
 
     console.log('Email PDF generated, buffer size:', pdfBuffer.length);
-    await browser.close();
 
     // Upload PDF to S3
     const pdfFilename = `report-${report.id}.pdf`;
