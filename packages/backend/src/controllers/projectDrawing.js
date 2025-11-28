@@ -62,7 +62,7 @@ exports.create = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
     const { user } = req;
-    if (!user || ![USER_ROLE.TECHNICIAN, USER_ROLE.PROJECT_MANAGER, USER_ROLE.SUPER_ADMIN].includes(user.role)) {
+    if (!user || ![USER_ROLE.TECHNICIAN, USER_ROLE.PROJECT_MANAGER, USER_ROLE.SUPER_ADMIN, USER_ROLE.ADMIN].includes(user.role)) {
       const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
       return ErrorHandler(ApiError, req, res, next);
     }
@@ -118,7 +118,7 @@ exports.remove = async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
     const { user } = req;
-    if (!user || ![USER_ROLE.TECHNICIAN, USER_ROLE.PROJECT_MANAGER, USER_ROLE.SUPER_ADMIN].includes(user.role)) {
+    if (!user || ![USER_ROLE.TECHNICIAN, USER_ROLE.PROJECT_MANAGER, USER_ROLE.SUPER_ADMIN, USER_ROLE.ADMIN].includes(user.role)) {
       const ApiError = new APIError(NOT_ACCESS, null, BAD_REQUEST);
       return ErrorHandler(ApiError, req, res, next);
     }

@@ -10,7 +10,7 @@ import {
   SelectGroup,
   SelectItem,
 } from "@/components/ui/select";
-import { Bookmark, CircleX, Download, SquarePen, Trash2 } from "lucide-react";
+import { Bookmark, CircleX, Download, Loader2, SquarePen, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { ProjectData, projectService } from "@/services/api/projectService";
@@ -78,6 +78,7 @@ const ProjectForm: React.FC = () => {
   const [isLoadingDrawings, setIsLoadingDrawings] = useState(false);
   const [isUploadingUnmarked, setIsUploadingUnmarked] = useState(false);
   const [isUploadingMarked, setIsUploadingMarked] = useState(false);
+  const [deletingDrawingId, setDeletingDrawingId] = useState<string | null>(null);
 
   // Generate a random 5-digit number
   const generateProjectNumber = () => {
@@ -136,6 +137,7 @@ const ProjectForm: React.FC = () => {
   const handleDelete = async (drawingId: string) => {
     if (!id) return;
     try {
+      setDeletingDrawingId(drawingId);
       const res = await projectDrawingService.remove(id, drawingId);
       if (res?.success) {
         toast({ title: "Deleted", description: "Drawing removed" });
@@ -145,6 +147,8 @@ const ProjectForm: React.FC = () => {
       }
     } catch (e) {
       toast({ title: "Error", description: "Failed to delete drawing", variant: "destructive" });
+    } finally {
+      setDeletingDrawingId(null);
     }
   };
 
@@ -901,12 +905,29 @@ const ProjectForm: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-3">
                         <Label>Upload Unmarked Drawings</Label>
-                        <Input type="file" multiple onChange={(e) => handleUpload(e.target.files, false)} disabled={isUploadingUnmarked} />
+                        <Input
+                          type="file"
+                          multiple
+                          onChange={(e) => {
+                            handleUpload(e.target.files, false);
+                            // Clear the file input so the same file can be selected again if needed
+                            e.target.value = "";
+                          }}
+                          disabled={isUploadingUnmarked}
+                        />
                         {isUploadingUnmarked && <p className="text-sm text-muted-foreground">Uploading...</p>}
                       </div>
                       <div className="space-y-3">
                         <Label>Upload Marked Drawings</Label>
-                        <Input type="file" multiple onChange={(e) => handleUpload(e.target.files, true)} disabled={isUploadingMarked} />
+                        <Input
+                          type="file"
+                          multiple
+                          onChange={(e) => {
+                            handleUpload(e.target.files, true);
+                            e.target.value = "";
+                          }}
+                          disabled={isUploadingMarked}
+                        />
                         {isUploadingMarked && <p className="text-sm text-muted-foreground">Uploading...</p>}
                       </div>
                     </div>
@@ -922,9 +943,14 @@ const ProjectForm: React.FC = () => {
                           <ul className="divide-y">
                             {unmarkedDrawings.map((d) => (
                               <li key={d.id} className="py-2 flex items-center justify-between gap-3">
-                                <div className="min-w-0">
-                                  <p className="truncate text-sm">{d.file_name}</p>
-                                  <p className="text-xs text-muted-foreground">{new Date(d.created_at).toLocaleString()}</p>
+                                <div className="min-w-0 flex items-center gap-2">
+                                  <div>
+                                    <p className="truncate text-sm">{d.file_name}</p>
+                                    <p className="text-xs text-muted-foreground">{new Date(d.created_at).toLocaleString()}</p>
+                                  </div>
+                                  {deletingDrawingId === d.id && (
+                                    <Loader2 className="h-4 w-4 animate-spin text-red-500" />
+                                  )}
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
                                   <Button variant="ghost" size="icon" onClick={() => window.open(d.file_url, '_blank')} title="Download">
@@ -945,7 +971,12 @@ const ProjectForm: React.FC = () => {
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDelete(d.id)}>Delete</AlertDialogAction>
+                                        <AlertDialogAction
+                                          onClick={() => handleDelete(d.id)}
+                                          disabled={deletingDrawingId === d.id}
+                                        >
+                                          {deletingDrawingId === d.id ? "Deleting..." : "Delete"}
+                                        </AlertDialogAction>
                                       </AlertDialogFooter>
                                     </AlertDialogContent>
                                   </AlertDialog>
@@ -965,9 +996,14 @@ const ProjectForm: React.FC = () => {
                           <ul className="divide-y">
                             {markedDrawings.map((d) => (
                               <li key={d.id} className="py-2 flex items-center justify-between gap-3">
-                                <div className="min-w-0">
-                                  <p className="truncate text-sm">{d.file_name}</p>
-                                  <p className="text-xs text-muted-foreground">{new Date(d.created_at).toLocaleString()}</p>
+                                <div className="min-w-0 flex items-center gap-2">
+                                  <div>
+                                    <p className="truncate text-sm">{d.file_name}</p>
+                                    <p className="text-xs text-muted-foreground">{new Date(d.created_at).toLocaleString()}</p>
+                                  </div>
+                                  {deletingDrawingId === d.id && (
+                                    <Loader2 className="h-4 w-4 animate-spin text-red-500" />
+                                  )}
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
                                   <Button variant="ghost" size="icon" onClick={() => window.open(d.file_url, '_blank')} title="Download">
@@ -988,7 +1024,12 @@ const ProjectForm: React.FC = () => {
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDelete(d.id)}>Delete</AlertDialogAction>
+                                        <AlertDialogAction
+                                          onClick={() => handleDelete(d.id)}
+                                          disabled={deletingDrawingId === d.id}
+                                        >
+                                          {deletingDrawingId === d.id ? "Deleting..." : "Delete"}
+                                        </AlertDialogAction>
                                       </AlertDialogFooter>
                                     </AlertDialogContent>
                                   </AlertDialog>

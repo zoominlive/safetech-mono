@@ -18,14 +18,19 @@ const { ErrorHandler } = require("../helpers/errorHandler");
 const { useFilter } = require("../helpers/pagination");
 const { sequelize, Report, Project, ReportTemplate, Customer, User, LabReport, LabReportResult, Location } = require("../models");
 const puppeteer = require('puppeteer');
+const { PDFDocument } = require('pdf-lib');
+const http = require('http');
+const https = require('https');
 const AWS = require('aws-sdk');
+const sharp = require('sharp');
 const { AWS_REGION, AWS_BUCKET, AWS_S3_SECRET_ACCESS_KEY, AWS_S3_ACCESS_KEY_ID } = require("../config/use_env_variable");
 const { Op } = require("sequelize");
 const multer = require('multer');
 const csv = require('csv-parser');
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const os = require('os');
+const { execSync, execFile } = require('child_process');
 const upload = multer({ dest: 'uploads/' });
 const dayjs = require('dayjs');
 const customParseFormat = require('dayjs/plugin/customParseFormat');
@@ -92,11 +97,40 @@ const generatePdfBuffer = async (htmlContent, headerTemplate, footerTemplate, op
     page.setDefaultTimeout(120000);
     await page.setViewport({ width: 1280, height: 1690, deviceScaleFactor: 1 });
 
-    // For very large reports with many external assets, waiting for full
-    // "networkidle0" can be counter‑productive and exceed upstream timeouts.
-    // "domcontentloaded" ensures the DOM is ready without blocking forever
-    // on slow images/fonts.
+    // First wait for the DOM to be ready
     await page.setContent(htmlContent, { waitUntil: 'domcontentloaded' });
+    // Explicitly wait for images to finish loading so they appear in the PDF.
+    // This is more reliable than relying on "networkidle0" and avoids very long waits
+    // on large reports with many external assets.
+    try {
+      await page.evaluate(async () => {
+        const images = Array.from(document.images || []);
+        if (!images.length) return;
+
+        await Promise.race([
+          Promise.all(
+            images.map((img) => {
+              if (img.complete && img.naturalWidth !== 0) {
+                return Promise.resolve();
+              }
+              return new Promise((resolve) => {
+                const done = () => {
+                  img.removeEventListener('load', done);
+                  img.removeEventListener('error', done);
+                  resolve();
+                };
+                img.addEventListener('load', done, { once: true });
+                img.addEventListener('error', done, { once: true });
+              });
+            })
+          ),
+          // Safety timeout so we never wait forever
+          new Promise((resolve) => setTimeout(resolve, 15000)),
+        ]);
+      });
+    } catch (imgErr) {
+      console.warn('Failed while waiting for images to load in PDF generation:', imgErr);
+    }
 
     const pdfBuffer = await page.pdf({
       format: "A4",
@@ -118,6 +152,183 @@ const generatePdfBuffer = async (htmlContent, headerTemplate, footerTemplate, op
     }
   }
 };
+// Max image size (in bytes) before we try to downsize/compress on upload.
+const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024; // 2 MB
+// Maximum width/height for uploaded images; larger images are resized to fit.
+const MAX_IMAGE_DIMENSION = 2000;
+
+// Fetch a remote PDF (e.g., site drawing stored on S3) as a Buffer.
+// Uses Node's built-in http/https to avoid adding heavy dependencies.
+const fetchPdfBuffer = (pdfUrl, redirectDepth = 0) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const urlObj = new URL(pdfUrl);
+      const lib = urlObj.protocol === 'http:' ? http : https;
+
+      const req = lib.get(urlObj, (res) => {
+        // Handle simple redirects (common with S3 pre-signed URLs)
+        if (
+          res.statusCode &&
+          res.statusCode >= 300 &&
+          res.statusCode < 400 &&
+          res.headers.location
+        ) {
+          if (redirectDepth > 3) {
+            return reject(new Error(`Too many redirects while fetching PDF: ${pdfUrl}`));
+          }
+          return resolve(fetchPdfBuffer(res.headers.location, redirectDepth + 1));
+        }
+
+        if (res.statusCode !== 200) {
+          return reject(new Error(`Failed to fetch PDF (${res.statusCode}): ${pdfUrl}`));
+        }
+
+        const chunks = [];
+        res.on('data', (chunk) => chunks.push(chunk));
+        res.on('end', () => resolve(Buffer.concat(chunks)));
+      });
+
+      req.on('error', (err) => reject(err));
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
+// Append all pages of the project drawing PDFs at the end of the report,
+// so the main report content and all appendices remain in their original order.
+const appendDrawingPdfsToReport = async (reportPdfBuffer, templateData) => {
+  try {
+    if (!templateData || (!templateData.project_drawings && !templateData.projectDrawings)) {
+      return reportPdfBuffer;
+    }
+
+    const pdfRegex = /\.pdf(\?|#|$)/i;
+
+    const drawingsSource = [
+      ...(Array.isArray(templateData.project_drawings) ? templateData.project_drawings : []),
+      ...(Array.isArray(templateData.projectDrawings) ? templateData.projectDrawings : []),
+    ];
+
+    // Collect unique PDF URLs
+    const pdfUrls = Array.from(
+      new Set(
+        drawingsSource
+          .filter((d) => d && typeof d.file_url === 'string' && pdfRegex.test(d.file_url))
+          .map((d) => d.file_url)
+      )
+    );
+
+    if (!pdfUrls.length) {
+      return reportPdfBuffer;
+    }
+
+    const mainDoc = await PDFDocument.load(reportPdfBuffer);
+    const totalPages = mainDoc.getPageCount();
+
+    // If we don't have any pages, nothing to do.
+    if (!totalPages) {
+      return reportPdfBuffer;
+    }
+
+    // Append each drawing PDF's pages to the end of the main document.
+    for (const url of pdfUrls) {
+      try {
+        const drawingBuffer = await fetchPdfBuffer(url);
+        const drawingDoc = await PDFDocument.load(drawingBuffer);
+        const pageIndices = Array.from(
+          { length: drawingDoc.getPageCount() },
+          (_, i) => i
+        );
+        const copiedPages = await mainDoc.copyPages(drawingDoc, pageIndices);
+        copiedPages.forEach((p) => mainDoc.addPage(p));
+      } catch (err) {
+        console.error('Failed to append drawing PDF at end of report:', url, err);
+      }
+    }
+
+    const mergedBytes = await mainDoc.save();
+    return Buffer.from(mergedBytes);
+  } catch (err) {
+    console.error('Error while appending drawing PDFs at end of report:', err);
+    return reportPdfBuffer;
+  }
+};
+
+/**
+ * Compress a PDF buffer using Ghostscript if available.
+ * This is primarily aimed at very large reports (e.g. >100 MB).
+ * 
+ * Controlled via env:
+ * - PDF_COMPRESSION_ENABLED=true|false (default: false)
+ * - GHOSTSCRIPT_PATH=custom gs binary (default: "gs")
+ */
+const compressPdfBufferIfEnabled = async (pdfBuffer) => {
+  try {
+    const enabled = String(process.env.PDF_COMPRESSION_ENABLED || '').toLowerCase() === 'true';
+    if (!enabled) {
+      return pdfBuffer;
+    }
+
+    const ghostscriptPath = process.env.GHOSTSCRIPT_PATH || 'gs';
+
+    // If buffer is already reasonably small (< 5MB), skip compression.
+    if (!pdfBuffer || pdfBuffer.length < 5 * 1024 * 1024) {
+      return pdfBuffer;
+    }
+
+    const tmpDir = os.tmpdir();
+    const uniqueId = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    const inputPath = path.join(tmpDir, `safetech-report-${uniqueId}.pdf`);
+    const outputPath = path.join(tmpDir, `safetech-report-${uniqueId}-compressed.pdf`);
+
+    await fs.promises.writeFile(inputPath, pdfBuffer);
+
+    const args = [
+      '-sDEVICE=pdfwrite',
+      '-dCompatibilityLevel=1.4',
+      // /ebook is a good trade-off between quality and size for reports
+      '-dPDFSETTINGS=/ebook',
+      '-dNOPAUSE',
+      '-dQUIET',
+      '-dBATCH',
+      `-sOutputFile=${outputPath}`,
+      inputPath,
+    ];
+
+    await new Promise((resolve, reject) => {
+      execFile(ghostscriptPath, args, (error) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve();
+      });
+    });
+
+    const compressedBuffer = await fs.promises.readFile(outputPath);
+
+    // Clean up temp files (best-effort)
+    fs.promises.unlink(inputPath).catch(() => {});
+    fs.promises.unlink(outputPath).catch(() => {});
+
+    if (compressedBuffer && compressedBuffer.length > 0 && compressedBuffer.length < pdfBuffer.length) {
+      console.log(
+        `PDF compression successful. Original size: ${pdfBuffer.length} bytes, ` +
+        `compressed size: ${compressedBuffer.length} bytes`
+      );
+      return compressedBuffer;
+    }
+
+    console.log(
+      'PDF compression did not reduce size, using original buffer. ' +
+      `Original: ${pdfBuffer.length}, Compressed: ${compressedBuffer.length}`
+    );
+    return pdfBuffer;
+  } catch (err) {
+    console.error('PDF compression failed, returning original buffer:', err);
+    return pdfBuffer;
+  }
+};
 
 // AWS S3 configuration
 const s3 = new AWS.S3({
@@ -127,29 +338,69 @@ const s3 = new AWS.S3({
 });
 
 // Helper function to upload to S3
-const uploadToS3 = (file, reportId) => {
+const uploadToS3 = async (file, reportId) => {
   if (!s3) {
     throw new Error('AWS S3 configuration is missing');
   }
 
-  return new Promise((resolve, reject) => {
-    const params = {
-      Bucket: AWS_BUCKET,
-      Key: `reports/${reportId}/${Date.now()}-${file.originalname}`,
-      Body: file.buffer,
-      ContentType: file.mimetype,
-      ACL: 'public-read'
-    };
+  let body = file.buffer;
+  let contentType = file.mimetype;
 
-    s3.upload(params, (err, data) => {
-      if (err) {
-        console.error('S3 Upload Error:', err);
-        reject(err);
+  // If this is a large image, downsize/compress it before uploading to S3.
+  try {
+    const isImage = typeof file.mimetype === 'string' && file.mimetype.startsWith('image/');
+    const originalSize = file.size || (file.buffer ? file.buffer.length : 0);
+
+    if (isImage && originalSize > MAX_IMAGE_SIZE_BYTES) {
+      console.log(
+        `Compressing image ${file.originalname} before upload. ` +
+        `Original size: ${originalSize} bytes`
+      );
+
+      let pipeline = sharp(file.buffer).rotate().resize({
+        width: MAX_IMAGE_DIMENSION,
+        height: MAX_IMAGE_DIMENSION,
+        fit: 'inside',
+        withoutEnlargement: true,
+      });
+
+      if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg') {
+        body = await pipeline.jpeg({ quality: 80 }).toBuffer();
+        contentType = 'image/jpeg';
+      } else if (file.mimetype === 'image/png') {
+        body = await pipeline.png({ compressionLevel: 9 }).toBuffer();
+        contentType = 'image/png';
+      } else if (file.mimetype === 'image/webp') {
+        body = await pipeline.webp({ quality: 80 }).toBuffer();
+        contentType = 'image/webp';
       } else {
-        resolve(data.Location);
+        // Fallback: resize without format change
+        body = await pipeline.toBuffer();
       }
-    });
-  });
+
+      console.log(
+        `Compressed image ${file.originalname} to ${body.length} bytes`
+      );
+    }
+  } catch (err) {
+    console.error(
+      'Image compression failed, uploading original file buffer instead:',
+      err
+    );
+    body = file.buffer;
+    contentType = file.mimetype;
+  }
+
+  const params = {
+    Bucket: AWS_BUCKET,
+    Key: `reports/${reportId}/${Date.now()}-${file.originalname}`,
+    Body: body,
+    ContentType: contentType,
+    ACL: 'public-read'
+  };
+
+  const data = await s3.upload(params).promise();
+  return data.Location;
 };
 
 exports.createReport = async (req, res, next) => {
@@ -506,10 +757,22 @@ exports.generatePDFReport = async (req, res, next) => {
     console.log('Header template generated, length:', headerTemplate.length);
 
     // Generate PDF using shared Puppeteer instance
-    const pdfBuffer = await generatePdfBuffer(
+    let pdfBuffer = await generatePdfBuffer(
       htmlContent,
       headerTemplate,
       getFooterTemplate(templateData)
+    );
+
+    // Append all pages from the project drawing PDFs so each drawing page
+    // is rendered as a full page in the exported PDF.
+    pdfBuffer = await appendDrawingPdfsToReport(pdfBuffer, templateData);
+
+    // Optionally compress the final PDF before sending it to the browser.
+    const originalSize = pdfBuffer.length;
+    pdfBuffer = await compressPdfBufferIfEnabled(pdfBuffer);
+    console.log(
+      'Final exported PDF size (bytes), original vs possibly compressed:',
+      { originalSize, finalSize: pdfBuffer.length }
     );
 
     console.log('PDF generated, buffer size:', pdfBuffer.length);
@@ -792,7 +1055,7 @@ exports.sendReportToCustomer = async (req, res, next) => {
     console.log('Email header template generated, length:', headerTemplate.length);
 
     // Generate PDF using shared Puppeteer instance
-    const pdfBuffer = await generatePdfBuffer(
+    let pdfBuffer = await generatePdfBuffer(
       htmlContent,
       headerTemplate,
       getFooterTemplate(templateData),
@@ -801,7 +1064,16 @@ exports.sendReportToCustomer = async (req, res, next) => {
       }
     );
 
-    console.log('Email PDF generated, buffer size:', pdfBuffer.length);
+    // Append drawing PDFs so emailed reports also contain full-page drawings.
+    pdfBuffer = await appendDrawingPdfsToReport(pdfBuffer, templateData);
+
+    // Optionally compress the final PDF before uploading to S3 / emailing.
+    const originalSize = pdfBuffer.length;
+    pdfBuffer = await compressPdfBufferIfEnabled(pdfBuffer);
+    console.log(
+      'Email PDF generated, buffer size (bytes), original vs possibly compressed:',
+      { originalSize, finalSize: pdfBuffer.length }
+    );
 
     // Upload PDF to S3
     const pdfFilename = `report-${report.id}.pdf`;

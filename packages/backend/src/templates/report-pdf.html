@@ -915,7 +915,15 @@
                   <td>{{{this.areas}}}</td>
                   <td>{{{this.locations}}}</td>
                   <td>{{{this.descriptions}}}</td>
-                  <td>{{#if this.photo}}<img src="{{this.photo}}" alt="Photo" style="max-width: 100px;" />{{/if}}</td>
+                  <td>
+                    {{#if this.photo}}
+                      <img
+                        src="{{this.photo}}"
+                        alt="Photo"
+                        style="max-width: 120px; max-height: 120px; object-fit: contain; display: block;"
+                      />
+                    {{/if}}
+                  </td>
                 </tr>
                 {{/each}}
               </tbody>
@@ -981,7 +989,15 @@
                   <td>{{this.areas}}</td>
                   <td>{{{this.locations}}}</td>
                   <td>{{{this.descriptions}}}</td>
-                  <td>{{#if this.photo}}<img src="{{this.photo}}" alt="Photo" style="max-width: 100px;" />{{/if}}</td>
+                  <td>
+                    {{#if this.photo}}
+                      <img
+                        src="{{this.photo}}"
+                        alt="Photo"
+                        style="max-width: 120px; max-height: 120px; object-fit: contain; display: block;"
+                      />
+                    {{/if}}
+                  </td>
                 </tr>
                 {{/each}}
               </tbody>
@@ -1047,7 +1063,15 @@
                     <td>{{this.areas}}</td>
                     <td>{{{this.locations}}}</td>
                     <td>{{{this.descriptions}}}</td>
-                    <td>{{#if this.photo}}<img src="{{this.photo}}" alt="Photo" style="max-width: 100px;" />{{/if}}</td>
+                    <td>
+                      {{#if this.photo}}
+                        <img
+                          src="{{this.photo}}"
+                          alt="Photo"
+                          style="max-width: 120px; max-height: 120px; object-fit: contain; display: block;"
+                        />
+                      {{/if}}
+                    </td>
                   </tr>
                   {{/each}}
                 {{else}}
@@ -1564,29 +1588,22 @@
 
     <!-- APPENDIX B: Site Drawings -->
     <div class="section appendix" id="appendix-b">
-        <h3>Appendix B: Site Drawings</h3>
+        {{!--
+          If there are drawings, show an Appendix B heading and a short note
+          indicating that the site drawings are provided at the end of the report.
+          If there are no drawings at all, show a "No drawings to show" message.
+        --}}
         {{#if project_drawings.length}}
-        <div class="photo-grid">
-            {{#each project_drawings}}
-            <div class="photo-item">
-                <img src="{{this.file_url}}" alt="{{this.file_name}}" />
-                <div class="photo-caption">{{this.file_name}}</div>
-            </div>
-            {{/each}}
-        </div>
+            <h3>Appendix B: Site Drawings</h3>
+            <p>The site drawings for this project are provided at the end of this report.</p>
         {{else}}
-        {{#if projectDrawings.length}}
-        <div class="photo-grid">
-            {{#each projectDrawings}}
-            <div class="photo-item">
-                <img src="{{this.file_url}}" alt="{{this.file_name}}" />
-                <div class="photo-caption">{{this.file_name}}</div>
-            </div>
-            {{/each}}
-        </div>
-        {{else}}
-        <p>No site drawings uploaded.</p>
-        {{/if}}
+            {{#if projectDrawings.length}}
+                <h3>Appendix B: Site Drawings</h3>
+                <p>The site drawings for this project are provided at the end of this report.</p>
+            {{else}}
+                <h3>Appendix B: Site Drawings</h3>
+                <p>No drawings to show.</p>
+            {{/if}}
         {{/if}}
     </div>
 

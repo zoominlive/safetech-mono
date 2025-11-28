@@ -160,6 +160,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   const [isLoadingDrawings, setIsLoadingDrawings] = useState(false);
   const [isUploadingUnmarked, setIsUploadingUnmarked] = useState(false);
   const [isUploadingMarked, setIsUploadingMarked] = useState(false);
+  const [deletingDrawingId, setDeletingDrawingId] = useState<string | null>(null);
 
   const loadDrawings = async () => {
     if (!projectId) return;
@@ -199,6 +200,7 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
   const handleDeleteDrawing = async (drawingId: string) => {
     if (!projectId) return;
     try {
+      setDeletingDrawingId(drawingId);
       const res = await projectDrawingService.remove(projectId, drawingId);
       if (res?.success) {
         toast({ title: "Deleted", description: "Drawing removed" });
@@ -208,6 +210,8 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
       }
     } catch (e) {
       toast({ title: "Error", description: "Failed to delete drawing", variant: "destructive" });
+    } finally {
+      setDeletingDrawingId(null);
     }
   };
 
@@ -3159,12 +3163,29 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-3">
                         <Label>Upload Unmarked Drawings</Label>
-                        <input type="file" multiple onChange={(e) => handleUploadDrawings(e.target.files, false)} disabled={isUploadingUnmarked} />
+                        <input
+                          type="file"
+                          multiple
+                          onChange={(e) => {
+                            handleUploadDrawings(e.target.files, false);
+                            // Clear the input so the selected file text doesn't linger
+                            e.target.value = "";
+                          }}
+                          disabled={isUploadingUnmarked}
+                        />
                         {isUploadingUnmarked && <p className="text-sm text-gray-500">Uploading...</p>}
                       </div>
                       <div className="space-y-3">
                         <Label>Upload Marked Drawings</Label>
-                        <input type="file" multiple onChange={(e) => handleUploadDrawings(e.target.files, true)} disabled={isUploadingMarked} />
+                        <input
+                          type="file"
+                          multiple
+                          onChange={(e) => {
+                            handleUploadDrawings(e.target.files, true);
+                            e.target.value = "";
+                          }}
+                          disabled={isUploadingMarked}
+                        />
                         {isUploadingMarked && <p className="text-sm text-gray-500">Uploading...</p>}
                       </div>
                     </div>
@@ -3180,9 +3201,14 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                           <ul className="divide-y">
                             {unmarkedDrawings.map((d) => (
                               <li key={d.id} className="py-2 flex items-center justify-between gap-3">
-                                <div className="min-w-0">
-                                  <p className="truncate text-sm">{d.file_name}</p>
-                                  <p className="text-xs text-gray-500">{new Date(d.created_at).toLocaleString()}</p>
+                                <div className="min-w-0 flex items-center gap-2">
+                                  <div>
+                                    <p className="truncate text-sm">{d.file_name}</p>
+                                    <p className="text-xs text-gray-500">{new Date(d.created_at).toLocaleString()}</p>
+                                  </div>
+                                  {deletingDrawingId === d.id && (
+                                    <Loader2 className="h-4 w-4 animate-spin text-red-500" />
+                                  )}
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
                                   <button className="p-2" onClick={() => window.open(d.file_url, '_blank')} title="Download">
@@ -3203,7 +3229,12 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDeleteDrawing(d.id)}>Delete</AlertDialogAction>
+                                        <AlertDialogAction
+                                          onClick={() => handleDeleteDrawing(d.id)}
+                                          disabled={deletingDrawingId === d.id}
+                                        >
+                                          {deletingDrawingId === d.id ? "Deleting..." : "Delete"}
+                                        </AlertDialogAction>
                                       </AlertDialogFooter>
                                     </AlertDialogContent>
                                   </AlertDialog>
@@ -3223,9 +3254,14 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                           <ul className="divide-y">
                             {markedDrawings.map((d) => (
                               <li key={d.id} className="py-2 flex items-center justify-between gap-3">
-                                <div className="min-w-0">
-                                  <p className="truncate text-sm">{d.file_name}</p>
-                                  <p className="text-xs text-gray-500">{new Date(d.created_at).toLocaleString()}</p>
+                                <div className="min-w-0 flex items-center gap-2">
+                                  <div>
+                                    <p className="truncate text-sm">{d.file_name}</p>
+                                    <p className="text-xs text-gray-500">{new Date(d.created_at).toLocaleString()}</p>
+                                  </div>
+                                  {deletingDrawingId === d.id && (
+                                    <Loader2 className="h-4 w-4 animate-spin text-red-500" />
+                                  )}
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
                                   <button className="p-2" onClick={() => window.open(d.file_url, '_blank')} title="Download">
@@ -3246,7 +3282,12 @@ export const ProjectReport: React.FC<{ readOnly?: boolean }> = ({ readOnly = fal
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDeleteDrawing(d.id)}>Delete</AlertDialogAction>
+                                        <AlertDialogAction
+                                          onClick={() => handleDeleteDrawing(d.id)}
+                                          disabled={deletingDrawingId === d.id}
+                                        >
+                                          {deletingDrawingId === d.id ? "Deleting..." : "Delete"}
+                                        </AlertDialogAction>
                                       </AlertDialogFooter>
                                     </AlertDialogContent>
                                   </AlertDialog>

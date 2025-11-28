@@ -279,7 +279,7 @@ export const reportService = {
   generateReportPDF: async (id: string): Promise<Blob> => {
     const response: AxiosResponse<Blob> = await BaseClient.get(`/reports/${id}/pdf`, {
       responseType: 'blob',
-      timeout: 60000, // 60s timeout specifically for large PDF generation
+      timeout: 120000, // 60s timeout specifically for large PDF generation
     });
     return response.data;
   },
@@ -328,8 +328,12 @@ export const reportService = {
   },
 
   // Send report to customer
+  // Send report to customer
   sendReportToCustomer: async (reportId: string): Promise<{ success: boolean; message?: string }> => {
-    const response: AxiosResponse<{ success: boolean; message?: string }> = await BaseClient.post(`/reports/${reportId}/send-to-customer`);
+    const response: AxiosResponse<{ success: boolean; message?: string }> =
+      await BaseClient.post(`/reports/${reportId}/send-to-customer`, undefined, {
+        timeout: 120000, // 2 minutes, same as generateReportPDF
+      });
     return response.data;
   },
 
