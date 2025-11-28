@@ -279,7 +279,7 @@ export const reportService = {
   generateReportPDF: async (id: string): Promise<Blob> => {
     const response: AxiosResponse<Blob> = await BaseClient.get(`/reports/${id}/pdf`, {
       responseType: 'blob',
-      timeout: 120000, // 60s timeout specifically for large PDF generation
+      timeout: 180000, // 180s timeout specifically for large PDF generation
     });
     return response.data;
   },
